@@ -60,11 +60,37 @@ document.addEventListener('DOMContentLoaded', () => {
         return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
     };
 
+    // Таблица маппинга брендов → имя файла в filippofilip95/car-logos-dataset
+    const LOGO_MAP = {
+        'acura':       'acura',
+        'buick':       'buick',
+        'cadillac':    'cadillac',
+        'chevrolet':   'chevrolet',
+        'chrysler':    'chrysler',
+        'dodge':       'dodge',
+        'ford':        'ford',
+        'gmc':         'gmc',
+        'gm':          'gmc',
+        'general motors': 'gmc',
+        'honda':       'honda',
+        'jeep':        'jeep',
+        'lexus':       'lexus',
+        'lincoln':     'lincoln',
+        'mercury':     'mercury',
+        'mopar':       'dodge',      // Mopar — бренд запчастей FCA, нет отдельного лого → используем Dodge
+        'nissan':      'nissan',
+        'oldsmobile':  'oldsmobile',
+        'pontiac':     'pontiac',
+        'ram':         'ram',
+        'saturn':      'saturn',
+        'toyota':      'toyota',
+    };
+
     const getMakeLogoUrl = (make) => {
         if (!make) return '';
-        let cleanMake = make.toLowerCase().trim();
-        if (cleanMake === 'gm' || cleanMake === 'general motors') cleanMake = 'gmc';
-        return `https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/${cleanMake}.png`;
+        const key = make.toLowerCase().trim();
+        const slug = LOGO_MAP[key] || key.replace(/\s+/g, '-');
+        return `https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/${slug}.png`;
     };
 
     const saveCart = () => {
@@ -646,13 +672,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (state.categories.size > 0 && !state.categories.has(p.category)) return false;
             if (state.makes.size > 0) {
-                const pMakes = new Set();
-                if (p.brand) pMakes.add(p.brand);
-                if (p.compatibility) p.compatibility.forEach(c => { if(c.make) pMakes.add(c.make); });
+                // Собираем марки товара в нижнем регистре для case-insensitive сравнения
+                const pMakesLower = new Set();
+                if (p.brand) pMakesLower.add(p.brand.toLowerCase().trim());
+                if (p.compatibility) p.compatibility.forEach(c => {
+                    if (c.make) {
+                        let mk = c.make.toLowerCase().trim();
+                        // GM и Gmc — это GMC
+                        if (mk === 'gm' || mk === 'gmc') { pMakesLower.add('gmc'); }
+                        else { pMakesLower.add(mk); }
+                    }
+                });
                 
                 let makeMatch = false;
                 for (let make of state.makes) {
-                    if (pMakes.has(make)) {
+                    let mk = make.toLowerCase().trim();
+                    if (mk === 'gm') mk = 'gmc';
+                    if (pMakesLower.has(mk)) {
                         makeMatch = true;
                         break;
                     }
@@ -718,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const trigger = document.createElement('div');
             trigger.id = 'loadingTrigger';
             trigger.className = 'w-full py-8 flex justify-center hidden';
-            trigger.innerHTML = `<div class="w-10 h-10 border-4 border-cyan-900/30 border-t-cyan-500 rounded-full animate-spin shadow-[0_0_15px_rgba(0,212,255,0.4)]"></div>`;
+            trigger.innerHTML = `<div class="w-8 h-8 border-2 border-apex-border border-t-[#d4af37] rounded-full animate-spin"></div>`;
             DOM.productsGrid.parentNode.insertBefore(trigger, DOM.productsGrid.nextSibling);
             DOM.loadingTrigger = trigger;
         }
