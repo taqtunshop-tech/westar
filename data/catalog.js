@@ -293,6 +293,11 @@ window.WESTAR_CATALOG = {
       "description": "Предлагается новая подушка (опора) двигателя Westar EM-2292, изготовленная в США по стандартам OEM. Это надежная деталь для фиксации двигателя и снижения вибраций. Производитель:\n Westar Industries – американский бренд с более чем 40-летним опытом производства опор двигателя, трансмиссии и элементов подвески. Продукция соответствует OEM-стандартам и проходит строгий контроль качества. OEM номер:\n EM-2292 (основной номер Westar, совместим с оригинальными GM номерами для указанных моделей). Тип детали:\n Опора двигателя передняя (L/R Front) левая/правая, резинометаллическая конструкция без гидравлического демпфирования. Материал: металл и резина для долговечности и амортизации. Состояние:\n Новая. Аналоги:\n Anchor 2292\n DEA A2292\n Pioneer 602292\n Beck/Arnley 104-1069\n Sealed Power 270-2292\n CARQUEST 31-2292 CHEVROLET: 497472, 14039437, 357716, 10001593, 525616, 10002452, 9762326, 6262208, 9762327, 10001133, 14066861, 9764714, 467422, 494381, 9769925, 22188497, 459021, 10002451, 10001132, 525617, 6262215, 3769925, 357715; OLDSMOBILE: 3769925, 14039437, 357716, 357715, 497472, 10001593, 525616, 10002452, 497473, 6262208, 9762326, 10001133, 14066861, 9762327, 10002451, 22188497, 10001132, 525617, 6262215, 6262232, 9764714, 494381, 459021, 9769925; PONTIAC: 494381, 357715, 357716, 497472, 3769925, 14039437, 9762327, 9762326, 10002452, 497473, 10001133, 14066861, 14066961, 10001593, 525616, 6262208, 6262232, 22188497, 9769925, 6262215, 467422, 459021, 10002451, 10001132, 525617; BUICK: 10001132, 525617, 10002451, 6262215, 459021, 9764714, 22188497, 10001592, 14066961, 10001593, 525616, 9762326, 6262232, 6262208, 467422, 357716, 3769925, 14039437, 14066861, 497472, 497473, 10001133; GMC: 10001592, 9769925, 467422, 22188497, 10002451, 6262215, 10001132, 525617, 525616, 10001133, 14066861, 497472, 6262208, 9762326, 9764714, 494381, 459021, 357715, 357716, 3769925, 10002452, 9762327, 6262232, 14066961, 10001593; CADILLAC: 10001592, 22188497, 10001132, 525617, 467422, 9764714, 97",
       "imageUrls": [
         "images/EM-2292-1.jpg",
+        "images/EM-2292-2.jpg",
+        "images/EM-2292-3.jpg",
+        "images/EM-2292-4.jpg",
+        "images/EM-2292-5.jpg",
+        "images/EM-2292-1.jpg",
         "images/EM-2292-2.jpg"
       ]
     },
@@ -329,6 +334,9 @@ window.WESTAR_CATALOG = {
         "images/EM-4139-5.jpg",
         "images/EM-4139-6.jpg",
         "images/EM-4139-7.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-4139-video-1.mp4"
       ]
     },
     {
@@ -355,6 +363,9 @@ window.WESTAR_CATALOG = {
         "images/EM-4326-7.jpg",
         "images/EM-4326-8.jpg",
         "images/EM-4326-9.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-4326-video-1.mp4"
       ]
     },
     {
@@ -460,6 +471,10 @@ window.WESTAR_CATALOG = {
         "images/EM-4405-10.jpg",
         "images/EM-4405-11.jpg",
         "images/EM-4405-12.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-4405-video-1.mp4",
+        "images/EM-4405-video-2.mp4"
       ]
     },
     {
@@ -605,6 +620,9 @@ window.WESTAR_CATALOG = {
         "images/EM-7204-8.jpg",
         "images/EM-7204-9.jpg",
         "images/EM-7204-10.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-7204-video-1.mp4"
       ]
     },
     {
@@ -834,37 +852,31 @@ window.WESTAR_CATALOG = {
       "stock": 137,
       "price": 8000,
       "name": "Тяговая опора двигателя (передняя) (Westar) EM-7097",
-      "imageUrl": "images/EM-7097-1.webp",
+      "imageUrl": "images/EM-7097-1.jpg",
       "brand": "LEXUS",
       "oem": "1236031050",
       "analogs": "A42017Hy Eagle Bhp 4449H Lexus 1236031050 Lexus 123600P070 Toyota 123600P030 Toyota 123600P130",
       "compatibility": [],
       "description": "Продаю оригинальную переднюю подушку двигателя WESTAR EM-7097.  Эта опора применяется на Toyota Camry VII (2007–2017), Avalon (2008–2018), Sienna III (2011–2017), Venza (2009–2016), а также на Lexus RX350 II–III (2010–2012) и ES350 (2013–2018) с двигателями 3,5 L V6. Совместимость:  Toyota Camry VII (2007–2017) 3,5 L V6 Toyota Avalon (2008–2018) 3,5 L V6 Toyota Sienna III (2011–2017) 3,5 L V6 Toyota Venza (2009–2016) 3,5 L V6 Lexus RX350 II–III (2010–2012) 3,5 L V6 Lexus ES350 (2013–2018) 3,5 L V6  +-----------------+------------+------------+ | Марка | Модель | Годы | +-----------------+------------+------------+ | LEXUS | ES 350 | 2013-2018 | | LEXUS | RX 350 | 2010-2012 | | TOYOTA | AVALON | 2008-2018 | | TOYOTA | CAMRY | 2012-2017 | | TOYOTA | SIENNA | 2011-2017 | | TOYOTA | VENZA | 2009-2016 | +-----------------+------------+------------+ \n Габариты и вес:  Размеры: 16,5 × 12,8 × 9,7 см Вес: 2,410 кг Позиция: передняя левая опора двигателя  Аналоги и кроссы по артикулу:  Anchor 9884 DEA Products A42017HY Eagle BHP 4449H LEXUS 1236031050 LEXUS 123600P070 TOYOTA 123600P030 TOYOTA 123600P130\n   Преимущества WESTAR EM-7097:  Производится по стандартам ISO, QS, TS Соответствует или превосходит OEM-спецификации по качеству, размеру и посадке Эффективно гасит вибрации и динамические нагрузки Устойчивая, долговечная металлическая конструкция с резиновым демпфером  Состояние: новое, оригинал\n OEM-номер: EM-7097 Оплата от юрлиц, возможна рассрочка\n Авито Доставка по России Звоните — помогу подобрать подходящую опору и проконсультирую по установке!1234",
       "imageUrls": [
-        "images/EM-7097-1.webp",
-        "images/EM-7097-2.webp",
-        "images/EM-7097-3.webp",
-        "images/EM-7097-4.webp",
-        "images/EM-7097-5.webp",
-        "images/EM-7097-6.webp",
-        "images/EM-7097-7.webp",
-        "images/EM-7097-8.webp",
-        "images/EM-7097-9.webp",
-        "images/EM-7097-10.webp",
-        "images/EM-7097-11.webp",
-        "images/EM-7097-12.webp",
-        "images/EM-7097-13.jpg",
-        "images/EM-7097-14.jpg",
-        "images/EM-7097-15.jpg",
-        "images/EM-7097-16.jpg",
-        "images/EM-7097-17.jpg",
-        "images/EM-7097-18.jpg",
-        "images/EM-7097-19.jpg",
-        "images/EM-7097-20.jpg",
-        "images/EM-7097-21.jpg",
-        "images/EM-7097-22.jpg",
-        "images/EM-7097-23.jpg",
-        "images/EM-7097-24.jpg"
+        "images/EM-7097-1.jpg",
+        "images/EM-7097-2.jpg",
+        "images/EM-7097-3.jpg",
+        "images/EM-7097-4.jpg",
+        "images/EM-7097-5.jpg",
+        "images/EM-7097-6.jpg",
+        "images/EM-7097-7.jpg",
+        "images/EM-7097-8.jpg",
+        "images/EM-7097-9.jpg",
+        "images/EM-7097-10.jpg",
+        "images/EM-7097-11.jpg",
+        "images/EM-7097-12.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-7097-video-1.mp4",
+        "images/EM-7097-video-2.mp4",
+        "images/EM-7097-video-3.mp4",
+        "images/EM-7097-video-4.mp4"
       ]
     },
     {
@@ -914,6 +926,9 @@ window.WESTAR_CATALOG = {
         "images/EM-9223-8.jpg",
         "images/EM-9223-9.jpg",
         "images/EM-9223-10.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-9223-video-1.mp4"
       ]
     },
     {
@@ -943,6 +958,9 @@ window.WESTAR_CATALOG = {
         "images/EM-4152-10.jpg",
         "images/EM-4152-11.jpg",
         "images/EM-4152-12.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-4152-video-1.mp4"
       ]
     },
     {
@@ -1131,6 +1149,9 @@ window.WESTAR_CATALOG = {
         "images/EM-4306-11.jpg",
         "images/EM-4306-12.jpg",
         "images/EM-4306-13.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-4306-video-1.mp4"
       ]
     },
     {
@@ -1197,6 +1218,9 @@ window.WESTAR_CATALOG = {
         "images/EM-2387-2.jpg",
         "images/EM-2387-3.jpg",
         "images/EM-2387-4.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-2387-video-1.mp4"
       ]
     },
     {
@@ -1376,6 +1400,10 @@ window.WESTAR_CATALOG = {
         "images/EM-9165-6.jpg",
         "images/EM-9165-7.jpg",
         "images/EM-9165-8.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-9165-video-1.mp4",
+        "images/EM-9165-video-2.mp4"
       ]
     },
     {
@@ -1429,6 +1457,9 @@ window.WESTAR_CATALOG = {
         "images/EM-5587-8.jpg",
         "images/EM-5587-9.jpg",
         "images/EM-5587-10.jpg"
+      ],
+      "videoUrls": [
+        "images/EM-5587-video-1.mp4"
       ]
     }
   ]

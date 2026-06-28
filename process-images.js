@@ -32,33 +32,47 @@ for (const dirName of dirs) {
 
         const fullDirPath = path.join(PARENT_DIR, dirName);
         
-        // Получаем файлы в папке
         try {
             const files = fs.readdirSync(fullDirPath);
             
-            // Ищем все подходящие картинки
+            // Ищем все подходящие картинки и видео
             const imageFiles = files.filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
+            const videoFiles = files.filter(f => /\.(mp4|mov|webm)$/i.test(f));
             
             if (imageFiles.length > 0) {
-                imageMapping[article] = [];
+                if (!imageMapping[article]) imageMapping[article] = { images: [], videos: [] };
                 
                 imageFiles.forEach((file, index) => {
                     const ext = path.extname(file).toLowerCase();
                     const sourcePath = path.join(fullDirPath, file);
-                    
-                    // Сохраняем как [Артикул]-[Индекс].jpg
                     const targetFileName = `${article}-${index + 1}${ext}`;
                     const targetPath = path.join(IMAGES_DIR, targetFileName);
                     
                     fs.copyFileSync(sourcePath, targetPath);
-                    
-                    imageMapping[article].push(`images/${targetFileName}`);
+                    imageMapping[article].images.push(`images/${targetFileName}`);
                     copiedCount++;
                 });
-                
                 console.log(`[+] Скопировано картинок для ${article}: ${imageFiles.length}`);
-            } else {
-                console.log(`[-] Нет картинок в папке: ${dirName}`);
+            }
+            
+            if (videoFiles.length > 0) {
+                if (!imageMapping[article]) imageMapping[article] = { images: [], videos: [] };
+                
+                videoFiles.forEach((file, index) => {
+                    const ext = path.extname(file).toLowerCase();
+                    const sourcePath = path.join(fullDirPath, file);
+                    const targetFileName = `${article}-video-${index + 1}${ext}`;
+                    const targetPath = path.join(IMAGES_DIR, targetFileName);
+                    
+                    fs.copyFileSync(sourcePath, targetPath);
+                    imageMapping[article].videos.push(`images/${targetFileName}`);
+                    copiedCount++;
+                });
+                console.log(`[+] Скопировано видео для ${article}: ${videoFiles.length}`);
+            }
+            
+            if (imageFiles.length === 0 && videoFiles.length === 0) {
+                console.log(`[-] Нет медиа в папке: ${dirName}`);
             }
         } catch (e) {
             console.error(`[!] Ошибка чтения папки ${dirName}:`, e.message);
@@ -66,7 +80,7 @@ for (const dirName of dirs) {
     }
 }
 
-console.log(`\nВсего скопировано ${copiedCount} картинок.`);
+console.log(`\nВсего скопировано ${copiedCount} файлов (картинок и видео).`);
 
 // Теперь обновляем catalog.json и catalog.js
 if (fs.existsSync(CATALOG_JSON_PATH)) {
@@ -77,9 +91,15 @@ if (fs.existsSync(CATALOG_JSON_PATH)) {
     catalog.products.forEach(product => {
         const productArticle = product.article.toUpperCase();
         
-        if (imageMapping[productArticle] && imageMapping[productArticle].length > 0) {
-            product.imageUrl = imageMapping[productArticle][0]; // Главная картинка
-            product.imageUrls = imageMapping[productArticle];   // Все картинки
+        if (imageMapping[productArticle]) {
+            const media = imageMapping[productArticle];
+            if (media.images && media.images.length > 0) {
+                product.imageUrl = media.images[0]; // Главная картинка
+                product.imageUrls = media.images;   // Все картинки
+            }
+            if (media.videos && media.videos.length > 0) {
+                product.videoUrls = media.videos;
+            }
             updatedCount++;
         }
     });

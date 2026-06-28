@@ -201,18 +201,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         DOM.modalContent.innerHTML = `
-            <!-- Left: Image Gallery -->
+            <!-- Left: Media Gallery -->
             <div class="w-full md:w-2/5 bg-slate-800 p-6 md:p-8 flex flex-col items-center justify-center min-h-[300px] gap-6">
-                <div class="flex-grow flex items-center justify-center w-full relative">
+                <div class="flex-grow flex items-center justify-center w-full relative" id="modalMainMediaContainer">
                     <img id="modalMainImage" src="${imgSrc}" alt="${product.name}" class="max-w-full max-h-[350px] object-contain drop-shadow-2xl transition-opacity duration-300">
+                    <video id="modalMainVideo" class="max-w-full max-h-[350px] object-contain drop-shadow-2xl hidden" controls></video>
                 </div>
-                ${product.imageUrls && product.imageUrls.length > 1 ? `
+                ${(product.imageUrls && product.imageUrls.length > 1) || (product.videoUrls && product.videoUrls.length > 0) ? `
                 <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 w-full px-2" id="modalThumbnails">
-                    ${product.imageUrls.map((url, i) => `
-                        <button class="thumbnail-btn flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === 0 ? 'border-brand-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}" data-src="${url}">
+                    ${product.imageUrls ? product.imageUrls.map((url, i) => `
+                        <button class="thumbnail-btn flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === 0 ? 'border-brand-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}" data-src="${url}" data-type="image">
                             <img src="${url}" class="w-full h-full object-cover" alt="Ракурс ${i+1}">
                         </button>
-                    `).join('')}
+                    `).join('') : ''}
+                    
+                    ${product.videoUrls ? product.videoUrls.map((url, i) => `
+                        <button class="thumbnail-btn flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 border-transparent opacity-60 hover:opacity-100 transition-all relative" data-src="${url}" data-type="video">
+                            <div class="w-full h-full bg-slate-900 flex items-center justify-center text-brand-500">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
+                            </div>
+                        </button>
+                    `).join('') : ''}
                 </div>
                 ` : ''}
             </div>
@@ -298,17 +307,29 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Gallery logic
         const mainImage = document.getElementById('modalMainImage');
+        const mainVideo = document.getElementById('modalMainVideo');
         const thumbnails = document.querySelectorAll('.thumbnail-btn');
-        if (thumbnails.length > 0 && mainImage) {
+        if (thumbnails.length > 0) {
             thumbnails.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // Update main image
+                    const type = this.getAttribute('data-type');
                     const newSrc = this.getAttribute('data-src');
-                    mainImage.style.opacity = '0';
-                    setTimeout(() => {
-                        mainImage.src = newSrc;
-                        mainImage.style.opacity = '1';
-                    }, 150);
+                    
+                    if (type === 'video') {
+                        mainImage.classList.add('hidden');
+                        mainVideo.classList.remove('hidden');
+                        mainVideo.src = newSrc;
+                        mainVideo.play();
+                    } else {
+                        mainVideo.pause();
+                        mainVideo.classList.add('hidden');
+                        mainImage.classList.remove('hidden');
+                        mainImage.style.opacity = '0';
+                        setTimeout(() => {
+                            mainImage.src = newSrc;
+                            mainImage.style.opacity = '1';
+                        }, 50);
+                    }
                     
                     // Update active state
                     thumbnails.forEach(t => {
@@ -323,6 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const closeModal = () => {
+        const mainVideo = document.getElementById('modalMainVideo');
+        if (mainVideo) mainVideo.pause();
         DOM.modal.classList.add('hidden');
         document.body.style.overflow = '';
     };
