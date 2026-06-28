@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Westar Industries | Каталог Автозапчастей</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        brand: { 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .product-card {
+            transition: all 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="custom-scrollbar antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+    <!-- Background decorations -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/20 blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/20 blur-[120px]"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-50 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-blue-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Westar Industries</h1>
+                        <p class="text-xs text-brand-400 font-medium tracking-wider uppercase">Каталог автозапчастей</p>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Поиск по артикулу, названию..." class="w-80 bg-slate-800/50 border border-slate-700 text-slate-200 text-sm rounded-full focus:ring-brand-500 focus:border-brand-500 block pl-10 p-2.5 transition-all placeholder-slate-500 outline-none">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col md:flex-row gap-8">
+        
+        <!-- Sidebar Filters -->
+        <aside class="w-full md:w-64 flex-shrink-0">
+            <div class="glass-panel rounded-2xl p-6 sticky top-28">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-bold text-white">Фильтры</h2>
+                    <button id="resetFiltersBtn" class="text-xs text-slate-400 hover:text-brand-400 transition-colors">Сбросить</button>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Categories -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Категория</h3>
+                        <div id="categoryFilters" class="space-y-2">
+                            <!-- Checkboxes injected by JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-slate-800"></div>
+                    
+                    <!-- Makes -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Марка авто</h3>
+                        <div class="relative mb-3">
+                            <input type="text" id="makeSearchInput" placeholder="Найти марку..." class="w-full bg-slate-900/50 border border-slate-700 text-slate-300 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 outline-none">
+                        </div>
+                        <div id="makeFilters" class="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-2">
+                            <!-- Checkboxes injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Product Grid -->
+        <section class="flex-grow">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-1">Товары</h2>
+                    <p class="text-sm text-slate-400" id="resultsCount">Загрузка...</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="sortSelect" class="text-sm text-slate-400">Сортировка:</label>
+                    <select id="sortSelect" class="bg-slate-800 border border-slate-700 text-white text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 outline-none cursor-pointer">
+                        <option value="default">По умолчанию</option>
+                        <option value="price_asc">Сначала дешевле</option>
+                        <option value="price_desc">Сначала дороже</option>
+                        <option value="stock_desc">По остаткам</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Mobile search -->
+            <div class="md:hidden mb-6">
+                <div class="relative">
+                    <input type="text" id="searchInputMobile" placeholder="Поиск по артикулу, названию..." class="w-full bg-slate-800/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-brand-500 focus:border-brand-500 block pl-10 p-3 outline-none">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Products injected by JS -->
+            </div>
+            
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-center">
+                <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Ничего не найдено</h3>
+                <p class="text-slate-400 max-w-md mx-auto">По вашему запросу не найдено ни одного товара. Попробуйте изменить параметры фильтрации или поисковый запрос.</p>
+                <button id="clearSearchBtn" class="mt-6 px-6 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg transition-colors shadow-lg shadow-brand-500/20 font-medium">Сбросить поиск</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-panel mt-auto border-t border-slate-800 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-slate-500 text-sm">© 2026 Westar Industries. Developed by ROM.</p>
+        </div>
+    </footer>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" id="modalBackdrop"></div>
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div class="glass-panel relative rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-5xl w-full border border-slate-700 max-h-[90vh] flex flex-col">
+                <div class="absolute top-0 right-0 pt-4 pr-4 z-10">
+                    <button id="closeModalBtn" type="button" class="text-slate-400 bg-slate-800/80 hover:bg-slate-700 hover:text-white rounded-full p-2 transition-colors focus:outline-none backdrop-blur">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <div class="flex-grow overflow-y-auto custom-scrollbar flex flex-col md:flex-row" id="modalContent">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="data/catalog.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
