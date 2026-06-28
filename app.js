@@ -42,6 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
     };
 
+    // Получение URL логотипа марки авто
+    const getMakeLogoUrl = (make) => {
+        if (!make) return '';
+        let cleanMake = make.toLowerCase().trim();
+        // Обработка особых случаев
+        if (cleanMake === 'gm' || cleanMake === 'general motors') cleanMake = 'gmc';
+        return `https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/${cleanMake}.png`;
+    };
+
     // Инициализация фильтров
     const initFilters = () => {
         // Категории
@@ -69,7 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.makeFilters.innerHTML = filteredMakes.map(make => `
             <label class="flex items-center space-x-3 cursor-pointer group">
                 <input type="checkbox" value="${make}" ${state.makes.has(make) ? 'checked' : ''} class="make-cb form-checkbox h-4 w-4 text-brand-500 rounded border-slate-600 bg-slate-800 focus:ring-brand-500 focus:ring-offset-slate-900 transition duration-150 ease-in-out">
-                <span class="text-slate-300 text-sm group-hover:text-white transition-colors truncate" title="${make}">${make}</span>
+                <span class="text-slate-300 text-sm group-hover:text-white transition-colors truncate flex items-center gap-2" title="${make}">
+                    <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="w-5 h-5 object-contain" alt="${make} logo">
+                    ${make}
+                </span>
             </label>
         `).join('');
 
@@ -103,7 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="p-5 flex flex-col flex-grow">
                     <div class="text-[10px] font-semibold text-brand-400 mb-2 uppercase tracking-wider flex items-center justify-between">
                         <span>${product.category}</span>
-                        <span class="text-slate-500 text-right w-1/2 truncate ml-2">${product.brand || 'Westar'}</span>
+                        <span class="text-slate-500 text-right w-1/2 truncate ml-2 flex items-center justify-end gap-1">
+                            ${product.brand ? `<img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-3 object-contain opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all" alt="">` : ''}
+                            ${product.brand || 'Westar'}
+                        </span>
                     </div>
                     <h3 class="text-white font-medium text-sm mb-4 flex-grow line-clamp-3 leading-snug group-hover:text-brand-300 transition-colors">${product.name}</h3>
                     <div class="flex items-end justify-between mt-auto pt-4 border-t border-slate-800/50">
@@ -140,7 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             compatHtml = Object.keys(makesGroup).map(make => `
                 <div class="mb-3">
-                    <h5 class="text-sm font-semibold text-slate-200 mb-1">${make}</h5>
+                    <h5 class="text-sm font-semibold text-slate-200 mb-1 flex items-center gap-2">
+                        <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="w-5 h-5 object-contain" alt="">
+                        ${make}
+                    </h5>
                     <ul class="text-sm text-slate-400 space-y-1 pl-4 border-l-2 border-slate-700">
                         ${makesGroup[make].map(c => `<li><span class="text-slate-300">${c.model}</span> <span class="text-slate-500">${c.years ? '('+c.years+')' : ''}</span></li>`).join('')}
                     </ul>
