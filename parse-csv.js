@@ -235,3 +235,11 @@ console.log(`✅ Создано ${products.length} товаров`);
 console.log(`📁 Категории: ${[...allCategories].join(', ')}`);
 console.log(`🚗 Марки: ${[...allMakes].slice(0, 10).join(', ')}...`);
 console.log(`💾 Сохранено в: ${outPath}`);
+
+// Автоматически запускаем скрипт обработки картинок, чтобы не сбросить локальные пути
+console.log('\n🔄 Запуск синхронизации локальных изображений (process-images.js)...');
+try {
+  require('child_process').execSync('node process-images.js', { stdio: 'inherit' });
+} catch (e) {
+  console.error('Ошибка при запуске process-images.js:', e.message);
+}
