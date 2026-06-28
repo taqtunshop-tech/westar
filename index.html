@@ -3,24 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Westar - Cyber Catalog</title>
+    <title>Westar — Каталог Автозапчастей</title>
+    <meta name="description" content="Официальный каталог запасных частей Westar. Подушки и опоры двигателя для американских автомобилей.">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { 
+                    fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        space: ['Space Grotesk', 'sans-serif']
+                        mono: ['JetBrains Mono', 'monospace']
                     },
                     colors: {
-                        cyber: {
-                            dark: '#050b1a',
-                            panel: 'rgba(12, 19, 34, 0.8)',
-                            cyan: '#00d4ff',
-                            blue: '#3b82f6'
+                        apex: {
+                            bg:        '#050505',
+                            surface:   '#0f0f0f',
+                            container: '#1a1a1a',
+                            border:    '#2a2a2a',
+                            text:      '#f5f5f5',
+                            muted:     '#888888',
+                            gold:      '#d4af37',
+                            silver:    '#c0c0c0'
                         }
                     }
                 }
@@ -28,94 +34,101 @@
         }
     </script>
 </head>
-<body class="antialiased min-h-screen flex flex-col relative text-slate-300">
+<body class="antialiased min-h-screen flex flex-col text-apex-text bg-apex-bg font-sans">
 
-    <!-- Animated Starfield Background -->
-    <div class="starfield-bg">
-        <div class="stars"></div>
-        <div class="stars2"></div>
-        <div class="stars3"></div>
-    </div>
+    <!-- Декоративный фон -->
+    <div class="apex-bg-grid" aria-hidden="true"></div>
+    <div class="apex-bg-radial" aria-hidden="true"></div>
 
-    <!-- Header -->
-    <header class="cyber-glass sticky top-0 z-50 border-b border-cyan-900/30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- ================================================================
+         ХЕДЕР
+         ================================================================ -->
+    <header class="site-header sticky top-0 z-50">
+        <div class="max-w-[1440px] mx-auto px-6 lg:px-16">
             <div class="flex items-center justify-between h-20">
-                <div class="flex items-center gap-4 group cursor-pointer" onclick="window.location.reload()">
-                    <div class="w-12 h-12 rounded-xl bg-cyber-dark border border-cyan-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(0,212,255,0.2)] group-hover:border-cyan-400 group-hover:shadow-[0_0_20px_rgba(0,212,255,0.5)] transition-all duration-300">
-                        <span class="text-2xl font-black text-cyan-400 font-space">W</span>
+                <!-- Логотип -->
+                <div class="flex items-center gap-4 cursor-pointer select-none" onclick="window.location.reload()">
+                    <!-- Иконка-ромб с буквой W -->
+                    <div class="relative w-9 h-9 flex items-center justify-center">
+                        <div class="absolute inset-0 rotate-45 border border-apex-gold opacity-60"></div>
+                        <span class="text-apex-gold font-bold text-sm font-mono relative z-10">W</span>
                     </div>
-                    <div class="scanning-text-container">
-                        <h1 class="text-2xl font-bold tracking-wider text-white font-space">WESTAR<span class="text-cyan-glow">.</span></h1>
-                        <p class="text-[0.65rem] font-mono text-cyan-500/70 uppercase tracking-[0.2em]">Cyber Catalog System</p>
-                        <div class="scanning-line"></div>
+                    <div class="flex flex-col leading-none">
+                        <span class="text-2xl font-bold tracking-[0.25em] text-apex-text uppercase">WESTAR</span>
+                        <span class="text-[8px] font-mono text-apex-gold uppercase tracking-[0.4em] mt-0.5 opacity-80">Precision Components</span>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center gap-4">
+
+                <!-- Поиск (десктоп) -->
+                <div class="hidden md:flex items-center gap-8">
                     <div class="relative group">
-                        <input type="text" id="searchInput" placeholder="Поиск по артикулу (напр. EM-7148)..." class="cyber-input w-[400px] text-sm rounded-lg block pl-10 p-3 font-mono placeholder-cyan-900/50">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <svg class="w-5 h-5 text-cyan-600 group-focus-within:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="searchInput"
+                            placeholder="Поиск по артикулу, названию, OEM..."
+                            class="w-72 text-xs bg-transparent border-b border-apex-border pb-2 text-apex-text focus:border-apex-gold focus:outline-none transition-colors placeholder-apex-muted font-mono">
+                        <div class="absolute right-0 top-0 text-apex-muted group-focus-within:text-apex-gold transition-colors pointer-events-none">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </div>
                     </div>
-                    <button id="cartBtn" class="relative w-12 h-12 flex items-center justify-center cyber-glass rounded-xl text-cyan-500 hover:text-cyan-300 transition-all border border-cyan-500/30 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,212,255,0.4)]">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        <span id="cartBadge" class="absolute -top-2 -right-2 bg-cyan-500 text-cyber-dark text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(0,212,255,0.8)] hidden">0</span>
+                    <!-- Кнопка корзины -->
+                    <button id="cartBtn" class="relative flex items-center gap-2 text-xs font-mono text-apex-muted hover:text-apex-gold transition-colors uppercase tracking-[0.15em]">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        <span>Корзина</span>
+                        <span id="cartBadge" class="absolute -top-2 -right-3 bg-apex-gold text-apex-bg text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden leading-none">0</span>
                     </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col lg:flex-row gap-8">
-        
-        <!-- Sidebar Filters -->
-        <aside class="w-full lg:w-72 flex-shrink-0">
-            <div class="cyber-glass rounded-2xl p-6 sticky top-28 border border-cyan-900/30">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-bold text-white font-space tracking-wider">Терминал</h2>
-                    <button id="resetFiltersBtn" class="text-xs font-mono text-cyan-500 hover:text-cyan-300 transition-colors uppercase tracking-widest">Сброс</button>
+    <!-- ================================================================
+         ГЛАВНЫЙ КОНТЕНТ
+         ================================================================ -->
+    <main class="flex-grow max-w-[1440px] mx-auto px-6 lg:px-16 py-12 w-full flex flex-col lg:flex-row gap-12">
+
+        <!-- Боковая панель фильтров -->
+        <aside class="w-full lg:w-60 flex-shrink-0">
+            <div class="sticky top-28">
+                <div class="flex items-center justify-between mb-8 pb-4 border-b border-apex-border">
+                    <span class="text-[10px] font-mono text-apex-text uppercase tracking-[0.25em]">Фильтры</span>
+                    <button id="resetFiltersBtn" class="text-[9px] font-mono text-apex-muted hover:text-apex-gold transition-colors uppercase tracking-widest">Сброс</button>
                 </div>
-                
-                <div class="space-y-6">
-                    <!-- Categories -->
+
+                <div class="space-y-10">
+                    <!-- Категории -->
                     <div>
-                        <h3 class="text-xs font-mono text-cyan-600 mb-4 flex items-center gap-2 uppercase tracking-widest">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                            Системы
-                        </h3>
-                        <div id="categoryFilters" class="space-y-3">
-                            <!-- Checkboxes injected by JS -->
+                        <h3 class="text-[9px] font-mono text-apex-silver mb-4 uppercase tracking-[0.2em] opacity-70">Категория</h3>
+                        <div id="categoryFilters" class="space-y-1">
+                            <!-- Injected by JS -->
                         </div>
                     </div>
-                    
-                    <div class="border-t border-cyan-900/30"></div>
-                    
-                    <!-- Vehicle Search -->
+
+                    <!-- Fitment / Совместимость -->
                     <div>
-                        <h3 class="text-xs font-mono text-cyan-600 mb-4 flex items-center gap-2 uppercase tracking-widest">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                            Калибровка
-                        </h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-[10px] font-mono text-cyan-500/70 uppercase mb-1.5 block">Марка</label>
-                                <select id="vehicleMake" class="cyber-input w-full text-sm rounded-lg p-2.5 cursor-pointer">
-                                    <option value="">Все марки</option>
+                        <h3 class="text-[9px] font-mono text-apex-silver mb-4 uppercase tracking-[0.2em] opacity-70">Совместимость</h3>
+                        <div class="space-y-3">
+                            <div class="relative">
+                                <select id="vehicleMake" class="appearance-none w-full text-[11px] bg-apex-surface border border-apex-border text-apex-text py-3 px-4 font-mono focus:border-apex-gold focus:outline-none cursor-pointer transition-colors rounded-none">
+                                    <option value="">Марка: Все</option>
                                 </select>
+                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-apex-muted">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
                             </div>
-                            <div>
-                                <label class="text-[10px] font-mono text-cyan-500/70 uppercase mb-1.5 block">Модель</label>
-                                <select id="vehicleModel" disabled class="cyber-input w-full text-sm rounded-lg p-2.5 cursor-pointer disabled:opacity-30">
-                                    <option value="">Все модели</option>
+                            <div class="relative">
+                                <select id="vehicleModel" disabled class="appearance-none w-full text-[11px] bg-apex-surface border border-apex-border text-apex-text py-3 px-4 font-mono focus:border-apex-gold focus:outline-none cursor-pointer disabled:opacity-30 transition-colors rounded-none">
+                                    <option value="">Модель: Все</option>
                                 </select>
+                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-apex-muted">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
                             </div>
-                            <div>
-                                <label class="text-[10px] font-mono text-cyan-500/70 uppercase mb-1.5 block">Год выпуска</label>
-                                <select id="vehicleYear" disabled class="cyber-input w-full text-sm rounded-lg p-2.5 cursor-pointer disabled:opacity-30">
-                                    <option value="">Любой год</option>
+                            <div class="relative">
+                                <select id="vehicleYear" disabled class="appearance-none w-full text-[11px] bg-apex-surface border border-apex-border text-apex-text py-3 px-4 font-mono focus:border-apex-gold focus:outline-none cursor-pointer disabled:opacity-30 transition-colors rounded-none">
+                                    <option value="">Год: Любой</option>
                                 </select>
+                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-apex-muted">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -123,115 +136,143 @@
             </div>
         </aside>
 
-        <!-- Product Grid & Brands -->
+        <!-- Основная секция с товарами -->
         <section class="flex-grow min-w-0">
-            <!-- Brand Grid -->
-            <div class="mb-10">
-                <h2 class="text-xl font-space font-bold text-white mb-6 flex items-center gap-3">
-                    <span class="text-cyan-glow uppercase tracking-wider">Производители</span>
-                </h2>
-                <div id="brandGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-                    <!-- Brands injected by JS -->
+
+            <!-- Бренд-грид -->
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="h-px flex-grow bg-gradient-to-r from-apex-border to-transparent"></div>
+                    <span class="text-[9px] font-mono text-apex-muted uppercase tracking-[0.3em]">Производитель</span>
+                    <div class="h-px flex-grow bg-gradient-to-l from-apex-border to-transparent"></div>
+                </div>
+                <div id="brandGrid" class="grid grid-cols-4 md:grid-cols-6 xl:grid-cols-8 gap-2">
+                    <!-- Injected by JS -->
                 </div>
             </div>
 
-            <div class="cyber-glass rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border border-cyan-900/30">
+            <!-- Заголовок результатов + сортировка -->
+            <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 border-b border-apex-border pb-5">
                 <div>
-                    <h2 class="text-xl font-bold text-white font-space mb-1 uppercase tracking-wider">База Данных</h2>
-                    <p class="text-xs font-mono text-cyan-500" id="resultsCount">Синхронизация...</p>
+                    <h2 class="text-2xl font-light text-apex-text tracking-tight mb-1">Каталог запчастей</h2>
+                    <p class="text-[10px] font-mono text-apex-muted uppercase tracking-widest" id="resultsCount">Загрузка...</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <label for="sortSelect" class="text-xs font-mono text-cyan-600 uppercase tracking-widest">Сортировка</label>
-                    <select id="sortSelect" class="cyber-input text-sm rounded-lg p-2 cursor-pointer">
-                        <option value="default">Стандарт</option>
-                        <option value="price_asc">Цена: Ниже</option>
-                        <option value="price_desc">Цена: Выше</option>
-                        <option value="stock_desc">Наличие</option>
+                    <label for="sortSelect" class="text-[9px] font-mono text-apex-muted uppercase tracking-[0.2em]">Сортировка</label>
+                    <select id="sortSelect" class="bg-transparent border-b border-apex-border text-apex-text text-xs font-mono py-1 focus:ring-0 focus:border-apex-gold cursor-pointer uppercase tracking-widest outline-none transition-colors">
+                        <option value="default" class="bg-apex-container">По умолчанию</option>
+                        <option value="price_asc" class="bg-apex-container">Цена ↑</option>
+                        <option value="price_desc" class="bg-apex-container">Цена ↓</option>
+                        <option value="stock_desc" class="bg-apex-container">В наличии</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Mobile search -->
-            <div class="md:hidden mb-6">
+            <!-- Мобильный поиск -->
+            <div class="md:hidden mb-8">
                 <div class="relative">
-                    <input type="text" id="searchInputMobile" placeholder="Поиск по артикулу..." class="cyber-input w-full text-sm rounded-xl pl-10 p-4">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                        <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" id="searchInputMobile"
+                        placeholder="Поиск..."
+                        class="w-full text-sm bg-transparent border-b border-apex-border pb-3 text-apex-text focus:border-apex-gold focus:outline-none transition-colors placeholder-apex-muted font-mono">
+                    <div class="absolute right-0 inset-y-0 flex items-start pt-0.5 pointer-events-none">
+                        <svg class="w-4 h-4 text-apex-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
                 </div>
             </div>
 
-            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                <!-- Products injected by JS -->
+            <!-- Грид товаров -->
+            <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+                <!-- Injected by JS -->
             </div>
-            
-            <div id="emptyState" class="hidden cyber-glass rounded-2xl flex-col items-center justify-center py-20 text-center mt-6 border border-cyan-900/30">
-                <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 border border-cyan-500/30 shadow-[0_0_20px_rgba(0,212,255,0.2)]">
-                    <svg class="w-12 h-12 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+
+            <!-- Пустое состояние -->
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-32 text-center border border-apex-border bg-apex-surface mt-4">
+                <div class="w-16 h-16 border border-apex-border flex items-center justify-center mb-6 rotate-45">
+                    <svg class="w-6 h-6 -rotate-45 text-apex-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <h3 class="text-2xl font-bold text-white font-space tracking-wider mb-2 text-cyan-glow">ДАННЫЕ НЕ НАЙДЕНЫ</h3>
-                <p class="text-slate-400 font-mono text-sm max-w-md mx-auto mb-8">Запрос не дал результатов. Измените параметры сканирования.</p>
-                <button id="clearSearchBtn" class="cyber-btn px-8 py-3 rounded-lg shadow-[0_0_15px_rgba(0,212,255,0.3)]">Сброс систем</button>
+                <h3 class="text-base font-light text-apex-text tracking-widest mb-2 uppercase">Ничего не найдено</h3>
+                <p class="text-apex-muted font-mono text-[11px] max-w-sm mx-auto mb-8 leading-relaxed">Измените параметры фильтрации или сбросьте поиск.</p>
+                <button id="clearSearchBtn" class="border border-apex-border text-apex-text hover:border-apex-gold hover:text-apex-gold transition-colors font-mono text-[10px] uppercase tracking-[0.2em] px-8 py-3">
+                    Сбросить фильтры
+                </button>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-cyan-900/30 mt-auto cyber-glass">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-2">
-                <span class="text-white font-space font-bold tracking-widest text-lg">WESTAR<span class="text-cyan-500">.</span></span>
+    <!-- ================================================================
+         ФУТЕР
+         ================================================================ -->
+    <footer class="border-t border-apex-border bg-apex-surface mt-auto">
+        <div class="max-w-[1440px] mx-auto px-6 lg:px-16 py-10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="relative w-6 h-6 flex items-center justify-center">
+                    <div class="absolute inset-0 rotate-45 border border-apex-gold opacity-40"></div>
+                    <span class="text-apex-gold font-bold text-[9px] font-mono relative z-10">W</span>
+                </div>
+                <span class="text-apex-text font-bold tracking-[0.25em] text-sm uppercase">WESTAR</span>
             </div>
-            <p class="text-cyan-600/60 font-mono text-xs uppercase tracking-widest">© 2026 СИСТЕМА ТОЧНОЙ ИНЖЕНЕРИИ. ИНТЕРФЕЙС ROM.</p>
+            <p class="text-apex-muted font-mono text-[9px] uppercase tracking-[0.3em]">© 2026 Westar Precision Engineering. Все права защищены.</p>
         </div>
     </footer>
 
-    <!-- Product Modal -->
+    <!-- ================================================================
+         МОДАЛЬНОЕ ОКНО ТОВАРА
+         ================================================================ -->
     <div id="productModal" class="fixed inset-0 z-[100] hidden">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-md transition-opacity" id="modalBackdrop"></div>
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-            <div class="cyber-glass relative rounded-2xl text-left overflow-hidden shadow-[0_0_40px_rgba(0,212,255,0.15)] transform transition-all sm:my-8 sm:max-w-5xl w-full border border-cyan-500/30 max-h-[90vh] flex flex-col">
-                <div class="absolute top-0 right-0 pt-4 pr-4 z-20">
-                    <button id="closeModalBtn" type="button" class="text-cyan-500 bg-cyber-dark/80 border border-cyan-500/30 hover:bg-cyan-900/50 hover:text-cyan-300 rounded-lg p-2 transition-all shadow-sm">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-                <div class="flex-grow overflow-y-auto flex flex-col md:flex-row relative" id="modalContent">
-                    <!-- Injected by JS -->
+        <div class="absolute inset-0 bg-apex-bg/95 backdrop-blur-xl" id="modalBackdrop"></div>
+        <div class="flex items-center justify-center min-h-screen px-4 py-8">
+            <div class="relative bg-apex-surface text-left overflow-hidden w-full max-w-6xl border border-apex-border max-h-[90vh] flex flex-col">
+                <!-- Угловые декораторы модалки -->
+                <div class="absolute top-3 left-3 w-4 h-4 border-t border-l border-apex-gold opacity-60 z-20 pointer-events-none"></div>
+                <div class="absolute top-3 right-3 w-4 h-4 border-t border-r border-apex-gold opacity-60 z-20 pointer-events-none"></div>
+                <div class="absolute bottom-3 left-3 w-4 h-4 border-b border-l border-apex-gold opacity-60 z-20 pointer-events-none"></div>
+                <div class="absolute bottom-3 right-3 w-4 h-4 border-b border-r border-apex-gold opacity-60 z-20 pointer-events-none"></div>
+
+                <button id="closeModalBtn" type="button" class="absolute top-5 right-5 z-30 text-apex-muted hover:text-apex-gold transition-colors p-2">
+                    <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <div class="flex-grow overflow-hidden" id="modalContent">
+                    <!-- Заполняется JS -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Cart Drawer -->
-    <div id="cartDrawer" class="fixed inset-y-0 right-0 z-[110] w-full md:w-[450px] cyber-glass shadow-[0_0_30px_rgba(0,212,255,0.1)] transform translate-x-full transition-transform duration-300 flex flex-col border-l border-cyan-500/30">
-        <div class="p-6 border-b border-cyan-900/30 flex justify-between items-center bg-cyber-dark/50">
-            <h2 class="text-xl font-bold text-white font-space tracking-wider flex items-center gap-3">
-                <svg class="w-6 h-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                Модуль Корзины
-            </h2>
-            <button id="closeCartBtn" class="text-cyan-600 hover:text-cyan-400 p-2 rounded-lg hover:bg-cyan-900/30 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <!-- ================================================================
+         КОРЗИНА (DRAWER)
+         ================================================================ -->
+    <div id="cartDrawer" class="fixed inset-y-0 right-0 z-[110] w-full md:w-[440px] flex flex-col transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+        <!-- Шапка корзины -->
+        <div class="p-6 border-b border-apex-border flex justify-between items-center bg-apex-surface">
+            <div class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-apex-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                <h2 class="text-[10px] font-mono text-apex-text uppercase tracking-[0.25em]">Корзина</h2>
+            </div>
+            <button id="closeCartBtn" class="text-apex-muted hover:text-apex-gold p-2 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-        <div class="flex-grow overflow-y-auto p-6 space-y-4" id="cartItems">
-            <!-- Cart items injected here -->
+        <!-- Список товаров -->
+        <div class="flex-grow overflow-y-auto p-6 space-y-3 custom-scrollbar bg-apex-surface" id="cartItems">
+            <!-- Injected by JS -->
         </div>
-        <div class="p-6 border-t border-cyan-900/30 bg-cyber-dark/50">
-            <div class="flex justify-between items-center mb-6">
-                <span class="text-cyan-600 font-mono text-sm uppercase tracking-widest">Итого:</span>
-                <span id="cartTotal" class="text-2xl font-black text-white font-space tracking-wider">0 ₽</span>
+        <!-- Итог + оформление -->
+        <div class="p-6 border-t border-apex-border bg-apex-container">
+            <div class="flex justify-between items-baseline mb-6">
+                <span class="text-apex-muted font-mono text-[9px] uppercase tracking-[0.2em]">Итого</span>
+                <span id="cartTotal" class="text-2xl font-light text-apex-text tracking-tight">0 ₽</span>
             </div>
-            <button id="checkoutBtn" class="w-full py-4 cyber-btn rounded-xl shadow-[0_0_15px_rgba(0,212,255,0.4)] text-lg flex justify-center items-center gap-2">
-                Оформить Заказ
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            <button id="checkoutBtn" class="w-full py-4 bg-apex-gold text-apex-bg hover:bg-yellow-400 transition-colors font-mono uppercase tracking-[0.2em] text-xs font-semibold">
+                Оформить заказ
             </button>
         </div>
     </div>
-    <!-- Cart Backdrop -->
-    <div id="cartBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[105] hidden transition-opacity"></div>
+    <!-- Фон-backdrop корзины -->
+    <div id="cartBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[105] hidden"></div>
 
-    <!-- Scripts -->
+    <!-- ================================================================
+         СКРИПТЫ
+         ================================================================ -->
     <script src="data/catalog.js"></script>
     <script src="app.js"></script>
 </body>

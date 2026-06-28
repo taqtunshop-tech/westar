@@ -113,48 +113,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateCartUI = () => {
         const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
+
         if (totalItems > 0) {
             DOM.cartBadge.textContent = totalItems;
             DOM.cartBadge.classList.remove('hidden');
         } else {
             DOM.cartBadge.classList.add('hidden');
         }
-        
+
         DOM.cartTotal.textContent = formatPrice(totalPrice);
-        
+
         if (state.cart.length === 0) {
             DOM.cartItems.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full text-cyan-600/50 py-12">
-                    <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <p class="font-mono tracking-widest text-sm uppercase">Корзина пуста</p>
+                <div class="flex flex-col items-center justify-center h-full py-16" style="color:#555">
+                    <svg class="w-12 h-12 mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <p class="font-mono tracking-widest text-xs uppercase">Корзина пуста</p>
                 </div>
             `;
             return;
         }
-        
+
         DOM.cartItems.innerHTML = state.cart.map(item => `
-            <div class="flex gap-4 p-4 bg-cyber-dark/80 rounded-xl border border-cyan-900/30 shadow-sm relative group/item hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(0,212,255,0.2)] transition-all">
-                <div class="w-20 h-20 bg-cyber-dark/50 rounded-lg flex items-center justify-center border border-cyan-900/30 p-1 flex-shrink-0">
-                    <img src="${item.imageUrl || `https://ui-avatars.com/api/?name=${item.article}&background=0a1128&color=00d4ff`}" alt="${item.name}" class="max-w-full max-h-full object-contain">
+            <div class="cart-item">
+                <div class="cart-item-img">
+                    <img src="${item.imageUrl || `https://ui-avatars.com/api/?name=${item.article}&background=0f0f0f&color=d4af37`}" alt="${item.name}">
                 </div>
-                <div class="flex flex-col justify-between flex-grow">
-                    <div>
-                        <div class="flex justify-between items-start gap-2">
-                            <h4 class="text-sm font-bold text-white font-space tracking-wide line-clamp-2 leading-tight">${item.name}</h4>
-                            <button onclick="window.removeFromCart('${item.id}')" class="text-cyan-600/50 hover:text-red-400 transition-colors p-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                        <p class="text-[11px] font-mono text-cyan-500/70 mt-1 uppercase">${item.article}</p>
+                <div class="flex flex-col justify-between flex-grow min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                        <h4 class="text-xs font-semibold text-apex-text line-clamp-2 leading-tight">${item.name}</h4>
+                        <button onclick="window.removeFromCart('${item.id}')" class="text-apex-muted hover:text-red-400 transition-colors p-1 flex-shrink-0">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
                     </div>
+                    <p class="text-[10px] font-mono mt-0.5 uppercase" style="color:#555">${item.article}</p>
                     <div class="flex items-center justify-between mt-2">
-                        <div class="flex items-center gap-3 bg-cyber-dark border border-cyan-900/50 rounded-lg px-2 py-1">
-                            <button onclick="window.updateQuantity('${item.id}', -1)" class="text-cyan-600 hover:text-cyan-300 font-bold w-4 flex justify-center">-</button>
-                            <span class="text-sm font-bold text-white min-w-[20px] text-center">${item.quantity}</span>
-                            <button onclick="window.updateQuantity('${item.id}', 1)" class="text-cyan-600 hover:text-cyan-300 font-bold w-4 flex justify-center">+</button>
+                        <div class="cart-qty-control">
+                            <button class="cart-qty-btn" onclick="window.updateQuantity('${item.id}', -1)">−</button>
+                            <span class="text-xs font-mono text-apex-text min-w-[20px] text-center">${item.quantity}</span>
+                            <button class="cart-qty-btn" onclick="window.updateQuantity('${item.id}', 1)">+</button>
                         </div>
-                        <span class="font-black text-cyan-400 font-space tracking-widest">${formatPrice(item.price * item.quantity)}</span>
+                        <span class="text-sm font-semibold" style="color:#d4af37">${formatPrice(item.price * item.quantity)}</span>
                     </div>
                 </div>
             </div>
@@ -254,9 +252,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const initFilters = () => {
         DOM.categoryFilters.innerHTML = catalog.categories.map(cat => `
-            <label class="flex items-center space-x-3 cursor-pointer group p-2 rounded-xl hover:bg-cyan-900/20 transition-all border border-transparent hover:border-cyan-900/50">
-                <input type="checkbox" value="${cat}" class="category-cb w-4 h-4 text-cyan-500 bg-cyber-dark border-cyan-700/50 rounded focus:ring-cyan-500 focus:ring-2 transition-all shadow-[0_0_10px_rgba(0,212,255,0.1)]">
-                <span class="text-slate-300 text-sm font-mono group-hover:text-cyan-400 transition-colors">${cat}</span>
+            <label class="filter-checkbox-label">
+                <input type="checkbox" value="${cat}" class="category-cb">
+                <span>${cat}</span>
             </label>
         `).join('');
 
@@ -269,69 +267,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const updateBrandGridState = () => {
-        if (!DOM.brandGrid) return;
-        document.querySelectorAll('.brand-item').forEach(item => {
-            const make = item.dataset.make;
-            if (state.makes.has(make)) {
-                item.classList.add('border-cyan-400', 'shadow-[0_0_15px_rgba(0,212,255,0.4)]');
-                item.classList.remove('border-cyan-900/30');
-                const img = item.querySelector('img');
-                if(img) img.classList.remove('grayscale', 'opacity-70');
-            } else {
-                item.classList.remove('border-cyan-400', 'shadow-[0_0_15px_rgba(0,212,255,0.4)]');
-                item.classList.add('border-cyan-900/30');
-                const img = item.querySelector('img');
-                if(img) img.classList.add('grayscale', 'opacity-70');
-            }
-        });
-    };
+
 
     const renderBrandGrid = () => {
         if (!DOM.brandGrid) return;
-        
+
         const originalMakesMap = new Map();
         catalog.makes.forEach(m => {
             const clean = m.toLowerCase().trim();
-            if (!originalMakesMap.has(clean)) {
-                originalMakesMap.set(clean, m);
-            }
+            if (!originalMakesMap.has(clean)) originalMakesMap.set(clean, m);
         });
-        
+
         const makesToShow = Array.from(originalMakesMap.values()).sort();
-        
+
         DOM.brandGrid.innerHTML = makesToShow.map(make => {
             const isActive = state.makes.has(make);
             return `
-                <div class="brand-item cyber-glass rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 border ${isActive ? 'border-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.4)]' : 'border-cyan-900/30 hover:border-cyan-500/50 hover:shadow-[0_0_10px_rgba(0,212,255,0.2)]'} group" data-make="${make}">
-                    <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" class="h-10 md:h-12 w-auto object-contain mb-2 ${isActive ? '' : 'grayscale opacity-70'} group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" alt="${make}">
-                    <span class="text-[10px] font-mono text-cyan-500 uppercase tracking-widest text-center" style="display: none;">${make}</span>
+                <div class="brand-item${isActive ? ' active' : ''}" data-make="${make}">
+                    ${isActive ? '<div class="corner-tl"></div><div class="corner-br"></div>' : ''}
+                    <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" alt="${make}">
+                    <span class="brand-label">${make}</span>
                 </div>
             `;
         }).join('');
-        
+
         document.querySelectorAll('.brand-item').forEach(item => {
             item.addEventListener('click', function() {
                 const make = this.dataset.make;
-                if (state.makes.has(make)) {
-                    state.makes.delete(make);
-                } else {
-                    state.makes.add(make);
-                }
-                
-                updateBrandGridState();
-                
+                if (state.makes.has(make)) state.makes.delete(make);
+                else state.makes.add(make);
+                renderBrandGrid();
                 applyFilters();
             });
         });
     };
 
+    // Алиас для совместимости
+    const updateBrandGridState = renderBrandGrid;
+
     const createProductCard = (product, index) => {
         const hasImage = !!product.imageUrl;
-        const imgPlaceholder = `https://ui-avatars.com/api/?name=${product.article}&background=050b1a&color=00d4ff&size=400&font-size=0.2`;
+        const imgPlaceholder = `https://ui-avatars.com/api/?name=${product.article}&background=0f0f0f&color=d4af37&size=400&font-size=0.2`;
         const imgSrc = hasImage ? product.imageUrl : imgPlaceholder;
         
-        // Load all items eagerly to avoid slow loading issues
         const loadStrategy = 'eager';
         const priorityStrategy = 'fetchpriority="high"';
         
@@ -352,47 +330,43 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             if (uniqueCars.length > 0) {
-                const displayCars = uniqueCars.slice(0, 3);
-                const hasMore = uniqueCars.length > 3;
+                const displayCars = uniqueCars.slice(0, 4);
+                const hasMore = uniqueCars.length > 4;
                 
                 const carBlocks = displayCars.map(car => {
                     return `
-                        <div class="relative w-16 h-10 bg-cyber-dark/80 rounded-md border border-cyan-900/40 overflow-hidden group/car hover:border-cyan-400 hover:shadow-[0_0_10px_rgba(0,212,255,0.3)] transition-all flex-shrink-0 cursor-help flex items-center justify-center" title="${car.make} ${car.model}">
-                            <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjMDBkNGZmIiBmaWxsLW9wYWNpdHk9IjEuMCIvPgo8L3N2Zz4=')] mix-blend-screen"></div>
-                            <img src="${getCarImageUrl(car.make, car.model)}" onerror="this.onerror=null; this.src='${getMakeLogoUrl(car.make)}'; this.classList.remove('scale-[1.3]', 'translate-y-1', 'object-cover'); this.classList.add('object-contain', 'p-1', 'opacity-60');" class="w-full h-full object-cover scale-[1.3] translate-y-1 relative z-10 transition-transform duration-300 group-hover/car:scale-[1.5] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-90 group-hover/car:opacity-100" alt="${car.make} ${car.model}">
-                            <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-cyber-dark/90 to-transparent z-10 pointer-events-none"></div>
+                        <div class="compat-car-thumb" title="${car.make} ${car.model}">
+                            <img src="${getCarImageUrl(car.make, car.model)}" onerror="this.onerror=null; this.src='${getMakeLogoUrl(car.make)}'; this.style.transform='none'; this.style.mixBlendMode='normal';" alt="${car.make} ${car.model}">
                         </div>
                     `;
                 }).join('');
 
                 compatHtml = `
-                    <div class="mb-5 mt-2 w-full">
-                        <p class="text-[9px] text-cyan-500/50 font-mono uppercase tracking-widest mb-2">Автомобили:</p>
-                        <div class="flex items-center gap-2">
+                    <div class="mt-3">
+                        <div class="flex items-center gap-1.5">
                             ${carBlocks}
-                            ${hasMore ? `<div class="flex items-center justify-center w-10 h-10 rounded-md bg-cyan-900/20 border border-cyan-900/50 text-[10px] text-cyan-400 font-bold font-mono shadow-inner">+${uniqueCars.length - 3}</div>` : ''}
+                            ${hasMore ? `<div class="compat-car-thumb flex items-center justify-center text-[9px] font-mono" style="color:#888">+${uniqueCars.length - 4}</div>` : ''}
                         </div>
                     </div>
                 `;
             } else if (makesOnly.size > 0) {
                 const makes = Array.from(makesOnly);
-                const displayMakes = makes.slice(0, 3);
-                const hasMore = makes.length > 3;
-                
+                const displayMakes = makes.slice(0, 5);
+                const hasMore = makes.length > 5;
+
                 const makeBlocks = displayMakes.map(make => {
                     return `
-                        <div class="flex items-center justify-center w-10 h-10 bg-cyber-dark/80 rounded-md border border-cyan-900/40 group/make cursor-help hover:border-cyan-400 transition-all shadow-sm" title="${make}">
-                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="max-w-[20px] max-h-[20px] object-contain opacity-60 group-hover/make:opacity-100 transition-all" alt="${make}">
+                        <div class="compat-car-thumb" title="${make}" style="align-items:center;justify-content:center;">
+                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" style="width:auto;height:18px;object-fit:contain;transform:none;opacity:0.5;mix-blend-mode:normal;" alt="${make}">
                         </div>
                     `;
                 }).join('');
-                
+
                 compatHtml = `
-                    <div class="mb-5 mt-2 w-full">
-                        <p class="text-[9px] text-cyan-500/50 font-mono uppercase tracking-widest mb-2">Марки:</p>
-                        <div class="flex items-center gap-2">
+                    <div class="mt-3">
+                        <div class="flex items-center gap-1.5">
                             ${makeBlocks}
-                            ${hasMore ? `<div class="flex items-center justify-center w-10 h-10 rounded-md bg-cyan-900/20 border border-cyan-900/50 text-[10px] text-cyan-400 font-bold font-mono shadow-inner">+${makes.length - 3}</div>` : ''}
+                            ${hasMore ? `<div class="compat-car-thumb flex items-center justify-center text-[9px] font-mono" style="color:#888">+${makes.length - 5}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -400,64 +374,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return `
-            <div class="product-card cyber-glass rounded-2xl overflow-hidden flex flex-col h-full cursor-pointer group hover:shadow-[0_0_20px_rgba(0,212,255,0.15)] transition-all duration-500 border border-cyan-900/30 hover:border-cyan-400/80 relative" data-id="${product.id}">
-                <!-- Glow effect on hover -->
-                <div class="absolute -inset-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-10 blur-md transition-opacity duration-500 -z-10"></div>
-                
-                <div class="relative h-64 flex items-center justify-center p-6 overflow-hidden border-b border-cyan-900/30 bg-cyber-dark/50 group/img">
-                    <!-- Technical corners -->
-                    <div class="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-cyan-800/50 z-10 transition-all duration-300 group-hover/img:border-cyan-400 group-hover/img:scale-110"></div>
-                    <div class="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-cyan-800/50 z-10 transition-all duration-300 group-hover/img:border-cyan-400 group-hover/img:scale-110"></div>
-                    <div class="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-cyan-800/50 z-10 transition-all duration-300 group-hover/img:border-cyan-400 group-hover/img:scale-110"></div>
-                    <div class="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-cyan-800/50 z-10 transition-all duration-300 group-hover/img:border-cyan-400 group-hover/img:scale-110"></div>
-                    
-                    <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none select-none z-0">
-                        <span class="text-6xl font-black tracking-[0.2em] text-cyan-100 rotate-[-25deg] uppercase">Westar</span>
-                    </div>
+            <div class="apex-product-card" data-id="${product.id}">
+                <!-- Угловые декораторы -->
+                <div class="apex-corner apex-corner-tl"></div>
+                <div class="apex-corner apex-corner-tr"></div>
+                <div class="apex-corner apex-corner-bl"></div>
+                <div class="apex-corner apex-corner-br"></div>
 
-                    <!-- Loader for image -->
-                    <div class="absolute inset-0 flex items-center justify-center bg-cyber-dark z-0 image-loader transition-opacity duration-300">
-                        <div class="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin shadow-[0_0_10px_rgba(0,212,255,0.5)]"></div>
+                <!-- Верхняя строка HUD -->
+                <div class="flex justify-between items-center px-4 py-2.5 border-b border-apex-border bg-apex-bg relative z-10">
+                    <div class="flex items-center gap-2">
+                        <span class="relative flex h-1.5 w-1.5">
+                            ${product.stock > 0 ? `<span class="animate-ping-gold absolute inline-flex h-full w-full rounded-full opacity-75" style="background:#d4af37"></span>` : ''}
+                            <span class="relative inline-flex rounded-full h-1.5 w-1.5" style="background:${product.stock > 0 ? '#d4af37;box-shadow:0 0 6px #d4af37' : '#ef4444'}"></span>
+                        </span>
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-apex-silver">${product.article}</span>
                     </div>
-
-                    <img src="${imgSrc}" alt="${product.name}" class="relative z-10 max-h-full max-w-full object-contain transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_15px_rgba(0,212,255,0.2)] opacity-0" loading="${loadStrategy}" ${priorityStrategy} onload="this.style.opacity='1'; this.previousElementSibling.style.opacity='0';" onerror="this.onerror=null; this.src='${imgPlaceholder}'; this.style.opacity='1'; this.previousElementSibling.style.opacity='0';">
-                    
-                    <div class="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
-                        <div class="bg-cyber-dark/90 backdrop-blur-md text-[10px] font-mono px-3 py-1.5 rounded-lg text-cyan-400 border border-cyan-900/50 shadow-[0_0_10px_rgba(0,0,0,0.5)] font-bold tracking-wider group-hover/img:border-cyan-400 transition-colors">
-                            ${product.article}
-                        </div>
-                        ${product.oem ? `
-                        <div class="bg-gradient-to-r from-cyan-600 to-blue-600 text-[9px] font-bold tracking-wider px-2.5 py-1 rounded-md text-white shadow-[0_0_10px_rgba(0,212,255,0.3)] border border-cyan-400/30 uppercase">
-                            OEM
-                        </div>
-                        ` : ''}
-                    </div>
-                    
-                    ${product.brand ? `
-                    <div class="absolute bottom-4 left-4 z-20 bg-cyber-dark/90 backdrop-blur-md p-2 rounded-xl border border-cyan-900/50 shadow-[0_0_10px_rgba(0,0,0,0.5)] group-hover/img:border-cyan-400 transition-all duration-300">
-                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-4 w-auto object-contain opacity-70 grayscale group-hover/img:grayscale-0 group-hover/img:opacity-100 transition-all duration-300" alt="${product.brand}">
-                    </div>
-                    ` : ''}
+                    ${product.oem
+                        ? `<span class="text-[8px] font-mono px-2 py-0.5 border uppercase tracking-widest" style="background:rgba(212,175,55,0.1);color:#d4af37;border-color:rgba(212,175,55,0.4)">OEM</span>`
+                        : `<span class="text-[8px] font-mono text-apex-muted uppercase tracking-widest">${product.brand || 'Aftermarket'}</span>`
+                    }
                 </div>
-                <div class="p-6 flex flex-col flex-grow bg-cyber-dark/40 relative z-10">
-                    <div class="text-[10px] font-mono text-cyan-400 mb-3 uppercase tracking-wider flex items-center justify-between bg-cyan-900/20 border border-cyan-900/40 inline-flex w-fit px-2.5 py-1 rounded-md">
+
+                <!-- Зона изображения -->
+                <div class="apex-product-img-zone">
+                    <div class="apex-crosshair-h"></div>
+                    <div class="apex-crosshair-v"></div>
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none" id="loader-${product.id}">
+                        <div class="w-5 h-5 border border-apex-border border-t-transparent rounded-full animate-spin opacity-40"></div>
+                    </div>
+                    <img src="${imgSrc}" alt="${product.name}"
+                        class="relative z-10 max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105 opacity-0"
+                        loading="lazy"
+                        onload="this.style.opacity='1'; var l=document.getElementById('loader-${product.id}'); if(l) l.style.display='none';"
+                        onerror="this.onerror=null; this.src='${imgPlaceholder}'; this.style.opacity='1'; var l=document.getElementById('loader-${product.id}'); if(l) l.style.display='none';">
+                </div>
+
+                <!-- Детали товара -->
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="text-[9px] font-mono mb-2 uppercase tracking-widest" style="color:#d4af37">
                         ${product.category}
                     </div>
-                    <h3 class="text-white font-bold text-lg mb-2 flex-grow line-clamp-3 leading-snug group-hover:text-cyan-300 transition-colors font-space">${product.name}</h3>
+                    <h3 class="text-apex-text font-semibold text-sm leading-snug mb-2 flex-grow line-clamp-2 group-hover:text-white transition-colors">${product.name}</h3>
                     ${compatHtml}
-                    <div class="flex items-end justify-between mt-auto pt-5 border-t border-cyan-900/30">
-                        <div>
-                            <p class="text-xs font-mono mb-1.5 flex items-center gap-2">
-                                <span class="relative flex h-2 w-2">
-                                  ${product.stock > 0 ? `<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>` : ''}
-                                  <span class="relative inline-flex rounded-full h-2 w-2 ${product.stock > 0 ? 'bg-cyan-500 shadow-[0_0_8px_rgba(0,212,255,0.8)]' : 'bg-amber-500'}"></span>
-                                </span>
-                                <span class="${product.stock > 0 ? 'text-cyan-400' : 'text-amber-500'} uppercase tracking-wider text-[9px]">${product.stock > 0 ? 'В наличии: ' + product.stock + ' шт.' : 'Под заказ'}</span>
-                            </p>
-                            <p class="text-2xl font-black text-white tracking-widest font-space">${formatPrice(product.price)}</p>
+                    <div class="flex items-end justify-between mt-4 pt-4 border-t border-apex-border">
+                        <div class="flex flex-col">
+                            <span class="text-[9px] font-mono text-apex-muted uppercase tracking-widest mb-1">${product.stock > 0 ? 'В наличии' : 'Под заказ'}</span>
+                            <span class="text-lg font-semibold text-apex-text tracking-wide">${formatPrice(product.price)}</span>
                         </div>
-                        <button onclick="event.stopPropagation(); window.addToCart('${product.id}')" class="w-12 h-12 rounded-xl bg-cyber-dark hover:bg-cyan-900/40 flex items-center justify-center transition-all duration-300 border border-cyan-900/50 hover:border-cyan-400 text-cyan-500 hover:text-cyan-300 shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(0,212,255,0.3)] group/btn">
-                            <svg class="w-5 h-5 transform group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <button onclick="event.stopPropagation(); window.addToCart('${product.id}')"
+                            class="h-9 px-4 border font-mono text-[10px] uppercase tracking-widest flex items-center gap-2 transition-all duration-300"
+                            style="border-color:rgba(212,175,55,0.35);color:#d4af37;background:rgba(212,175,55,0.07)"
+                            onmouseover="this.style.background='rgba(212,175,55,0.15)';this.style.borderColor='#d4af37'"
+                            onmouseout="this.style.background='rgba(212,175,55,0.07)';this.style.borderColor='rgba(212,175,55,0.35)'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         </button>
                     </div>
                 </div>
@@ -465,65 +435,73 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     };
 
+    // --- Источники реальных фото автомобилей ---
+    const CAR_PHOTO_SOURCES = [
+        // 1) imagin.studio — специализированный CDN с реальными фото авто по марке/модели
+        (make, model) => `https://cdn.imagin.studio/getImage?customer=hr&make=${encodeURIComponent(make)}&modelFamily=${encodeURIComponent(model)}&angle=23&width=400`,
+        // 2) Wikimedia Commons — широкое покрытие марок
+        (make, model) => `https://en.wikipedia.org/w/index.php?action=render&title=${encodeURIComponent(make + '_' + model)}`,
+    ];
+
     const getCarImageUrl = (make, model) => {
         let cleanMake = make.trim().toLowerCase();
-        
         if (cleanMake === 'mercedes-benz' || cleanMake === 'mercedes benz') cleanMake = 'mercedes';
         if (cleanMake === 'vw') cleanMake = 'volkswagen';
-        
+        if (cleanMake === 'vaz' || cleanMake === 'ваз') cleanMake = 'lada';
+        if (cleanMake === 'uaz' || cleanMake === 'уаз') cleanMake = 'uaz';
         cleanMake = cleanMake.replace(/\s+/g, '-');
-        
+
         let cleanModel = '';
         if (model) {
-            cleanModel = model.trim().toLowerCase();
-            cleanModel = cleanModel.split('(')[0].split('/')[0].trim();
-            cleanModel = cleanModel.replace(/\s+[ivx]+$/i, ''); 
-            cleanModel = cleanModel.replace(/\s+/g, ''); 
+            cleanModel = model.trim().toLowerCase()
+                .split('(')[0].split('/')[0].trim()
+                .replace(/\s+[ivx]+$/i, '')
+                .replace(/\s+/g, '-');
         }
-        
-        return `https://cdn.imagin.studio/getImage?customer=hr&make=${cleanMake}&modelFamily=${cleanModel}&angle=23`;
+
+        // imagin.studio — лучший источник для авто
+        return `https://cdn.imagin.studio/getImage?customer=hr&make=${cleanMake}&modelFamily=${cleanModel}&angle=23&width=400`;
     };
+
 
     const openProductModal = (id) => {
         const product = catalog.products.find(p => p.id === id);
         if (!product) return;
 
         const hasImage = !!product.imageUrl;
-        const imgPlaceholder = `https://ui-avatars.com/api/?name=${product.article}&background=050b1a&color=00d4ff&size=500&font-size=0.2`;
+        const imgPlaceholder = `https://ui-avatars.com/api/?name=${product.article}&background=0f0f0f&color=d4af37&size=500&font-size=0.2`;
         const imgSrc = hasImage ? product.imageUrl : imgPlaceholder;
 
-        let compatHtml = '<div class="p-4 bg-cyber-dark/50 rounded-xl border border-cyan-900/30 text-sm text-cyan-500/50 italic font-mono uppercase text-center">Сведения о совместимости отсутствуют</div>';
+        // --- Совместимость ---
+        let compatHtml = `<p class="text-xs font-mono" style="color:#555">Нет данных о совместимости</p>`;
         if (product.compatibility && product.compatibility.length > 0) {
             const makesGroup = {};
             product.compatibility.forEach(c => {
-                const make = c.make || 'Разное';
-                if (!makesGroup[make]) makesGroup[make] = {};
-                const model = c.model || 'Разное';
-                if (!makesGroup[make][model]) makesGroup[make][model] = [];
-                makesGroup[make][model].push(c);
+                const mk = c.make || 'Разное';
+                if (!makesGroup[mk]) makesGroup[mk] = {};
+                const md = c.model || 'Разное';
+                if (!makesGroup[mk][md]) makesGroup[mk][md] = [];
+                makesGroup[mk][md].push(c);
             });
-            
+
             compatHtml = Object.keys(makesGroup).map(make => `
-                <div class="mb-6">
-                    <h5 class="text-sm font-bold text-cyan-400 mb-4 flex items-center gap-3 font-space uppercase tracking-widest border-b border-cyan-900/30 pb-2">
-                        <div class="w-8 h-8 rounded-lg bg-cyber-dark flex items-center justify-center border border-cyan-900/50 shadow-[0_0_10px_rgba(0,212,255,0.1)]">
-                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="max-w-[20px] max-h-[20px] object-contain" alt="">
-                        </div>
+                <div class="mb-5">
+                    <h5 class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest mb-3 pb-2" style="border-bottom:1px solid var(--apex-border);color:var(--apex-silver)">
+                        <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" style="height:16px;width:auto;object-fit:contain;filter:grayscale(1);opacity:0.7" alt="">
                         ${make}
                     </h5>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-3">
                         ${Object.keys(makesGroup[make]).map(model => `
-                            <div class="bg-cyber-dark/40 rounded-xl border border-cyan-900/30 overflow-hidden hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(0,212,255,0.15)] transition-all group/model flex flex-col cursor-crosshair">
-                                <div class="h-28 bg-cyber-dark/80 relative flex items-center justify-center overflow-hidden border-b border-cyan-900/30">
-                                    <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjMDBkNGZmIiBmaWxsLW9wYWNpdHk9IjEuMCIvPgo8L3N2Zz4=')] mix-blend-screen"></div>
-                                    <!-- Scanline animation on hover -->
-                                    <div class="absolute left-0 right-0 h-0.5 bg-cyan-400/50 top-0 -translate-y-full opacity-0 group-hover/model:animate-[scan_2s_ease-in-out_infinite] group-hover/model:opacity-100 z-20 shadow-[0_0_8px_rgba(0,212,255,0.8)]"></div>
-                                    <img src="${getCarImageUrl(make, model)}" onerror="this.style.display='none'" class="h-full object-contain relative z-10 transition-transform duration-500 group-hover/model:scale-110 drop-shadow-xl opacity-90 group-hover/model:opacity-100" alt="${make} ${model}">
+                            <div class="modal-compat-card">
+                                <div class="modal-compat-img">
+                                    <img src="${getCarImageUrl(make, model)}"
+                                        onerror="this.parentElement.style.background='#0f0f0f'; this.src='${getMakeLogoUrl(make)}'; this.style.height='32px';this.style.width='auto';this.style.objectFit='contain';this.style.opacity='0.3';"
+                                        alt="${make} ${model}">
                                 </div>
-                                <div class="p-3 flex-grow flex flex-col justify-center">
-                                    <h6 class="font-bold text-white text-xs mb-2 group-hover/model:text-cyan-400 transition-colors uppercase font-mono tracking-wider">${model !== 'Разное' ? model : make}</h6>
-                                    <div class="flex flex-wrap gap-1.5">
-                                        ${makesGroup[make][model].map(c => c.years ? `<span class="bg-cyan-900/30 border border-cyan-700/50 text-cyan-300 px-2 py-0.5 rounded text-[9px] font-mono">${c.years}</span>` : '').join('')}
+                                <div style="padding:10px 12px">
+                                    <p class="text-xs font-semibold text-apex-text mb-1 uppercase tracking-wide">${model !== 'Разное' ? model : make}</p>
+                                    <div class="flex flex-wrap gap-1">
+                                        ${makesGroup[make][model].map(c => c.years ? `<span class="year-badge">${c.years}</span>` : '').join('')}
                                     </div>
                                 </div>
                             </div>
@@ -534,178 +512,93 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         DOM.modalContent.innerHTML = `
-            <!-- Left: Media Gallery -->
-            <div class="w-full lg:w-2/5 bg-cyber-dark/80 p-6 md:p-10 flex flex-col items-center min-h-[400px] gap-6 border-r border-cyan-900/50 relative overflow-hidden">
-                <!-- Decorative background -->
-                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-cyan-900/20 to-transparent z-0"></div>
-                <div class="absolute inset-4 border border-cyan-900/30 rounded-2xl pointer-events-none z-0 border-dashed"></div>
-
-                <div class="flex-grow flex items-center justify-center w-full relative z-10 bg-cyber-dark/50 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.5)] p-8 border border-cyan-500/20 hover:border-cyan-400/50 transition-colors" id="modalMainMediaContainer">
-                    <!-- Brand Logo -->
+            <!-- Левая колонка: фото -->
+            <div class="modal-left">
+                <div class="modal-img-container" id="modalMainMediaContainer">
                     ${product.brand ? `
-                    <div class="absolute top-5 left-5 z-20 bg-cyber-dark/80 p-2 rounded-lg border border-cyan-900/50 backdrop-blur-sm">
-                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-6 w-auto object-contain opacity-70 grayscale transition-all hover:grayscale-0 hover:opacity-100" alt="${product.brand}">
-                    </div>
-                    ` : ''}
-                    
-                    <!-- OEM Badge -->
+                    <div style="position:absolute;top:12px;left:12px;z-index:20;padding:6px 10px;background:rgba(10,10,10,0.85);border:1px solid var(--apex-border);border-radius:3px;backdrop-filter:blur(8px)">
+                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" style="height:20px;width:auto;object-fit:contain;filter:grayscale(1);opacity:0.7" alt="${product.brand}">
+                    </div>` : ''}
                     ${product.oem ? `
-                    <div class="absolute bottom-5 right-5 z-20">
-                        <span class="bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-[0_0_10px_rgba(0,212,255,0.4)] border border-cyan-400/30">Оригинал (OEM)</span>
-                    </div>
-                    ` : ''}
-
-                    <img id="modalMainImage" src="${imgSrc}" alt="${product.name}" class="relative z-10 max-w-full max-h-[400px] object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-transform duration-700 hover:scale-110">
-                    <video id="modalMainVideo" class="relative z-10 max-w-full max-h-[400px] object-contain drop-shadow-xl hidden rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.8)] border border-cyan-900/50" controls></video>
+                    <div style="position:absolute;top:12px;right:12px;z-index:20">
+                        <span class="oem-badge">OEM</span>
+                    </div>` : ''}
+                    <img id="modalMainImage" src="${imgSrc}" alt="${product.name}"
+                        style="max-width:100%;max-height:420px;object-fit:contain;position:relative;z-index:10;transition:transform 0.5s">
                 </div>
-                
-                ${(product.imageUrls && product.imageUrls.length > 1) || (product.videoUrls && product.videoUrls.length > 0) ? `
-                <div class="flex items-center gap-4 overflow-x-auto custom-scrollbar pb-3 w-full px-2 z-10" id="modalThumbnails">
-                    ${product.imageUrls ? product.imageUrls.map((url, i) => `
-                        <button class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 shadow-[0_0_10px_rgba(0,0,0,0.5)] bg-cyber-dark p-1 ${i === 0 ? 'border-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.3)] opacity-100 scale-105' : 'border-cyan-900/30 hover:border-cyan-50 opacity-60 hover:opacity-100'}" data-src="${url}" data-type="image">
-                            <img src="${url}" class="w-full h-full object-cover rounded-lg" alt="Ракурс ${i+1}">
+                ${(product.imageUrls && product.imageUrls.length > 1) ? `
+                <div style="display:flex;gap:8px;overflow-x:auto;padding:12px 16px" class="custom-scrollbar" id="modalThumbnails">
+                    ${product.imageUrls.map((url, i) => `
+                        <button class="modal-thumb-btn${i === 0 ? ' active' : ''}" data-src="${url}" data-type="image">
+                            <img src="${url}" style="width:100%;height:100%;object-fit:cover" alt="">
                         </button>
-                    `).join('') : ''}
-                    
-                    ${product.videoUrls ? product.videoUrls.map((url, i) => `
-                        <button class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-cyan-900/30 hover:border-cyan-50 opacity-60 hover:opacity-100 transition-all duration-300 relative shadow-[0_0_10px_rgba(0,0,0,0.5)] bg-cyber-dark p-1 group/vid" data-src="${url}" data-type="video">
-                            <div class="w-full h-full bg-cyber-dark/80 rounded-lg flex items-center justify-center text-cyan-600 group-hover/vid:text-cyan-400 transition-colors">
-                                <svg class="w-8 h-8 drop-shadow-[0_0_5px_rgba(0,212,255,0.5)]" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
-                            </div>
-                        </button>
-                    `).join('') : ''}
-                </div>
-                ` : ''}
+                    `).join('')}
+                </div>` : ''}
             </div>
-            
-            <!-- Right: Details -->
-            <div class="w-full lg:w-3/5 p-6 md:p-10 flex flex-col bg-cyber-panel relative z-10 border-l border-cyan-900/30">
-                <div class="mb-5 flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest font-mono">
-                    <span class="text-cyan-400 px-3 py-1.5 rounded-lg bg-cyan-900/20 border border-cyan-900/50">${product.category}</span>
-                    <span class="text-cyan-800">•</span>
-                    <span class="text-cyan-500/70">${product.purpose || 'Автозапчасть'}</span>
+
+            <!-- Правая колонка: детали -->
+            <div class="modal-right">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="modal-badge">${product.category}</span>
+                    <span style="color:var(--apex-muted);font-size:10px;font-family:monospace">${product.purpose || 'Автозапчасть'}</span>
                 </div>
-                
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 leading-tight font-space tracking-wider uppercase">${product.name}</h2>
-                
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-                    <div class="bg-cyber-dark/50 border border-cyan-900/30 rounded-xl p-5 hover:border-cyan-500/50 transition-colors shadow-sm">
-                        <p class="text-[10px] font-bold text-cyan-500/70 uppercase tracking-widest mb-2 font-mono">Артикул</p>
-                        <p class="font-mono text-cyan-400 text-lg font-bold">${product.article}</p>
+
+                <h2 style="font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:20px;line-height:1.3;letter-spacing:0.03em">${product.name}</h2>
+
+                <!-- Параметры -->
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px">
+                    <div class="modal-param-box">
+                        <p class="modal-param-label">Артикул</p>
+                        <p class="modal-param-value" style="color:var(--apex-gold)">${product.article}</p>
                     </div>
-                    <div class="bg-cyber-dark/50 border border-cyan-900/30 rounded-xl p-5 hover:border-cyan-500/50 transition-colors shadow-sm">
-                        <p class="text-[10px] font-bold text-cyan-500/70 uppercase tracking-widest mb-2 font-mono">Остаток</p>
-                        <p class="font-bold ${product.stock > 0 ? 'text-cyan-400' : 'text-amber-500'} text-lg flex items-center gap-2 font-mono">
-                            <span class="w-2.5 h-2.5 rounded-full ${product.stock > 0 ? 'bg-cyan-500 shadow-[0_0_10px_rgba(0,212,255,0.6)]' : 'bg-amber-500'}"></span>
+                    <div class="modal-param-box">
+                        <p class="modal-param-label">Остаток</p>
+                        <p class="modal-param-value" style="color:${product.stock > 0 ? '#4ade80' : '#f59e0b'}">
                             ${product.stock > 0 ? product.stock + ' шт.' : 'Под заказ'}
                         </p>
                     </div>
-                    <div class="col-span-2 md:col-span-1 bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-500/30 rounded-xl p-5 text-white shadow-[0_0_15px_rgba(0,212,255,0.1)] relative overflow-hidden group/price flex flex-col justify-between">
-                        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjMDBkNGZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 group-hover/price:opacity-40 transition-opacity"></div>
-                        <div>
-                            <p class="text-[10px] font-bold text-cyan-300 uppercase tracking-widest mb-2 relative z-10 font-mono">Цена</p>
-                            <p class="text-2xl font-black tracking-widest relative z-10 font-space text-cyan-50">${formatPrice(product.price)}</p>
-                        </div>
-                        <button onclick="window.addToCart('${product.id}')" class="mt-4 w-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-bold py-2.5 rounded-lg border border-cyan-500/50 shadow-[0_0_10px_rgba(0,212,255,0.2)] hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] transition-all relative z-10 flex items-center justify-center gap-2 group/btn font-mono uppercase text-[10px] tracking-wider">
-                            <svg class="w-4 h-4 group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            В КОРЗИНУ
-                        </button>
+                    <div class="modal-param-box" style="border-color:rgba(212,175,55,0.3);background:rgba(212,175,55,0.05)">
+                        <p class="modal-param-label" style="color:var(--apex-gold)">Цена</p>
+                        <p class="modal-param-value" style="color:#fff;font-size:1.1rem">${formatPrice(product.price)}</p>
+                        <button onclick="window.addToCart('${product.id}')" class="modal-add-btn">В корзину</button>
                     </div>
                 </div>
-                
-                <div class="space-y-10 flex-grow">
-                    ${product.description ? `
-                    <div class="relative">
-                        <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-3 font-space tracking-wider uppercase">
-                            <div class="w-8 h-8 rounded-lg bg-cyan-900/30 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.1)]">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            Описание
-                        </h4>
-                        <div class="text-sm text-slate-300 leading-relaxed max-w-none bg-cyber-dark/50 p-6 rounded-xl border border-cyan-900/30 font-sans shadow-inner">
-                            ${product.description.replace(/\\n/g, '<br>')}
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-3 font-space tracking-wider uppercase">
-                                <div class="w-8 h-8 rounded-lg bg-cyan-900/30 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.1)]">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                                </div>
-                                Совместимость
-                            </h4>
-                            <div class="max-h-80 overflow-y-auto custom-scrollbar pr-2">
-                                ${compatHtml}
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-3 font-space tracking-wider uppercase">
-                                <div class="w-8 h-8 rounded-lg bg-cyan-900/30 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.1)]">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                                </div>
-                                Кросс-номера
-                            </h4>
-                            <div class="bg-cyber-dark/50 p-6 rounded-xl border border-cyan-900/30 space-y-6 shadow-inner">
-                                ${product.oem ? `
-                                <div>
-                                    <h5 class="text-[10px] font-bold text-cyan-500/70 uppercase tracking-widest mb-2 font-mono">Оригинальный OEM</h5>
-                                    <p class="text-sm text-cyan-300 font-mono bg-cyber-dark px-3 py-2 rounded-lg border border-cyan-900/50 shadow-sm inline-block shadow-[0_0_10px_rgba(0,212,255,0.1)]">${product.oem}</p>
-                                </div>
-                                ` : ''}
-                                ${product.analogs ? `
-                                <div>
-                                    <h5 class="text-[10px] font-bold text-cyan-500/70 uppercase tracking-widest mb-2 font-mono">Аналоги</h5>
-                                    <p class="text-xs text-slate-300 whitespace-pre-line leading-relaxed font-mono bg-cyber-dark p-4 rounded-xl border border-cyan-900/50 shadow-sm">${product.analogs.replace(/\\n/g, '<br>')}</p>
-                                </div>
-                                ` : '<p class="text-xs text-cyan-700/50 italic bg-cyber-dark p-4 rounded-xl border border-cyan-900/30 font-mono">Нет данных об аналогах</p>'}
-                            </div>
-                        </div>
-                    </div>
+
+                <!-- Описание -->
+                ${product.description ? `
+                <div class="modal-section">
+                    <h4 class="modal-section-title">Описание</h4>
+                    <p style="font-size:13px;color:var(--apex-silver);line-height:1.7">${product.description.replace(/\n/g, '<br>')}</p>
+                </div>` : ''}
+
+                <!-- Совместимость -->
+                <div class="modal-section">
+                    <h4 class="modal-section-title">Совместимость</h4>
+                    <div class="max-h-72 overflow-y-auto custom-scrollbar pr-2">${compatHtml}</div>
                 </div>
+
+                <!-- Кросс-номера -->
+                ${(product.oem || product.analogs) ? `
+                <div class="modal-section">
+                    <h4 class="modal-section-title">Кросс-номера</h4>
+                    ${product.oem ? `<p style="font-size:12px;font-family:monospace;margin-bottom:8px"><span style="color:var(--apex-muted)">OEM: </span><span style="color:var(--apex-gold)">${product.oem}</span></p>` : ''}
+                    ${product.analogs ? `<p style="font-size:11px;font-family:monospace;color:var(--apex-silver);white-space:pre-wrap;line-height:1.8">${product.analogs}</p>` : ''}
+                </div>` : ''}
             </div>
         `;
-        
+
         DOM.modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-        
-        const mainImage = document.getElementById('modalMainImage');
-        const mainVideo = document.getElementById('modalMainVideo');
-        const thumbnails = document.querySelectorAll('.thumbnail-btn');
-        if (thumbnails.length > 0) {
-            thumbnails.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const type = this.getAttribute('data-type');
-                    const newSrc = this.getAttribute('data-src');
-                    
-                    if (type === 'video') {
-                        mainImage.classList.add('hidden');
-                        mainVideo.classList.remove('hidden');
-                        mainVideo.src = newSrc;
-                        mainVideo.play();
-                    } else {
-                        mainVideo.pause();
-                        mainVideo.classList.add('hidden');
-                        mainImage.classList.remove('hidden');
-                        mainImage.style.opacity = '0';
-                        setTimeout(() => {
-                            mainImage.src = newSrc;
-                            mainImage.style.opacity = '1';
-                        }, 50);
-                    }
-                    
-                    thumbnails.forEach(t => {
-                        t.classList.remove('border-cyan-400', 'shadow-[0_0_15px_rgba(0,212,255,0.3)]', 'opacity-100', 'scale-105');
-                        t.classList.add('border-cyan-900/30', 'opacity-60');
-                    });
-                    this.classList.remove('border-cyan-900/30', 'opacity-60');
-                    this.classList.add('border-cyan-400', 'shadow-[0_0_15px_rgba(0,212,255,0.3)]', 'opacity-100', 'scale-105');
-                });
+
+        // Галерея thumbnail
+        document.querySelectorAll('.modal-thumb-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('modalMainImage').src = this.dataset.src;
+                document.querySelectorAll('.modal-thumb-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
             });
-        }
-    };
+        });
+    };  // <-- конец openProductModal
 
     const closeModal = () => {
         const mainVideo = document.getElementById('modalMainVideo');
@@ -729,9 +622,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         state.renderedCount += toRender.length;
 
-        // Re-attach listeners to new cards
-        document.querySelectorAll('.product-card').forEach(card => {
-            // Remove old listener just in case to prevent duplicates (though insertAdjacentHTML creates new nodes)
+        // Привязываем клик на каждую карточку
+        document.querySelectorAll('.apex-product-card').forEach(card => {
             card.onclick = () => openProductModal(card.dataset.id);
         });
 
