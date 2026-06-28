@@ -1,5 +1,14 @@
 # История проекта Westar Industries App
 
+## 🌐 Доступы и ссылки
+- **GitHub Репозиторий**: [https://github.com/taqtunshop-tech/westar](https://github.com/taqtunshop-tech/westar)
+- **Рабочий сайт (GitHub Pages)**: [https://taqtunshop-tech.github.io/westar/](https://taqtunshop-tech.github.io/westar/)
+- **Локальная директория**: `d:\Загрузки 2026\WESTAR\westar-app\`
+
+---
+
+## 📝 Лог изменений
+
 **2026-06-28 15:30:00**
 - **Инициализация проекта**: Создана директория приложения `westar-app`.
 - **Подключение к GitHub**: Создан и инициализирован публичный репозиторий `taqtunshop-tech/westar`.
