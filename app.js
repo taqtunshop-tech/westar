@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'lexus':       'lexus',
         'lincoln':     'lincoln',
         'mercury':     'mercury',
-        'mopar':       'dodge',      // Mopar — бренд запчастей FCA, нет отдельного лого → используем Dodge
+        'mopar':       'chrysler',  // Mopar — запчасти Chrysler Group, используем chrysler лого
         'nissan':      'nissan',
         'oldsmobile':  'oldsmobile',
         'pontiac':     'pontiac',
@@ -308,10 +308,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         DOM.brandGrid.innerHTML = makesToShow.map(make => {
             const isActive = state.makes.has(make);
+            const letter = make.charAt(0).toUpperCase();
+            // SVG fallback — показывается если лого не загрузилось
+            const fallbackSvg = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'><rect width='48' height='48' rx='4' fill='%23111'/><text x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='serif' font-size='22' font-weight='700' fill='%23d4af37'>${letter}</text></svg>`;
             return `
                 <div class="brand-item${isActive ? ' active' : ''}" data-make="${make}">
                     ${isActive ? '<div class="corner-tl"></div><div class="corner-br"></div>' : ''}
-                    <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" alt="${make}">
+                    <img src="${getMakeLogoUrl(make)}" onerror="this.src='${fallbackSvg}'" alt="${make}">
                     <span class="brand-label">${make}</span>
                 </div>
             `;
