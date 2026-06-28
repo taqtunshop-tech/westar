@@ -139,28 +139,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `
             <div class="product-card glass-panel rounded-2xl overflow-hidden flex flex-col h-full cursor-pointer group" data-id="${product.id}">
-                <div class="relative h-48 bg-slate-800 flex items-center justify-center p-4 overflow-hidden border-b border-slate-800/50">
-                    <img src="${imgSrc}" alt="${product.name}" class="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-110" loading="lazy">
-                    <div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur text-xs font-mono px-2 py-1 rounded text-slate-300 border border-slate-700">
+                <div class="relative h-56 flex items-center justify-center p-4 overflow-hidden border-b border-white/5">
+                    <img src="${imgSrc}" alt="${product.name}" class="max-h-full max-w-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-2xl" loading="lazy">
+                    <div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-xs font-mono px-2 py-1 rounded text-brand-400 border border-brand-500/20 shadow-neon-blue">
                         ${product.article}
                     </div>
                 </div>
-                <div class="p-5 flex flex-col flex-grow">
-                    <div class="text-[10px] font-semibold text-brand-400 mb-2 uppercase tracking-wider flex items-center justify-between">
-                        <span>${product.category}</span>
+                <div class="p-6 flex flex-col flex-grow">
+                    <div class="text-[10px] font-semibold text-slate-400 mb-3 uppercase tracking-wider flex items-center justify-between">
+                        <span class="label-caps">${product.category}</span>
                         <span class="text-slate-500 text-right w-1/2 truncate ml-2 flex items-center justify-end gap-1">
-                            ${product.brand ? `<img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-3 object-contain opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all" alt="">` : ''}
+                            ${product.brand ? `<img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-4 object-contain opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all" alt="">` : ''}
                             ${product.brand || 'Westar'}
                         </span>
                     </div>
-                    <h3 class="text-white font-medium text-sm mb-1 flex-grow line-clamp-3 leading-snug group-hover:text-brand-300 transition-colors">${product.name}</h3>
+                    <h3 class="text-white font-medium text-base mb-2 flex-grow line-clamp-3 leading-snug group-hover:text-brand-400 transition-colors">${product.name}</h3>
                     ${compatHtml}
-                    <div class="flex items-end justify-between mt-auto pt-4 border-t border-slate-800/50">
+                    <div class="flex items-end justify-between mt-auto pt-4 border-t border-white/5">
                         <div>
-                            <p class="text-xs text-slate-400 mb-1">Остаток: <span class="text-emerald-400 font-medium">${product.stock > 0 ? product.stock + ' шт.' : 'Под заказ'}</span></p>
-                            <p class="text-lg font-bold text-white">${formatPrice(product.price)}</p>
+                            <p class="text-xs text-slate-400 mb-1 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full ${product.stock > 0 ? 'bg-neon-green shadow-neon-green' : 'bg-neon-orange shadow-neon-orange'}"></span>
+                                <span class="${product.stock > 0 ? 'text-neon-green' : 'text-neon-orange'}">${product.stock > 0 ? product.stock + ' шт.' : 'Под заказ'}</span>
+                            </p>
+                            <p class="text-xl font-bold text-white tracking-tight">${formatPrice(product.price)}</p>
                         </div>
-                        <button class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-all duration-300 border border-slate-700 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/30">
+                        <button class="w-10 h-10 rounded-xl bg-slate-800/80 hover:bg-brand-600 flex items-center justify-center transition-all duration-300 border border-white/10 hover:border-brand-500 hover:shadow-neon-blue backdrop-blur-sm">
                             <svg class="w-5 h-5 text-white transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </button>
                     </div>
@@ -202,23 +205,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         DOM.modalContent.innerHTML = `
             <!-- Left: Media Gallery -->
-            <div class="w-full md:w-2/5 bg-slate-800 p-6 md:p-8 flex flex-col items-center justify-center min-h-[300px] gap-6">
-                <div class="flex-grow flex items-center justify-center w-full relative" id="modalMainMediaContainer">
-                    <img id="modalMainImage" src="${imgSrc}" alt="${product.name}" class="max-w-full max-h-[350px] object-contain drop-shadow-2xl transition-opacity duration-300">
-                    <video id="modalMainVideo" class="max-w-full max-h-[350px] object-contain drop-shadow-2xl hidden" controls></video>
+            <div class="w-full md:w-2/5 bg-slate-900/50 p-6 md:p-8 flex flex-col items-center justify-center min-h-[300px] gap-6 border-r border-white/5 relative">
+                <div class="absolute inset-0 bg-brand-500/5 blur-[100px] pointer-events-none"></div>
+                <div class="flex-grow flex items-center justify-center w-full relative z-10" id="modalMainMediaContainer">
+                    <img id="modalMainImage" src="${imgSrc}" alt="${product.name}" class="max-w-full max-h-[350px] object-contain drop-shadow-2xl transition-all duration-500 hover:scale-105">
+                    <video id="modalMainVideo" class="max-w-full max-h-[350px] object-contain drop-shadow-2xl hidden rounded-xl shadow-neon-blue" controls></video>
                 </div>
                 ${(product.imageUrls && product.imageUrls.length > 1) || (product.videoUrls && product.videoUrls.length > 0) ? `
-                <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 w-full px-2" id="modalThumbnails">
+                <div class="flex items-center gap-3 overflow-x-auto custom-scrollbar pb-2 w-full px-2 z-10" id="modalThumbnails">
                     ${product.imageUrls ? product.imageUrls.map((url, i) => `
-                        <button class="thumbnail-btn flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === 0 ? 'border-brand-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}" data-src="${url}" data-type="image">
+                        <button class="thumbnail-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300 shadow-lg ${i === 0 ? 'border-brand-500 shadow-neon-blue opacity-100 scale-105' : 'border-white/10 opacity-60 hover:opacity-100 hover:border-brand-400'}" data-src="${url}" data-type="image">
                             <img src="${url}" class="w-full h-full object-cover" alt="Ракурс ${i+1}">
                         </button>
                     `).join('') : ''}
                     
                     ${product.videoUrls ? product.videoUrls.map((url, i) => `
-                        <button class="thumbnail-btn flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 border-transparent opacity-60 hover:opacity-100 transition-all relative" data-src="${url}" data-type="video">
-                            <div class="w-full h-full bg-slate-900 flex items-center justify-center text-brand-500">
-                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
+                        <button class="thumbnail-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 border-white/10 opacity-60 hover:opacity-100 hover:border-brand-400 transition-all duration-300 relative shadow-lg" data-src="${url}" data-type="video">
+                            <div class="w-full h-full bg-slate-800 flex items-center justify-center text-brand-500">
+                                <svg class="w-8 h-8 drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
                             </div>
                         </button>
                     `).join('') : ''}
@@ -227,27 +231,30 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             
             <!-- Right: Details -->
-            <div class="w-full md:w-3/5 p-6 md:p-10 flex flex-col bg-slate-900">
-                <div class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
-                    <span class="text-brand-400">${product.category}</span>
+            <div class="w-full md:w-3/5 p-6 md:p-10 flex flex-col bg-slate-900/80 backdrop-blur-xl relative z-10">
+                <div class="mb-4 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider">
+                    <span class="text-brand-400 label-caps px-2 py-1 rounded bg-brand-500/10 border border-brand-500/20">${product.category}</span>
                     <span class="text-slate-600">•</span>
-                    <span class="text-slate-400">${product.purpose || 'Автозапчасть'}</span>
+                    <span class="text-slate-400 label-caps">${product.purpose || 'Автозапчасть'}</span>
                 </div>
                 
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 leading-tight">${product.name}</h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 leading-tight tracking-tight">${product.name}</h2>
                 
                 <div class="flex flex-wrap items-center gap-4 mb-8">
-                    <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 flex-1 min-w-[120px]">
-                        <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Артикул</p>
-                        <p class="font-mono text-white text-lg">${product.article}</p>
+                    <div class="bg-slate-800/50 border border-white/10 rounded-xl px-5 py-4 flex-1 min-w-[120px] backdrop-blur hover:border-brand-500/50 transition-colors">
+                        <p class="label-caps text-slate-400 mb-2">Артикул</p>
+                        <p class="font-mono text-white text-xl">${product.article}</p>
                     </div>
-                    <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 flex-1 min-w-[120px]">
-                        <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Остаток</p>
-                        <p class="font-medium text-emerald-400 text-lg">${product.stock > 0 ? product.stock + ' шт.' : 'Под заказ'}</p>
+                    <div class="bg-slate-800/50 border border-white/10 rounded-xl px-5 py-4 flex-1 min-w-[120px] backdrop-blur hover:border-brand-500/50 transition-colors">
+                        <p class="label-caps text-slate-400 mb-2">Остаток</p>
+                        <p class="font-medium ${product.stock > 0 ? 'text-neon-green' : 'text-neon-orange'} text-xl flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full ${product.stock > 0 ? 'bg-neon-green shadow-neon-green' : 'bg-neon-orange shadow-neon-orange'}"></span>
+                            ${product.stock > 0 ? product.stock + ' шт.' : 'Под заказ'}
+                        </p>
                     </div>
-                    <div class="bg-gradient-to-br from-brand-600 to-blue-700 rounded-xl px-5 py-3 shadow-lg shadow-brand-500/20 text-white min-w-[140px]">
-                        <p class="text-[10px] text-brand-100 uppercase tracking-wider mb-1">Цена</p>
-                        <p class="text-2xl font-bold">${formatPrice(product.price)}</p>
+                    <div class="bg-brand-600 rounded-xl px-6 py-4 shadow-neon-blue text-white min-w-[140px] border border-brand-400 hover:bg-brand-500 transition-colors">
+                        <p class="label-caps text-brand-100 mb-2">Цена</p>
+                        <p class="text-3xl font-bold tracking-tight">${formatPrice(product.price)}</p>
                     </div>
                 </div>
                 
@@ -333,11 +340,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Update active state
                     thumbnails.forEach(t => {
-                        t.classList.remove('border-brand-500', 'opacity-100');
-                        t.classList.add('border-transparent', 'opacity-60');
+                        t.classList.remove('border-brand-500', 'shadow-neon-blue', 'opacity-100', 'scale-105');
+                        t.classList.add('border-white/10', 'opacity-60');
                     });
-                    this.classList.remove('border-transparent', 'opacity-60');
-                    this.classList.add('border-brand-500', 'opacity-100');
+                    this.classList.remove('border-white/10', 'opacity-60');
+                    this.classList.add('border-brand-500', 'shadow-neon-blue', 'opacity-100', 'scale-105');
                 });
             });
         }
