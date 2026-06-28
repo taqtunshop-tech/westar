@@ -104,6 +104,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const imgPlaceholder = `https://ui-avatars.com/api/?name=${product.article}&background=1e293b&color=94a3b8&size=300&font-size=0.2`;
         const imgSrc = hasImage ? product.imageUrl : imgPlaceholder;
         
+        let compatHtml = '';
+        if (product.compatibility && product.compatibility.length > 0) {
+            const makesGroup = {};
+            product.compatibility.forEach(c => {
+                if (!c.make) return;
+                if (!makesGroup[c.make]) makesGroup[c.make] = new Set();
+                if (c.model) makesGroup[c.make].add(c.model);
+            });
+            
+            const makes = Object.keys(makesGroup);
+            if (makes.length > 0) {
+                const displayMakes = makes.slice(0, 3);
+                const hasMore = makes.length > 3;
+                
+                const makeBlocks = displayMakes.map(make => {
+                    const models = Array.from(makesGroup[make]).join(', ');
+                    return `
+                        <div class="flex items-center gap-2 bg-slate-900/50 rounded-lg py-1.5 px-2 border border-slate-700/50 group/make cursor-help" title="${make}: ${models}">
+                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="h-4 object-contain opacity-80 group-hover/make:opacity-100 transition-opacity" alt="${make}">
+                            <span class="text-[10px] text-slate-400 truncate flex-grow group-hover/make:text-slate-200 transition-colors">${models || make}</span>
+                        </div>
+                    `;
+                }).join('');
+                
+                compatHtml = `
+                    <div class="mb-4 flex flex-col gap-1.5 w-full mt-2">
+                        ${makeBlocks}
+                        ${hasMore ? `<div class="text-[10px] text-slate-500 text-center bg-slate-800/30 rounded py-1 border border-slate-800/50">еще ${makes.length - 3} марк${makes.length - 3 > 1 && makes.length - 3 < 5 ? 'и' : 'а'}...</div>` : ''}
+                    </div>
+                `;
+            }
+        }
+
         return `
             <div class="product-card glass-panel rounded-2xl overflow-hidden flex flex-col h-full cursor-pointer group" data-id="${product.id}">
                 <div class="relative h-48 bg-slate-800 flex items-center justify-center p-4 overflow-hidden border-b border-slate-800/50">
@@ -120,7 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${product.brand || 'Westar'}
                         </span>
                     </div>
-                    <h3 class="text-white font-medium text-sm mb-4 flex-grow line-clamp-3 leading-snug group-hover:text-brand-300 transition-colors">${product.name}</h3>
+                    <h3 class="text-white font-medium text-sm mb-1 flex-grow line-clamp-3 leading-snug group-hover:text-brand-300 transition-colors">${product.name}</h3>
+                    ${compatHtml}
                     <div class="flex items-end justify-between mt-auto pt-4 border-t border-slate-800/50">
                         <div>
                             <p class="text-xs text-slate-400 mb-1">Остаток: <span class="text-emerald-400 font-medium">${product.stock > 0 ? product.stock + ' шт.' : 'Под заказ'}</span></p>
