@@ -101,18 +101,21 @@ function parseCompatibility(text) {
   let currentModel = '';
   let currentYears = '';
   
+  // Известные марки для поиска в строках
+  const knownMakes = ['Ford', 'Chevrolet', 'Dodge', 'Ram', 'Honda', 'Toyota', 'Nissan', 'Jeep', 'Buick', 'Cadillac', 'GMC', 'Oldsmobile', 'Pontiac', 'Saturn', 'Chrysler', 'Lincoln', 'Mercury', 'Acura', 'Infiniti', 'Subaru', 'Mazda', 'Hyundai', 'Kia', 'Lexus', 'Mitsubishi', 'Suzuki', 'Volkswagen', 'Audi', 'BMW', 'Mercedes-Benz', 'Volvo'];
+  const makesRegex = new RegExp(`^(${knownMakes.join('|')})\\b`, 'i');
+  
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
     
-    const makeMatch = trimmed.match(/^(?:Марка:\s*)?([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)\s*$/i) ||
-                       trimmed.match(/^(Ford|Chevrolet|Dodge|Ram|Honda|Toyota|Nissan|Jeep|Buick|Cadillac|GMC|Oldsmobile|Pontiac|Saturn|Chrysler|Lincoln|Mercury|Acura|Infiniti|Subaru|Mazda|Hyundai|Kia)/i);
-    
+    // 1. Явное указание марки
     if (trimmed.startsWith('Марка:')) {
       currentMake = trimmed.replace('Марка:', '').trim();
       continue;
     }
     
+    // 2. Явное указание модели
     if (trimmed.startsWith('Модель:')) {
       if (currentModel && currentYears) {
         entries.push({ make: currentMake, model: currentModel, years: currentYears });
@@ -122,15 +125,38 @@ function parseCompatibility(text) {
       continue;
     }
     
+    // 3. Явное указание годов
     if (trimmed.startsWith('Годы Выпуска:') || trimmed.startsWith('Годы выпуска:')) {
       currentYears = trimmed.replace(/Годы [Вв]ыпуска:\s*/, '').trim();
       continue;
     }
     
-    // Простой формат: "Модель (годы)"
+    // 4. Поиск просто марки в строке (если строка состоит только из названия марки)
+    if (knownMakes.some(m => m.toLowerCase() === trimmed.toLowerCase())) {
+      currentMake = trimmed;
+      continue;
+    }
+    
+    // 5. Простой формат: "Модель (годы)" или "Марка Модель (годы)"
     const simpleMatch = trimmed.match(/^(.+?)\s*\((\d{4}[-–]\d{4}|\d{4})\)$/);
     if (simpleMatch) {
-      entries.push({ make: '', model: simpleMatch[1].trim(), years: simpleMatch[2] });
+      let makeAndModel = simpleMatch[1].trim();
+      const years = simpleMatch[2];
+      
+      let make = currentMake;
+      let model = makeAndModel;
+      
+      // Попробуем вытащить марку прямо из строки, если она там есть (например, "Honda Civic")
+      const inlineMakeMatch = makeAndModel.match(makesRegex);
+      if (inlineMakeMatch) {
+        make = inlineMakeMatch[1];
+        // Убираем марку из названия модели
+        model = makeAndModel.substring(make.length).trim();
+        // Запоминаем марку для следующих строк
+        currentMake = make;
+      }
+      
+      entries.push({ make: make, model: model, years: years });
     }
   }
   
