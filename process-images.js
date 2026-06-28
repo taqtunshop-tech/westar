@@ -36,24 +36,27 @@ for (const dirName of dirs) {
         try {
             const files = fs.readdirSync(fullDirPath);
             
-            // Ищем подходящую картинку (jpg, jpeg, png, webp)
+            // Ищем все подходящие картинки
             const imageFiles = files.filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
             
             if (imageFiles.length > 0) {
-                // Берем первый файл
-                const selectedImage = imageFiles[0];
-                const ext = path.extname(selectedImage).toLowerCase();
-                const sourcePath = path.join(fullDirPath, selectedImage);
+                imageMapping[article] = [];
                 
-                // Сохраняем как [Артикул].jpg/png
-                const targetFileName = `${article}${ext}`;
-                const targetPath = path.join(IMAGES_DIR, targetFileName);
+                imageFiles.forEach((file, index) => {
+                    const ext = path.extname(file).toLowerCase();
+                    const sourcePath = path.join(fullDirPath, file);
+                    
+                    // Сохраняем как [Артикул]-[Индекс].jpg
+                    const targetFileName = `${article}-${index + 1}${ext}`;
+                    const targetPath = path.join(IMAGES_DIR, targetFileName);
+                    
+                    fs.copyFileSync(sourcePath, targetPath);
+                    
+                    imageMapping[article].push(`images/${targetFileName}`);
+                    copiedCount++;
+                });
                 
-                fs.copyFileSync(sourcePath, targetPath);
-                
-                imageMapping[article] = `images/${targetFileName}`;
-                copiedCount++;
-                console.log(`[+] Скопировано: ${article} -> ${targetFileName}`);
+                console.log(`[+] Скопировано картинок для ${article}: ${imageFiles.length}`);
             } else {
                 console.log(`[-] Нет картинок в папке: ${dirName}`);
             }
@@ -63,7 +66,7 @@ for (const dirName of dirs) {
     }
 }
 
-console.log(`\nВсего найдено картинок для ${copiedCount} артикулов.`);
+console.log(`\nВсего скопировано ${copiedCount} картинок.`);
 
 // Теперь обновляем catalog.json и catalog.js
 if (fs.existsSync(CATALOG_JSON_PATH)) {
@@ -72,11 +75,11 @@ if (fs.existsSync(CATALOG_JSON_PATH)) {
     let updatedCount = 0;
     
     catalog.products.forEach(product => {
-        // У нас article обычно формата "EM-XXXX"
         const productArticle = product.article.toUpperCase();
         
-        if (imageMapping[productArticle]) {
-            product.imageUrl = imageMapping[productArticle];
+        if (imageMapping[productArticle] && imageMapping[productArticle].length > 0) {
+            product.imageUrl = imageMapping[productArticle][0]; // Главная картинка
+            product.imageUrls = imageMapping[productArticle];   // Все картинки
             updatedCount++;
         }
     });

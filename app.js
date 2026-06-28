@@ -167,9 +167,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         DOM.modalContent.innerHTML = `
-            <!-- Left: Image -->
-            <div class="w-full md:w-2/5 bg-slate-800 p-8 flex items-center justify-center min-h-[300px]">
-                <img src="${imgSrc}" alt="${product.name}" class="max-w-full max-h-[400px] object-contain drop-shadow-2xl">
+            <!-- Left: Image Gallery -->
+            <div class="w-full md:w-2/5 bg-slate-800 p-6 md:p-8 flex flex-col items-center justify-center min-h-[300px] gap-6">
+                <div class="flex-grow flex items-center justify-center w-full relative">
+                    <img id="modalMainImage" src="${imgSrc}" alt="${product.name}" class="max-w-full max-h-[350px] object-contain drop-shadow-2xl transition-opacity duration-300">
+                </div>
+                ${product.imageUrls && product.imageUrls.length > 1 ? `
+                <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 w-full px-2" id="modalThumbnails">
+                    ${product.imageUrls.map((url, i) => `
+                        <button class="thumbnail-btn flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === 0 ? 'border-brand-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}" data-src="${url}">
+                            <img src="${url}" class="w-full h-full object-cover" alt="Ракурс ${i+1}">
+                        </button>
+                    `).join('')}
+                </div>
+                ` : ''}
             </div>
             
             <!-- Right: Details -->
@@ -250,6 +261,31 @@ document.addEventListener('DOMContentLoaded', () => {
         
         DOM.modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        
+        // Gallery logic
+        const mainImage = document.getElementById('modalMainImage');
+        const thumbnails = document.querySelectorAll('.thumbnail-btn');
+        if (thumbnails.length > 0 && mainImage) {
+            thumbnails.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Update main image
+                    const newSrc = this.getAttribute('data-src');
+                    mainImage.style.opacity = '0';
+                    setTimeout(() => {
+                        mainImage.src = newSrc;
+                        mainImage.style.opacity = '1';
+                    }, 150);
+                    
+                    // Update active state
+                    thumbnails.forEach(t => {
+                        t.classList.remove('border-brand-500', 'opacity-100');
+                        t.classList.add('border-transparent', 'opacity-60');
+                    });
+                    this.classList.remove('border-transparent', 'opacity-60');
+                    this.classList.add('border-brand-500', 'opacity-100');
+                });
+            });
+        }
     };
 
     const closeModal = () => {
