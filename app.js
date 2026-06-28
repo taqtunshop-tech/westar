@@ -274,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderMakeFilters = () => {
+        if (!DOM.makeFilters) return;
         const filteredMakes = catalog.makes.filter(m => m.toLowerCase().includes(state.makeSearchQuery.toLowerCase()));
         
         DOM.makeFilters.innerHTML = filteredMakes.map(make => `
@@ -335,12 +336,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         DOM.brandGrid.innerHTML = makesToShow.map(make => {
             const isActive = state.makes.has(make);
-            return \`
-                <div class="brand-item cyber-glass rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 border \${isActive ? 'border-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.4)]' : 'border-cyan-900/30 hover:border-cyan-500/50 hover:shadow-[0_0_10px_rgba(0,212,255,0.2)]'} group" data-make="\${make}">
-                    <img src="\${getMakeLogoUrl(make)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" class="h-10 md:h-12 w-auto object-contain mb-2 \${isActive ? '' : 'grayscale opacity-70'} group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" alt="\${make}">
-                    <span class="text-[10px] font-mono text-cyan-500 uppercase tracking-widest text-center" style="display: none;">\${make}</span>
+            return `
+                <div class="brand-item cyber-glass rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 border ${isActive ? 'border-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.4)]' : 'border-cyan-900/30 hover:border-cyan-500/50 hover:shadow-[0_0_10px_rgba(0,212,255,0.2)]'} group" data-make="${make}">
+                    <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" class="h-10 md:h-12 w-auto object-contain mb-2 ${isActive ? '' : 'grayscale opacity-70'} group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" alt="${make}">
+                    <span class="text-[10px] font-mono text-cyan-500 uppercase tracking-widest text-center" style="display: none;">${make}</span>
                 </div>
-            \`;
+            `;
         }).join('');
         
         document.querySelectorAll('.brand-item').forEach(item => {
@@ -831,10 +832,12 @@ document.addEventListener('DOMContentLoaded', () => {
     DOM.searchInput.addEventListener('input', handleSearch);
     DOM.searchInputMobile.addEventListener('input', handleSearch);
     
-    DOM.makeSearchInput.addEventListener('input', (e) => {
-        state.makeSearchQuery = e.target.value;
-        renderMakeFilters();
-    });
+    if (DOM.makeSearchInput) {
+        DOM.makeSearchInput.addEventListener('input', (e) => {
+            state.makeSearchQuery = e.target.value;
+            renderMakeFilters();
+        });
+    }
 
     DOM.sortSelect.addEventListener('change', (e) => {
         state.sortBy = e.target.value;
@@ -855,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         DOM.searchInput.value = '';
         DOM.searchInputMobile.value = '';
-        DOM.makeSearchInput.value = '';
+        if (DOM.makeSearchInput) DOM.makeSearchInput.value = '';
         DOM.sortSelect.value = 'default';
         
         DOM.vehicleMake.value = '';
