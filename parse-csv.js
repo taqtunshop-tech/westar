@@ -63,8 +63,20 @@ for (let i = 0; i < lines.length; i++) {
     const stockRaw = (fields[3] || '').replace(/[^0-9]/g, '');
     const priceRaw = (fields[4] || '').replace(/[^0-9]/g, '');
     
+    // Извлекаем описание
+    let descriptionText = (fields[17] || fields[18] || fields[19] || '').trim();
+    
     // Парсим совместимость
-    const compatText = fields[14] || fields[15] || '';
+    let compatText = fields[14] || fields[15] || '';
+    
+    // Если совместимость не указана в явных столбцах, попробуем извлечь её из описания
+    if (!compatText && descriptionText) {
+      const match = descriptionText.match(/Совместимость:\s*([\s\S]+?)(?=(Перед покупкой|Вес и габариты|Способы оплаты|Аналоги|$))/i);
+      if (match) {
+        compatText = match[1];
+      }
+    }
+    
     const compatList = parseCompatibility(compatText);
     
     // Парсим аналоги  
@@ -86,7 +98,7 @@ for (let i = 0; i < lines.length; i++) {
       oem: (fields[12] || '').trim(),
       analogs: analogsText.substring(0, 500),
       compatibility: compatList,
-      description: (fields[17] || '').trim().substring(0, 2000)
+      description: descriptionText.substring(0, 2000)
     };
     
     products.push(product);
@@ -137,7 +149,38 @@ function parseCompatibility(text) {
       continue;
     }
     
-    // 5. Простой формат: "Модель (годы)" или "Марка Модель (годы)"
+    // 5. Поиск годов выпуска в строке (вида 2005-2010 или просто 2008)
+    const yearMatch = trimmed.match(/\b(19\d{2}|20\d{2})(?:\s*[-–]\s*(19\d{2}|20\d{2}))?\b/);
+    
+    if (yearMatch) {
+      let years = yearMatch[0];
+      let makeAndModel = trimmed.replace(years, '').trim();
+      
+      // Убираем инфу о двигателе и т.д. (в скобках)
+      makeAndModel = makeAndModel.replace(/\([^)]+\)/g, '').replace(/\s{2,}/g, ' ').trim();
+      
+      // Если модель пустая, пропускаем
+      if (!makeAndModel) continue;
+
+      let make = currentMake;
+      let model = makeAndModel;
+      
+      // Попробуем вытащить марку из начала строки
+      const inlineMakeMatch = makeAndModel.match(makesRegex);
+      if (inlineMakeMatch) {
+        make = inlineMakeMatch[1];
+        model = makeAndModel.substring(make.length).trim();
+        currentMake = make; // Запоминаем марку для следующих строк
+      }
+      
+      // Чтобы не добавлять пустые модели, состоящие только из марки
+      if (model.length > 0) {
+        entries.push({ make: make, model: model, years: years });
+      }
+      continue;
+    }
+    
+    // 6. Простой формат (откат к старому, если год в скобках без дефиса, хотя он должен покрываться 5-м пунктом)
     const simpleMatch = trimmed.match(/^(.+?)\s*\((\d{4}[-–]\d{4}|\d{4})\)$/);
     if (simpleMatch) {
       let makeAndModel = simpleMatch[1].trim();
@@ -146,13 +189,10 @@ function parseCompatibility(text) {
       let make = currentMake;
       let model = makeAndModel;
       
-      // Попробуем вытащить марку прямо из строки, если она там есть (например, "Honda Civic")
       const inlineMakeMatch = makeAndModel.match(makesRegex);
       if (inlineMakeMatch) {
         make = inlineMakeMatch[1];
-        // Убираем марку из названия модели
         model = makeAndModel.substring(make.length).trim();
-        // Запоминаем марку для следующих строк
         currentMake = make;
       }
       
