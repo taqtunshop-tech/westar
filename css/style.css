@@ -5,16 +5,17 @@
 
 /* Базовые переменные */
 :root {
-    --apex-bg:         #050505;
-    --apex-surface:    #0f0f0f;
-    --apex-container:  #1a1a1a;
-    --apex-border:     #2a2a2a;
-    --apex-border-hi:  #3a3a3a;
-    --apex-text:       #f5f5f5;
-    --apex-muted:      #888888;
-    --apex-gold:       #d4af37;
-    --apex-gold-dim:   rgba(212, 175, 55, 0.15);
-    --apex-silver:     #c0c0c0;
+    --apex-bg:         #0a0f18; /* Тёмно-синий фон */
+    --apex-surface:    #111827;
+    --apex-container:  #1f2937;
+    --apex-border:     #374151;
+    --apex-border-hi:  #4b5563;
+    --apex-text:       #f9fafb;
+    --apex-muted:      #9ca3af;
+    --apex-gold:       #FDB913; /* Westar Yellow */
+    --apex-blue:       #0033A0; /* Westar Blue */
+    --apex-gold-dim:   rgba(253, 185, 19, 0.15);
+    --apex-silver:     #d1d5db;
 }
 
 /* Сбрасываем конфликт Tailwind vs. CSS */
@@ -35,8 +36,8 @@ body {
     inset: 0;
     z-index: -1;
     background:
-        linear-gradient(rgba(212,175,55,0.015) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(212,175,55,0.015) 1px, transparent 1px);
+        linear-gradient(rgba(0, 51, 160, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 51, 160, 0.05) 1px, transparent 1px);
     background-size: 64px 64px;
     pointer-events: none;
 }
@@ -44,7 +45,7 @@ body {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,175,55,0.04) 0%, transparent 70%);
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0, 51, 160, 0.1) 0%, transparent 70%);
     pointer-events: none;
 }
 
