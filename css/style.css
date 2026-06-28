@@ -1,0 +1,209 @@
+/* css/style.css - Hyper-Luminous Automotive System */
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #050b1a; /* Dark Space Navy */
+    color: #dce2f8;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Starfield Animation Background */
+.starfield-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: -1;
+    background: radial-gradient(circle at center, #0a1628 0%, #050b1a 100%);
+    overflow: hidden;
+}
+
+.stars {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: transparent;
+    box-shadow: 200px 100px #fff, 400px 300px #fff, 600px 500px #fff, 800px 700px #fff, 1000px 900px #fff, 1200px 200px #fff, 1400px 400px #fff, 1600px 600px #fff, 1800px 800px #fff, 50px 800px #fff, 150px 600px #fff, 250px 400px #fff, 350px 200px #fff, 450px 1000px #fff, 550px 1200px #fff, 650px 1400px #fff, 750px 1600px #fff, 850px 1800px #fff;
+    animation: animStar 50s linear infinite;
+}
+.stars2 {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: transparent;
+    box-shadow: 100px 200px #00d4ff, 300px 400px #00d4ff, 500px 600px #00d4ff, 700px 800px #00d4ff, 900px 1000px #00d4ff, 1100px 1200px #00d4ff, 1300px 1400px #00d4ff, 1500px 1600px #00d4ff, 1700px 1800px #00d4ff;
+    animation: animStar 100s linear infinite;
+}
+.stars3 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    background: transparent;
+    box-shadow: 50px 50px #fff, 150px 150px #fff, 250px 250px #fff, 350px 350px #fff, 450px 450px #fff, 550px 550px #fff, 650px 650px #fff, 750px 750px #fff, 850px 850px #fff, 950px 950px #fff, 1050px 1050px #fff, 1150px 1150px #fff, 1250px 1250px #fff, 1350px 1350px #fff, 1450px 1450px #fff, 1550px 1550px #fff, 1650px 1650px #fff, 1750px 1750px #fff, 1850px 1850px #fff, 1950px 1950px #fff;
+    animation: animStar 150s linear infinite;
+}
+
+@keyframes animStar {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-2000px); }
+}
+
+/* Glassmorphism Panels */
+.cyber-glass {
+    background: rgba(12, 19, 34, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.cyber-glass:hover, .cyber-card:hover {
+    border-color: rgba(0, 212, 255, 0.5);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1);
+}
+
+/* Titles and Text */
+h1, h2, h3, .orbitron {
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.05em;
+}
+
+.text-cyan-glow {
+    color: #00d4ff;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.7);
+}
+
+/* Scanning Line Animation */
+.scanning-text-container {
+    position: relative;
+    display: inline-block;
+}
+.scanning-line {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: #00d4ff;
+    box-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff;
+    animation: scan 2.5s infinite linear;
+    opacity: 0.8;
+}
+@keyframes scan {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* Brand Grid Cards */
+.brand-card {
+    background: rgba(12, 19, 34, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    height: 120px;
+}
+.brand-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(0,212,255,0.1) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+}
+.brand-card:hover {
+    transform: translateY(-5px) scale(1.05);
+    border-color: #00d4ff;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+.brand-card:hover::before {
+    opacity: 1;
+}
+.brand-card img {
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)) grayscale(100%);
+    transition: all 0.3s;
+    max-height: 60px;
+    object-fit: contain;
+}
+.brand-card:hover img, .brand-card.active img {
+    filter: drop-shadow(0 0 10px rgba(0,212,255,0.6)) grayscale(0%);
+}
+.brand-card.active {
+    border-color: #00d4ff;
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+    background: rgba(0, 212, 255, 0.1);
+}
+.brand-card .brand-name {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #859398;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.3s;
+}
+.brand-card:hover .brand-name, .brand-card.active .brand-name {
+    color: #a8e8ff;
+}
+
+/* Product Cards */
+.cyber-product-card {
+    background: rgba(20, 26, 43, 0.7);
+    border: 1px solid rgba(133, 147, 152, 0.2);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+.cyber-product-card:hover {
+    transform: translateY(-4px);
+    border-color: #00d4ff;
+    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.15);
+}
+
+/* Inputs and Buttons */
+.cyber-input {
+    background: rgba(12, 19, 34, 0.8);
+    border: 1px solid rgba(133, 147, 152, 0.4);
+    color: #a8e8ff;
+    transition: all 0.3s;
+}
+.cyber-input:focus {
+    border-color: #00d4ff;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    outline: none;
+}
+.cyber-btn {
+    background: linear-gradient(135deg, #00d4ff 0%, #3b82f6 100%);
+    color: #050b1a;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s;
+    border: none;
+}
+.cyber-btn:hover {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+    transform: scale(1.02);
+}
+.cyber-btn-outline {
+    background: transparent;
+    border: 1px solid #00d4ff;
+    color: #00d4ff;
+    transition: all 0.3s;
+}
+.cyber-btn-outline:hover {
+    background: rgba(0, 212, 255, 0.1);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #050b1a; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: #191f2f; border-radius: 4px; border: 1px solid #00d4ff; }
+::-webkit-scrollbar-thumb:hover { background: #00d4ff; }

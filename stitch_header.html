@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Westar Auto Parts Catalog</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdbce",
+                        "surface-container-high": "#e6e8ea",
+                        "on-background": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#f9bd22",
+                        "surface-variant": "#e0e3e5",
+                        "on-primary-fixed": "#001453",
+                        "surface": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#b8c4ff",
+                        "primary": "#00288e",
+                        "surface-dim": "#d8dadc",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#b8c4ff",
+                        "on-tertiary-fixed-variant": "#802a00",
+                        "on-secondary-fixed-variant": "#5c4300",
+                        "on-primary-container": "#a8b8ff",
+                        "inverse-surface": "#2d3133",
+                        "background": "#f7f9fb",
+                        "secondary": "#795900",
+                        "on-secondary-container": "#6f5100",
+                        "on-secondary-fixed": "#261a00",
+                        "on-primary-fixed-variant": "#173bab",
+                        "tertiary-container": "#872d00",
+                        "outline": "#757684",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#ffc329",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "inverse-on-surface": "#eff1f3",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#f2f4f6",
+                        "tertiary": "#611e00",
+                        "primary-container": "#1e40af",
+                        "tertiary-fixed-dim": "#ffb59a",
+                        "surface-tint": "#3755c3",
+                        "primary-fixed": "#dde1ff",
+                        "on-tertiary-fixed": "#380d00",
+                        "on-tertiary-container": "#ffa583",
+                        "on-surface": "#191c1e",
+                        "secondary-fixed": "#ffdf9f",
+                        "outline-variant": "#c4c5d5",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#444653"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "lg": "48px",
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "xl": "80px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-xl": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-xl border-b border-white/20 dark:border-surface-variant/10 shadow-[0px_4px_20px_rgba(0,0,0,0.03)] h-16">
+<div class="flex justify-between items-center w-full px-md md:px-lg max-w-container-max mx-auto h-full gap-md">
+<!-- Brand Logo -->
+<div class="flex-shrink-0">
+<img alt="Westar Elite Logo" class="h-10 object-contain" src="data:image/png;base64,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"/>
+</div>
+<!-- Search Bar (Center) -->
+<div class="hidden md:flex flex-1 max-w-xl relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-body-md focus:ring-2 focus:ring-primary/20 transition-all outline-none" placeholder="Find parts by OEM or Artikul..." type="text"/>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary dark:border-primary-fixed-dim pb-1 text-label-md transition-all" href="#">Catalog</a>
+<a class="text-on-surface-variant/70 dark:text-surface-variant/70 font-medium hover:text-primary transition-colors text-label-md" href="#">About</a>
+<a class="text-on-surface-variant/70 dark:text-surface-variant/70 font-medium hover:text-primary transition-colors text-label-md" href="#">Contact</a>
+</nav>
+<!-- Action Buttons -->
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">shopping_cart</button>
+<button class="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-6 py-2 rounded-lg hover:brightness-105 active:scale-95 transition-all shadow-sm">Quote</button>
+</div>
+</div>
+</header>
+<!-- Hero Section -->
+<section class="relative pt-16 min-h-[400px] flex items-center overflow-hidden">
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="A high-resolution, wide-angle cinematic shot of a clean, modern automotive parts warehouse. The aisles are perfectly organized with metallic shelving units under bright, diffused industrial lighting. The color palette features cool blues and crisp whites, creating a professional and high-tech atmosphere that emphasizes precision and scale. Soft lens flare adds a premium touch to the polished concrete floors." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDL4aKA7sMVhPuwg8BNC4rlJiNFagq33wNKYDR_X6fb3f9r-w4gZYfiUgMLYVP8fGcjCUcfeBCQLZxNc-J8I1OaUccNeXA9dFhnyPThJfw0rlw6wdrMeBGrel7-IofHYDibsfNiwuV46iwJuiySIq3BmxrLzrAflm4zDXjPRLA_7iI3FM_GGuUy0jG8g9hukFcgidS-GqoivyZkZCHvWODeyIflFVOwTsMDOCBk-TEcu4KAXwTqOZS3aEdljrajg_01vIU3Aq5gECZS')"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-surface/90 to-transparent"></div>
+</div>
+<div class="relative z-10 max-w-container-max mx-auto px-md md:px-lg w-full">
+<div class="glass-panel p-lg max-w-2xl rounded-xl">
+<h1 class="text-headline-xl font-headline-xl text-primary mb-sm leading-tight">Westar Auto Parts Catalog</h1>
+<p class="text-body-lg text-on-surface-variant/80 mb-md">Professional-grade replacement components for high-end automotive systems. Engineered for precision, built for performance.</p>
+<div class="flex gap-sm">
+<button class="bg-primary text-on-primary px-lg py-3 rounded-lg font-label-md text-label-md transition-all hover:shadow-lg">Browse Categories</button>
+<button class="border border-primary text-primary px-lg py-3 rounded-lg font-label-md text-label-md transition-all hover:bg-primary/5">Technical Docs</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Catalog Content -->
+<main class="max-w-container-max mx-auto px-md md:px-lg py-lg">
+<!-- Table Control Bar -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-md mb-md">
+<div>
+<h2 class="text-headline-md font-headline-md text-on-surface">Precision Components</h2>
+<p class="text-body-md text-on-surface-variant">Showing 1,248 available parts in stock</p>
+</div>
+<div class="flex gap-sm w-full md:w-auto">
+<button class="flex items-center gap-xs bg-white border border-outline-variant/30 px-4 py-2 rounded-lg text-label-md">
+<span class="material-symbols-outlined text-sm">filter_list</span> Filter
+                </button>
+<button class="flex items-center gap-xs bg-white border border-outline-variant/30 px-4 py-2 rounded-lg text-label-md">
+<span class="material-symbols-outlined text-sm">sort</span> Sort
+                </button>
+</div>
+</div>
+<!-- Technical Data Table -->
+<div class="glass-panel rounded-xl overflow-hidden shadow-[0px_4px_20px_rgba(0,0,0,0.03)]">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 border-b border-outline-variant/20">
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Место установки</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Назначение</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Артикул</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Наличие</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Цена</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">OEM</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Кросс-номера</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Применимость</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="hover:bg-primary/5 transition-colors group cursor-pointer">
+<td class="px-6 py-5 text-body-md font-medium text-on-surface">Передний мост</td>
+<td class="px-6 py-5 text-body-md text-on-surface-variant">Сайлентблок рычага</td>
+<td class="px-6 py-5 font-mono text-label-md text-primary font-bold">WS-4921-X</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold uppercase">В наличии</span>
+</td>
+<td class="px-6 py-5 text-body-md font-bold text-on-surface">4 250 ₽</td>
+<td class="px-6 py-5 text-body-md text-on-surface-variant">51350-SNA-A01</td>
+<td class="px-6 py-5 text-label-sm text-on-surface-variant">RU-451, 80211</td>
+<td class="px-6 py-5">
+<button class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">info</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-primary/5 transition-colors group cursor-pointer">
+<td class="px-6 py-5 text-body-md font-medium text-on-surface">Задний мост</td>
+<td class="px-6 py-5 text-body-md text-on-surface-variant">Опора амортизатора</td>
+<td class="px-6 py-5 font-mono text-label-md text-primary font-bold">WS-3305-R</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold uppercase">В наличии</span>
+</td>
+<td class="px-6 py-5 text-body-md font-bold text-on-surface">2 800 ₽</td>
+<td class="px-6 py-5 text-body-md text-on-surface-variant">48750-42020</td>
+<td class="px-6 py-5 text-label-sm text-on-surface-variant">SM-1029, 34509</td>
+<td class="px-6 py-5">
+<button class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">info</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-primary/5 transition-colors group cursor-pointer">
+<td class="px-6 py-5 text-body-md font-medium text-on-surface">Двигатель</td>
+<td class="px-6 py-5 text-body-md text-on-surface-variant">Подушка ДВС</td>
+<td class="px-6 py-5 font-mono text-label-md text-primary font-bold">WS-8812-E</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold uppercase">Под заказ</span>
+</td>
+<td class="px-6 py-5 text-body-md font-bold text-on-surface">12 400 ₽</td>
+<td class="px-6 py-5 text-body-md text-on-surface-variant">12361-28220</td>
+<td class="px-6 py-5 text-label-sm text-on-surface-variant">TEN-202, 19283</td>
+<td class="px-6 py-5">
+<button class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">info</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-primary/5 transition-colors group cursor-pointer">
+<td class="px-6 py-5 text-body-md font-medium text-on-surface">Рулевое упр.</td>
+<td class="px-6 py-5 text-body-md text-on-surface-variant">Наконечник рулевой</td>
+<td class="px-6 py-5 font-mono text-label-md text-primary font-bold">WS-1099-T</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold uppercase">В наличии</span>
+</td>
+<td class="px-6 py-5 text-body-md font-bold text-on-surface">1 950 ₽</td>
+<td class="px-6 py-5 text-body-md text-on-surface-variant">45046-59025</td>
+<td class="px-6 py-5 text-label-sm text-on-surface-variant">CE-010, 20391</td>
+<td class="px-6 py-5">
+<button class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">info</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-surface-container-low/30 border-t border-outline-variant/20 flex justify-between items-center">
+<span class="text-label-sm text-on-surface-variant">Page 1 of 64</span>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-variant/50 rounded-lg transition-colors border border-outline-variant/20"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md">1</button>
+<button class="px-4 py-2 hover:bg-surface-variant/50 rounded-lg text-label-md">2</button>
+<button class="px-4 py-2 hover:bg-surface-variant/50 rounded-lg text-label-md">3</button>
+<button class="p-2 hover:bg-surface-variant/50 rounded-lg transition-colors border border-outline-variant/20"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Featured Technical Spec Bento -->
+<div class="mt-xl grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="glass-panel p-md rounded-xl md:col-span-2 relative overflow-hidden flex flex-col justify-center">
+<div class="absolute -right-20 -top-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
+<h3 class="text-headline-md font-headline-md text-primary mb-xs">Technical Superiority</h3>
+<p class="text-body-md text-on-surface-variant max-w-md">Our parts are manufactured using high-precision CNC machining and rigorous quality control protocols to ensure perfect fitment and OEM-matching longevity.</p>
+<div class="mt-md flex gap-lg">
+<div>
+<p class="text-headline-md font-bold text-primary">0.02mm</p>
+<p class="text-label-sm text-on-surface-variant uppercase">Tolerance</p>
+</div>
+<div>
+<p class="text-headline-md font-bold text-primary">ISO 9001</p>
+<p class="text-label-sm text-on-surface-variant uppercase">Certified</p>
+</div>
+</div>
+</div>
+<div class="bg-primary text-on-primary p-md rounded-xl flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-4xl mb-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+<h3 class="text-headline-md font-headline-md mb-xs">Warranty Plus</h3>
+<p class="text-label-md opacity-80">All catalog items include a standard 24-month manufacturer warranty.</p>
+</div>
+<button class="mt-md text-label-md font-bold flex items-center gap-2 group">
+                    Learn more <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-md bg-surface-container-lowest border-t border-outline-variant/30">
+<div class="max-w-container-max mx-auto px-md flex flex-col md:flex-row justify-between items-center gap-sm">
+<div class="flex items-center gap-4">
+<span class="text-label-md font-bold text-primary">Westar</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant/50">|</span>
+<p class="text-label-sm font-label-sm text-on-surface-variant">© 2024 Westar Automotive. All rights reserved.</p>
+</div>
+<div class="flex gap-md">
+<a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Service</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Technical Documentation</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Contact Us</a>
+</div>
+</div>
+</footer>
+<script>
+        // Optional micro-interactions
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Future expansion: open part details modal
+                console.log('Opening details for part:', row.querySelector('.font-mono').textContent);
+            });
+        });
+
+        // Search highlight effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-primary/20');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-primary/20');
+        });
+    </script>
+</body></html>

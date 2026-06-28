@@ -3,193 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Westar - Precision Auto Parts</title>
+    <title>Westar - Cyber Catalog</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        space: ['Space Grotesk', 'sans-serif']
+                    },
                     colors: {
-                        brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            900: '#1e3a8a'
+                        cyber: {
+                            dark: '#050b1a',
+                            panel: 'rgba(12, 19, 34, 0.8)',
+                            cyan: '#00d4ff',
+                            blue: '#3b82f6'
                         }
                     }
                 }
             }
         }
     </script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #0f172a;
-            position: relative;
-        }
-
-        /* Animated Machine Parts Background */
-        .machine-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            overflow: hidden;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        }
-        
-        .gear {
-            position: absolute;
-            opacity: 0.03;
-            animation: spin linear infinite;
-        }
-        
-        .gear-1 { width: 400px; height: 400px; top: -100px; left: -100px; animation-duration: 40s; }
-        .gear-2 { width: 300px; height: 300px; top: 150px; left: 180px; animation-duration: 30s; animation-direction: reverse; }
-        .gear-3 { width: 600px; height: 600px; bottom: -200px; right: -150px; animation-duration: 60s; }
-        .gear-4 { width: 200px; height: 200px; bottom: 300px; right: 350px; animation-duration: 20s; animation-direction: reverse; }
-        .gear-5 { width: 350px; height: 350px; top: 20%; right: -50px; animation-duration: 45s; }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* Technical Grid for Product Photos */
-        .tech-grid-bg {
-            background-image: 
-                linear-gradient(to right, #e2e8f0 1px, transparent 1px),
-                linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
-            background-size: 20px 20px;
-            background-position: center;
-        }
-
-        /* Clean Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .label-caps { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-        
-        .product-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-        }
-        .product-card:hover {
-            transform: translateY(-4px);
-            border-color: #93c5fd;
-            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.12);
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-        }
-    </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col relative">
+<body class="antialiased min-h-screen flex flex-col relative text-slate-300">
 
-    <!-- Animated Background -->
-    <div class="machine-bg">
-        <!-- SVG Gears -->
-        <svg class="gear gear-1" viewBox="0 0 100 100" fill="none" stroke="#0f172a" stroke-width="2"><path d="M50 20 A30 30 0 1 0 50 80 A30 30 0 1 0 50 20 Z"/><path d="M50 5 L50 20 M50 80 L50 95 M5 50 L20 50 M80 50 L95 50 M18 18 L28 28 M72 72 L82 82 M18 82 L28 72 M72 18 L82 28" stroke-linecap="round"/><circle cx="50" cy="50" r="10" stroke="#0f172a" stroke-width="2"/></svg>
-        <svg class="gear gear-2" viewBox="0 0 100 100" fill="none" stroke="#0f172a" stroke-width="3"><path d="M50 25 A25 25 0 1 0 50 75 A25 25 0 1 0 50 25 Z"/><path d="M50 10 L50 25 M50 75 L50 90 M10 50 L25 50 M75 50 L90 50 M21 21 L32 32 M68 68 L79 79 M21 79 L32 68 M68 21 L79 32" stroke-linecap="round"/><circle cx="50" cy="50" r="8" stroke="#0f172a" stroke-width="2"/></svg>
-        <svg class="gear gear-3" viewBox="0 0 100 100" fill="none" stroke="#0f172a" stroke-width="1.5"><path d="M50 15 A35 35 0 1 0 50 85 A35 35 0 1 0 50 15 Z"/><path d="M50 0 L50 15 M50 85 L50 100 M0 50 L15 50 M85 50 L100 50 M14 14 L25 25 M75 75 L86 86 M14 86 L25 75 M75 14 L86 25" stroke-linecap="round"/><circle cx="50" cy="50" r="15" stroke="#0f172a" stroke-width="1.5"/></svg>
-        <svg class="gear gear-4" viewBox="0 0 100 100" fill="none" stroke="#0f172a" stroke-width="2"><path d="M50 20 A30 30 0 1 0 50 80 A30 30 0 1 0 50 20 Z"/><path d="M50 5 L50 20 M50 80 L50 95 M5 50 L20 50 M80 50 L95 50 M18 18 L28 28 M72 72 L82 82 M18 82 L28 72 M72 18 L82 28" stroke-linecap="round"/><circle cx="50" cy="50" r="10" stroke="#0f172a" stroke-width="2"/></svg>
-        <svg class="gear gear-5" viewBox="0 0 100 100" fill="none" stroke="#0f172a" stroke-width="2.5"><path d="M50 25 A25 25 0 1 0 50 75 A25 25 0 1 0 50 25 Z"/><path d="M50 10 L50 25 M50 75 L50 90 M10 50 L25 50 M75 50 L90 50 M21 21 L32 32 M68 68 L79 79 M21 79 L32 68 M68 21 L79 32" stroke-linecap="round"/><circle cx="50" cy="50" r="12" stroke="#0f172a" stroke-width="2"/></svg>
+    <!-- Animated Starfield Background -->
+    <div class="starfield-bg">
+        <div class="stars"></div>
+        <div class="stars2"></div>
+        <div class="stars3"></div>
     </div>
 
     <!-- Header -->
-    <header class="glass-panel sticky top-0 z-50 border-b border-slate-200">
+    <header class="cyber-glass sticky top-0 z-50 border-b border-cyan-900/30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <div class="flex items-center gap-4 group cursor-pointer">
-                    <div class="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:border-brand-400 group-hover:shadow-md transition-all duration-300">
-                        <svg class="w-7 h-7 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                <div class="flex items-center gap-4 group cursor-pointer" onclick="window.location.reload()">
+                    <div class="w-12 h-12 rounded-xl bg-cyber-dark border border-cyan-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(0,212,255,0.2)] group-hover:border-cyan-400 group-hover:shadow-[0_0_20px_rgba(0,212,255,0.5)] transition-all duration-300">
+                        <span class="text-2xl font-black text-cyan-400 font-space">W</span>
                     </div>
-                    <div>
-                        <h1 class="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-brand-600 transition-colors">WESTAR<span class="text-brand-500">.</span></h1>
-                        <p class="label-caps text-slate-500">Precision Parts Catalog</p>
+                    <div class="scanning-text-container">
+                        <h1 class="text-2xl font-bold tracking-wider text-white font-space">WESTAR<span class="text-cyan-glow">.</span></h1>
+                        <p class="text-[0.65rem] font-mono text-cyan-500/70 uppercase tracking-[0.2em]">Cyber Catalog System</p>
+                        <div class="scanning-line"></div>
                     </div>
                 </div>
-                <div class="hidden md:block">
+                <div class="hidden md:flex items-center gap-4">
                     <div class="relative group">
-                        <input type="text" id="searchInput" placeholder="Поиск по артикулу (напр. EM-7148)..." class="w-[400px] bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-1 focus:ring-brand-500 focus:border-brand-500 block pl-10 p-3 transition-all placeholder-slate-400 outline-none group-hover:border-slate-300">
+                        <input type="text" id="searchInput" placeholder="Поиск по артикулу (напр. EM-7148)..." class="cyber-input w-[400px] text-sm rounded-lg block pl-10 p-3 font-mono placeholder-cyan-900/50">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <svg class="w-5 h-5 text-slate-400 group-focus-within:text-brand-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <svg class="w-5 h-5 text-cyan-600 group-focus-within:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
                     </div>
+                    <button id="cartBtn" class="relative w-12 h-12 flex items-center justify-center cyber-glass rounded-xl text-cyan-500 hover:text-cyan-300 transition-all border border-cyan-500/30 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,212,255,0.4)]">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span id="cartBadge" class="absolute -top-2 -right-2 bg-cyan-500 text-cyber-dark text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(0,212,255,0.8)] hidden">0</span>
+                    </button>
                 </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col md:flex-row gap-8">
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col lg:flex-row gap-8">
         
         <!-- Sidebar Filters -->
-        <aside class="w-full md:w-64 flex-shrink-0">
-            <div class="glass-panel rounded-2xl p-6 sticky top-28">
+        <aside class="w-full lg:w-72 flex-shrink-0">
+            <div class="cyber-glass rounded-2xl p-6 sticky top-28 border border-cyan-900/30">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-bold text-slate-900 tracking-tight">Фильтры</h2>
-                    <button id="resetFiltersBtn" class="label-caps text-brand-600 hover:text-brand-500 transition-colors">Сбросить</button>
+                    <h2 class="text-lg font-bold text-white font-space tracking-wider">Терминал</h2>
+                    <button id="resetFiltersBtn" class="text-xs font-mono text-cyan-500 hover:text-cyan-300 transition-colors uppercase tracking-widest">Сброс</button>
                 </div>
                 
                 <div class="space-y-6">
                     <!-- Categories -->
                     <div>
-                        <h3 class="label-caps text-slate-500 mb-4 flex items-center gap-2">
+                        <h3 class="text-xs font-mono text-cyan-600 mb-4 flex items-center gap-2 uppercase tracking-widest">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                            Категория
+                            Системы
                         </h3>
                         <div id="categoryFilters" class="space-y-3">
                             <!-- Checkboxes injected by JS -->
                         </div>
                     </div>
                     
-                    <div class="border-t border-slate-200"></div>
+                    <div class="border-t border-cyan-900/30"></div>
                     
-                    <!-- Makes -->
+                    <!-- Vehicle Search -->
                     <div>
-                        <h3 class="label-caps text-slate-500 mb-4 flex items-center gap-2">
+                        <h3 class="text-xs font-mono text-cyan-600 mb-4 flex items-center gap-2 uppercase tracking-widest">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                            Марка авто
+                            Калибровка
                         </h3>
-                        <div class="relative mb-4">
-                            <input type="text" id="makeSearchInput" placeholder="Поиск марки..." class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-1 focus:ring-brand-500 focus:border-brand-500 block p-2.5 outline-none transition-colors hover:border-slate-300">
-                        </div>
-                        <div id="makeFilters" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                            <!-- Checkboxes injected by JS -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[10px] font-mono text-cyan-500/70 uppercase mb-1.5 block">Марка</label>
+                                <select id="vehicleMake" class="cyber-input w-full text-sm rounded-lg p-2.5 cursor-pointer">
+                                    <option value="">Все марки</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-mono text-cyan-500/70 uppercase mb-1.5 block">Модель</label>
+                                <select id="vehicleModel" disabled class="cyber-input w-full text-sm rounded-lg p-2.5 cursor-pointer disabled:opacity-30">
+                                    <option value="">Все модели</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-mono text-cyan-500/70 uppercase mb-1.5 block">Год выпуска</label>
+                                <select id="vehicleYear" disabled class="cyber-input w-full text-sm rounded-lg p-2.5 cursor-pointer disabled:opacity-30">
+                                    <option value="">Любой год</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- Product Grid -->
-        <section class="flex-grow">
-            <div class="glass-panel rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <!-- Product Grid & Brands -->
+        <section class="flex-grow min-w-0">
+            <!-- Brand Grid -->
+            <div class="mb-10">
+                <h2 class="text-xl font-space font-bold text-white mb-6 flex items-center gap-3">
+                    <span class="text-cyan-glow uppercase tracking-wider">Производители</span>
+                </h2>
+                <div id="brandGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+                    <!-- Brands injected by JS -->
+                </div>
+            </div>
+
+            <div class="cyber-glass rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border border-cyan-900/30">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-900 mb-1">Каталог деталей</h2>
-                    <p class="text-sm text-brand-600 font-medium" id="resultsCount">Загрузка...</p>
+                    <h2 class="text-xl font-bold text-white font-space mb-1 uppercase tracking-wider">База Данных</h2>
+                    <p class="text-xs font-mono text-cyan-500" id="resultsCount">Синхронизация...</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <label for="sortSelect" class="label-caps text-slate-500">Сортировка</label>
-                    <select id="sortSelect" class="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-1 focus:ring-brand-500 focus:border-brand-500 block p-2 outline-none cursor-pointer hover:border-slate-300 transition-colors">
-                        <option value="default">По умолчанию</option>
-                        <option value="price_asc">Сначала дешевле</option>
-                        <option value="price_desc">Сначала дороже</option>
-                        <option value="stock_desc">По остаткам</option>
+                    <label for="sortSelect" class="text-xs font-mono text-cyan-600 uppercase tracking-widest">Сортировка</label>
+                    <select id="sortSelect" class="cyber-input text-sm rounded-lg p-2 cursor-pointer">
+                        <option value="default">Стандарт</option>
+                        <option value="price_asc">Цена: Ниже</option>
+                        <option value="price_desc">Цена: Выше</option>
+                        <option value="stock_desc">Наличие</option>
                     </select>
                 </div>
             </div>
@@ -197,57 +154,82 @@
             <!-- Mobile search -->
             <div class="md:hidden mb-6">
                 <div class="relative">
-                    <input type="text" id="searchInputMobile" placeholder="Поиск по артикулу..." class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-1 focus:ring-brand-500 focus:border-brand-500 block pl-10 p-4 outline-none shadow-sm">
+                    <input type="text" id="searchInputMobile" placeholder="Поиск по артикулу..." class="cyber-input w-full text-sm rounded-xl pl-10 p-4">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
                 </div>
             </div>
 
-            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 <!-- Products injected by JS -->
             </div>
             
-            <div id="emptyState" class="hidden glass-panel rounded-2xl flex-col items-center justify-center py-20 text-center mt-6">
-                <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 border border-slate-200">
-                    <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div id="emptyState" class="hidden cyber-glass rounded-2xl flex-col items-center justify-center py-20 text-center mt-6 border border-cyan-900/30">
+                <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 border border-cyan-500/30 shadow-[0_0_20px_rgba(0,212,255,0.2)]">
+                    <svg class="w-12 h-12 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <h3 class="text-2xl font-bold text-slate-900 mb-2">Деталь не найдена</h3>
-                <p class="text-slate-500 max-w-md mx-auto mb-8">По вашему запросу не найдено ни одного компонента в базе данных. Попробуйте изменить параметры технической фильтрации.</p>
-                <button id="clearSearchBtn" class="px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-lg transition-all shadow-md font-semibold hover:shadow-lg hover:-translate-y-0.5">Сбросить поиск</button>
+                <h3 class="text-2xl font-bold text-white font-space tracking-wider mb-2 text-cyan-glow">ДАННЫЕ НЕ НАЙДЕНЫ</h3>
+                <p class="text-slate-400 font-mono text-sm max-w-md mx-auto mb-8">Запрос не дал результатов. Измените параметры сканирования.</p>
+                <button id="clearSearchBtn" class="cyber-btn px-8 py-3 rounded-lg shadow-[0_0_15px_rgba(0,212,255,0.3)]">Сброс систем</button>
             </div>
         </section>
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-200 mt-auto bg-white/80 backdrop-blur-lg">
+    <footer class="border-t border-cyan-900/30 mt-auto cyber-glass">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center border border-brand-100">
-                    <span class="text-brand-600 font-bold text-xs">W</span>
-                </div>
-                <span class="text-slate-800 font-semibold tracking-tight">WESTAR<span class="text-brand-500">.</span></span>
+                <span class="text-white font-space font-bold tracking-widest text-lg">WESTAR<span class="text-cyan-500">.</span></span>
             </div>
-            <p class="text-slate-500 text-sm font-medium">© 2026 Precision Engineering System. Developed by ROM.</p>
+            <p class="text-cyan-600/60 font-mono text-xs uppercase tracking-widest">© 2026 СИСТЕМА ТОЧНОЙ ИНЖЕНЕРИИ. ИНТЕРФЕЙС ROM.</p>
         </div>
     </footer>
 
     <!-- Product Modal -->
     <div id="productModal" class="fixed inset-0 z-[100] hidden">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" id="modalBackdrop"></div>
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-md transition-opacity" id="modalBackdrop"></div>
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-            <div class="bg-white relative rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-5xl w-full border border-slate-200 max-h-[90vh] flex flex-col">
+            <div class="cyber-glass relative rounded-2xl text-left overflow-hidden shadow-[0_0_40px_rgba(0,212,255,0.15)] transform transition-all sm:my-8 sm:max-w-5xl w-full border border-cyan-500/30 max-h-[90vh] flex flex-col">
                 <div class="absolute top-0 right-0 pt-4 pr-4 z-20">
-                    <button id="closeModalBtn" type="button" class="text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-800 hover:border-slate-300 rounded-lg p-2 transition-all focus:outline-none shadow-sm">
+                    <button id="closeModalBtn" type="button" class="text-cyan-500 bg-cyber-dark/80 border border-cyan-500/30 hover:bg-cyan-900/50 hover:text-cyan-300 rounded-lg p-2 transition-all shadow-sm">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <div class="flex-grow overflow-y-auto custom-scrollbar flex flex-col md:flex-row relative" id="modalContent">
+                <div class="flex-grow overflow-y-auto flex flex-col md:flex-row relative" id="modalContent">
                     <!-- Injected by JS -->
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Cart Drawer -->
+    <div id="cartDrawer" class="fixed inset-y-0 right-0 z-[110] w-full md:w-[450px] cyber-glass shadow-[0_0_30px_rgba(0,212,255,0.1)] transform translate-x-full transition-transform duration-300 flex flex-col border-l border-cyan-500/30">
+        <div class="p-6 border-b border-cyan-900/30 flex justify-between items-center bg-cyber-dark/50">
+            <h2 class="text-xl font-bold text-white font-space tracking-wider flex items-center gap-3">
+                <svg class="w-6 h-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                Модуль Корзины
+            </h2>
+            <button id="closeCartBtn" class="text-cyan-600 hover:text-cyan-400 p-2 rounded-lg hover:bg-cyan-900/30 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="flex-grow overflow-y-auto p-6 space-y-4" id="cartItems">
+            <!-- Cart items injected here -->
+        </div>
+        <div class="p-6 border-t border-cyan-900/30 bg-cyber-dark/50">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-cyan-600 font-mono text-sm uppercase tracking-widest">Итого:</span>
+                <span id="cartTotal" class="text-2xl font-black text-white font-space tracking-wider">0 ₽</span>
+            </div>
+            <button id="checkoutBtn" class="w-full py-4 cyber-btn rounded-xl shadow-[0_0_15px_rgba(0,212,255,0.4)] text-lg flex justify-center items-center gap-2">
+                Оформить Заказ
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+        </div>
+    </div>
+    <!-- Cart Backdrop -->
+    <div id="cartBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[105] hidden transition-opacity"></div>
 
     <!-- Scripts -->
     <script src="data/catalog.js"></script>
