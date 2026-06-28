@@ -142,12 +142,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return `
-            <div class="product-card rounded-2xl overflow-hidden flex flex-col h-full cursor-pointer group" data-id="${product.id}">
-                <div class="relative h-56 flex items-center justify-center p-4 overflow-hidden border-b border-slate-100 bg-white">
-                    <img src="${imgSrc}" alt="${product.name}" class="max-h-full max-w-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-sm" loading="${loadStrategy}" ${priorityStrategy}>
-                    <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-xs font-mono px-2 py-1 rounded text-slate-600 border border-slate-200 shadow-sm font-semibold">
-                        ${product.article}
+            <div class="product-card rounded-2xl overflow-hidden flex flex-col h-full cursor-pointer group hover:shadow-lg transition-shadow duration-300 border border-transparent hover:border-slate-200" data-id="${product.id}">
+                <div class="relative h-56 flex items-center justify-center p-4 overflow-hidden border-b border-slate-100 bg-white group/img">
+                    <!-- Technical corners -->
+                    <div class="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-slate-200 z-10 transition-colors group-hover/img:border-brand-300"></div>
+                    <div class="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-slate-200 z-10 transition-colors group-hover/img:border-brand-300"></div>
+                    <div class="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-slate-200 z-10 transition-colors group-hover/img:border-brand-300"></div>
+                    <div class="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-slate-200 z-10 transition-colors group-hover/img:border-brand-300"></div>
+                    
+                    <!-- Watermark -->
+                    <div class="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none select-none z-0">
+                        <span class="text-5xl font-black tracking-[0.2em] text-slate-900 rotate-[-30deg] uppercase">Westar</span>
                     </div>
+
+                    <img src="${imgSrc}" alt="${product.name}" class="relative z-10 max-h-full max-w-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-sm" loading="${loadStrategy}" ${priorityStrategy}>
+                    
+                    <!-- Top Badges -->
+                    <div class="absolute top-3 right-3 z-20 flex flex-col gap-1.5 items-end">
+                        <div class="bg-white/95 backdrop-blur text-[10px] font-mono px-2 py-1 rounded text-slate-700 border border-slate-200 shadow-sm font-bold tracking-wider group-hover/img:border-brand-300 transition-colors">
+                            ${product.article}
+                        </div>
+                        ${product.oem ? `
+                        <div class="bg-brand-50 text-[9px] font-mono px-1.5 py-0.5 rounded text-brand-700 border border-brand-100 shadow-sm uppercase font-semibold">
+                            OEM
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Bottom Brand Logo -->
+                    ${product.brand ? `
+                    <div class="absolute bottom-3 left-3 z-20 bg-white/90 backdrop-blur p-1.5 rounded border border-slate-100 shadow-sm group-hover/img:border-brand-200 transition-colors">
+                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-4 w-auto object-contain opacity-75 grayscale group-hover/img:grayscale-0 transition-all" alt="${product.brand}">
+                    </div>
+                    ` : ''}
                 </div>
                 <div class="p-5 flex flex-col flex-grow bg-white">
                     <div class="text-[10px] font-semibold text-brand-500 mb-3 uppercase tracking-wider flex items-center justify-between">
@@ -209,10 +236,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         DOM.modalContent.innerHTML = `
             <!-- Left: Media Gallery -->
-            <div class="w-full md:w-2/5 bg-slate-50 p-6 md:p-8 flex flex-col items-center justify-center min-h-[300px] gap-6 border-r border-slate-200 relative">
-                <div class="flex-grow flex items-center justify-center w-full relative z-10" id="modalMainMediaContainer">
-                    <img id="modalMainImage" src="${imgSrc}" alt="${product.name}" class="max-w-full max-h-[350px] object-contain drop-shadow-md transition-all duration-500 hover:scale-105">
-                    <video id="modalMainVideo" class="max-w-full max-h-[350px] object-contain drop-shadow-md hidden rounded-xl shadow-lg" controls></video>
+            <div class="w-full md:w-2/5 bg-slate-50 p-6 md:p-8 flex flex-col items-center justify-center min-h-[300px] gap-6 border-r border-slate-200 relative overflow-hidden">
+                <!-- Technical Watermark / Frame -->
+                <div class="absolute inset-4 border border-slate-200/60 rounded-xl pointer-events-none z-0 border-dashed"></div>
+                <div class="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none select-none z-0">
+                    <span class="text-7xl font-black tracking-widest text-slate-900 rotate-[-45deg] uppercase">WESTAR</span>
+                </div>
+
+                <div class="flex-grow flex items-center justify-center w-full relative z-10 bg-white rounded-2xl shadow-sm p-6 border border-slate-100" id="modalMainMediaContainer">
+                    
+                    <!-- Corner technical accents -->
+                    <div class="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-slate-300/50 z-10"></div>
+                    <div class="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-slate-300/50 z-10"></div>
+                    <div class="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-slate-300/50 z-10"></div>
+                    <div class="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-slate-300/50 z-10"></div>
+
+                    <!-- Brand Logo -->
+                    ${product.brand ? `
+                    <div class="absolute top-4 left-4 z-20">
+                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-6 w-auto object-contain opacity-50 grayscale transition-all hover:grayscale-0 hover:opacity-100" alt="${product.brand}">
+                    </div>
+                    ` : ''}
+                    
+                    <!-- OEM Badge -->
+                    ${product.oem ? `
+                    <div class="absolute bottom-4 right-4 z-20">
+                        <span class="bg-brand-50 text-brand-700 text-[10px] font-bold px-2 py-1 rounded-md border border-brand-100 uppercase tracking-wider shadow-sm">OEM Part</span>
+                    </div>
+                    ` : ''}
+
+                    <img id="modalMainImage" src="${imgSrc}" alt="${product.name}" class="relative z-10 max-w-full max-h-[350px] object-contain drop-shadow-md transition-all duration-500 hover:scale-105">
+                    <video id="modalMainVideo" class="relative z-10 max-w-full max-h-[350px] object-contain drop-shadow-md hidden rounded-xl shadow-lg" controls></video>
                 </div>
                 ${(product.imageUrls && product.imageUrls.length > 1) || (product.videoUrls && product.videoUrls.length > 0) ? `
                 <div class="flex items-center gap-3 overflow-x-auto custom-scrollbar pb-2 w-full px-2 z-10" id="modalThumbnails">
