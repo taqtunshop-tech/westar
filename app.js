@@ -29,10 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
         productsGrid: document.getElementById('productsGrid'),
         resultsCount: document.getElementById('resultsCount'),
         categoryFilters: document.getElementById('categoryFilters'),
-        makeFilters: document.getElementById('makeFilters'),
         searchInput: document.getElementById('searchInput'),
         searchInputMobile: document.getElementById('searchInputMobile'),
-        makeSearchInput: document.getElementById('makeSearchInput'),
         sortSelect: document.getElementById('sortSelect'),
         resetFiltersBtn: document.getElementById('resetFiltersBtn'),
         emptyState: document.getElementById('emptyState'),
@@ -256,9 +254,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const initFilters = () => {
         DOM.categoryFilters.innerHTML = catalog.categories.map(cat => `
-            <label class="flex items-center space-x-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-100 transition-colors">
-                <input type="checkbox" value="${cat}" class="category-cb w-4 h-4 text-brand-600 bg-white border-slate-300 rounded focus:ring-brand-500 focus:ring-2 transition-all">
-                <span class="text-slate-700 text-sm font-medium group-hover:text-brand-600 transition-colors">${cat}</span>
+            <label class="flex items-center space-x-3 cursor-pointer group p-2 rounded-xl hover:bg-cyan-900/20 transition-all border border-transparent hover:border-cyan-900/50">
+                <input type="checkbox" value="${cat}" class="category-cb w-4 h-4 text-cyan-500 bg-cyber-dark border-cyan-700/50 rounded focus:ring-cyan-500 focus:ring-2 transition-all shadow-[0_0_10px_rgba(0,212,255,0.1)]">
+                <span class="text-slate-300 text-sm font-mono group-hover:text-cyan-400 transition-colors">${cat}</span>
             </label>
         `).join('');
 
@@ -266,38 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
             cb.addEventListener('change', (e) => {
                 if (e.target.checked) state.categories.add(e.target.value);
                 else state.categories.delete(e.target.value);
-                applyFilters();
-            });
-        });
-
-        renderMakeFilters();
-    };
-
-    const renderMakeFilters = () => {
-        if (!DOM.makeFilters) return;
-        const filteredMakes = catalog.makes.filter(m => m.toLowerCase().includes(state.makeSearchQuery.toLowerCase()));
-        
-        DOM.makeFilters.innerHTML = filteredMakes.map(make => `
-            <label class="flex items-center space-x-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-100 transition-colors">
-                <input type="checkbox" value="${make}" ${state.makes.has(make) ? 'checked' : ''} class="make-cb w-4 h-4 text-brand-600 bg-white border-slate-300 rounded focus:ring-brand-500 focus:ring-2 transition-all">
-                <span class="text-slate-700 text-sm font-medium group-hover:text-brand-600 transition-colors truncate flex items-center gap-3" title="${make}">
-                    <div class="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm border border-slate-100 group-hover:border-brand-200 transition-colors">
-                        <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="max-w-[16px] max-h-[16px] object-contain" alt="${make} logo">
-                    </div>
-                    ${make}
-                </span>
-            </label>
-        `).join('');
-
-        if (filteredMakes.length === 0) {
-            DOM.makeFilters.innerHTML = `<p class="text-sm text-slate-500 italic p-2">Ничего не найдено</p>`;
-        }
-
-        document.querySelectorAll('.make-cb').forEach(cb => {
-            cb.addEventListener('change', (e) => {
-                if (e.target.checked) state.makes.add(e.target.value);
-                else state.makes.delete(e.target.value);
-                updateBrandGridState();
                 applyFilters();
             });
         });
@@ -355,13 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 updateBrandGridState();
                 
-                // update sidebar checkboxes
-                document.querySelectorAll('.make-cb').forEach(cb => {
-                    if (cb.value === make) {
-                        cb.checked = state.makes.has(make);
-                    }
-                });
-                
                 applyFilters();
             });
         });
@@ -369,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const createProductCard = (product, index) => {
         const hasImage = !!product.imageUrl;
-        const imgPlaceholder = `https://ui-avatars.com/api/?name=${product.article}&background=f8fafc&color=94a3b8&size=400&font-size=0.2`;
+        const imgPlaceholder = `https://ui-avatars.com/api/?name=${product.article}&background=050b1a&color=00d4ff&size=400&font-size=0.2`;
         const imgSrc = hasImage ? product.imageUrl : imgPlaceholder;
         
         // Load all items eagerly to avoid slow loading issues
@@ -378,96 +337,127 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let compatHtml = '';
         if (product.compatibility && product.compatibility.length > 0) {
-            const makesGroup = {};
+            const uniqueCars = [];
+            const makesOnly = new Set();
+            
             product.compatibility.forEach(c => {
                 if (!c.make) return;
-                if (!makesGroup[c.make]) makesGroup[c.make] = new Set();
-                if (c.model) makesGroup[c.make].add(c.model);
+                makesOnly.add(c.make);
+                if (c.model) {
+                    const key = `${c.make.trim()} ${c.model.trim()}`;
+                    if (!uniqueCars.find(x => x.key === key)) {
+                        uniqueCars.push({ key, make: c.make, model: c.model });
+                    }
+                }
             });
             
-            const makes = Object.keys(makesGroup);
-            if (makes.length > 0) {
+            if (uniqueCars.length > 0) {
+                const displayCars = uniqueCars.slice(0, 3);
+                const hasMore = uniqueCars.length > 3;
+                
+                const carBlocks = displayCars.map(car => {
+                    return `
+                        <div class="relative w-16 h-10 bg-cyber-dark/80 rounded-md border border-cyan-900/40 overflow-hidden group/car hover:border-cyan-400 hover:shadow-[0_0_10px_rgba(0,212,255,0.3)] transition-all flex-shrink-0 cursor-help flex items-center justify-center" title="${car.make} ${car.model}">
+                            <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjMDBkNGZmIiBmaWxsLW9wYWNpdHk9IjEuMCIvPgo8L3N2Zz4=')] mix-blend-screen"></div>
+                            <img src="${getCarImageUrl(car.make, car.model)}" onerror="this.onerror=null; this.src='${getMakeLogoUrl(car.make)}'; this.classList.remove('scale-[1.3]', 'translate-y-1', 'object-cover'); this.classList.add('object-contain', 'p-1', 'opacity-60');" class="w-full h-full object-cover scale-[1.3] translate-y-1 relative z-10 transition-transform duration-300 group-hover/car:scale-[1.5] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-90 group-hover/car:opacity-100" alt="${car.make} ${car.model}">
+                            <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-cyber-dark/90 to-transparent z-10 pointer-events-none"></div>
+                        </div>
+                    `;
+                }).join('');
+
+                compatHtml = `
+                    <div class="mb-5 mt-2 w-full">
+                        <p class="text-[9px] text-cyan-500/50 font-mono uppercase tracking-widest mb-2">Автомобили:</p>
+                        <div class="flex items-center gap-2">
+                            ${carBlocks}
+                            ${hasMore ? `<div class="flex items-center justify-center w-10 h-10 rounded-md bg-cyan-900/20 border border-cyan-900/50 text-[10px] text-cyan-400 font-bold font-mono shadow-inner">+${uniqueCars.length - 3}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            } else if (makesOnly.size > 0) {
+                const makes = Array.from(makesOnly);
                 const displayMakes = makes.slice(0, 3);
                 const hasMore = makes.length > 3;
                 
                 const makeBlocks = displayMakes.map(make => {
-                    const models = Array.from(makesGroup[make]).join(', ');
                     return `
-                        <div class="flex items-center gap-2 bg-slate-100/80 rounded-md py-1.5 px-2.5 border border-slate-200/60 group/make cursor-help hover:bg-white hover:border-brand-200 hover:shadow-sm transition-all" title="${make}: ${models}">
-                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="h-3.5 object-contain opacity-60 group-hover/make:opacity-100 transition-opacity" alt="${make}">
-                            <span class="text-[11px] text-slate-600 font-semibold truncate flex-grow group-hover/make:text-brand-600 transition-colors">${models || make}</span>
+                        <div class="flex items-center justify-center w-10 h-10 bg-cyber-dark/80 rounded-md border border-cyan-900/40 group/make cursor-help hover:border-cyan-400 transition-all shadow-sm" title="${make}">
+                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="max-w-[20px] max-h-[20px] object-contain opacity-60 group-hover/make:opacity-100 transition-all" alt="${make}">
                         </div>
                     `;
                 }).join('');
                 
                 compatHtml = `
-                    <div class="mb-5 flex flex-col gap-1.5 w-full mt-4">
-                        ${makeBlocks}
-                        ${hasMore ? `<div class="text-[10px] text-brand-600 font-bold text-center bg-brand-50 rounded py-1 border border-brand-100/50 uppercase tracking-wider">еще ${makes.length - 3} марк${makes.length - 3 > 1 && makes.length - 3 < 5 ? 'и' : 'а'}</div>` : ''}
+                    <div class="mb-5 mt-2 w-full">
+                        <p class="text-[9px] text-cyan-500/50 font-mono uppercase tracking-widest mb-2">Марки:</p>
+                        <div class="flex items-center gap-2">
+                            ${makeBlocks}
+                            ${hasMore ? `<div class="flex items-center justify-center w-10 h-10 rounded-md bg-cyan-900/20 border border-cyan-900/50 text-[10px] text-cyan-400 font-bold font-mono shadow-inner">+${makes.length - 3}</div>` : ''}
+                        </div>
                     </div>
                 `;
             }
         }
 
         return `
-            <div class="product-card bg-white rounded-2xl overflow-hidden flex flex-col h-full cursor-pointer group hover:shadow-2xl transition-all duration-500 border border-slate-200/60 hover:border-brand-300 relative" data-id="${product.id}">
+            <div class="product-card cyber-glass rounded-2xl overflow-hidden flex flex-col h-full cursor-pointer group hover:shadow-[0_0_20px_rgba(0,212,255,0.15)] transition-all duration-500 border border-cyan-900/30 hover:border-cyan-400/80 relative" data-id="${product.id}">
                 <!-- Glow effect on hover -->
-                <div class="absolute -inset-0.5 bg-gradient-to-r from-brand-400 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-10 blur-md transition-opacity duration-500 -z-10"></div>
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-10 blur-md transition-opacity duration-500 -z-10"></div>
                 
-                <div class="relative h-64 flex items-center justify-center p-6 overflow-hidden border-b border-slate-100/80 bg-slate-50/50 group/img">
+                <div class="relative h-64 flex items-center justify-center p-6 overflow-hidden border-b border-cyan-900/30 bg-cyber-dark/50 group/img">
                     <!-- Technical corners -->
-                    <div class="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-slate-200 z-10 transition-all duration-300 group-hover/img:border-brand-400 group-hover/img:scale-110"></div>
-                    <div class="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-slate-200 z-10 transition-all duration-300 group-hover/img:border-brand-400 group-hover/img:scale-110"></div>
-                    <div class="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-slate-200 z-10 transition-all duration-300 group-hover/img:border-brand-400 group-hover/img:scale-110"></div>
-                    <div class="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-slate-200 z-10 transition-all duration-300 group-hover/img:border-brand-400 group-hover/img:scale-110"></div>
+                    <div class="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-cyan-800/50 z-10 transition-all duration-300 group-hover/img:border-cyan-400 group-hover/img:scale-110"></div>
+                    <div class="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-cyan-800/50 z-10 transition-all duration-300 group-hover/img:border-cyan-400 group-hover/img:scale-110"></div>
+                    <div class="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-cyan-800/50 z-10 transition-all duration-300 group-hover/img:border-cyan-400 group-hover/img:scale-110"></div>
+                    <div class="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-cyan-800/50 z-10 transition-all duration-300 group-hover/img:border-cyan-400 group-hover/img:scale-110"></div>
                     
-                    <div class="absolute inset-0 flex items-center justify-center opacity-[0.015] pointer-events-none select-none z-0 mix-blend-multiply">
-                        <span class="text-6xl font-black tracking-[0.2em] text-slate-900 rotate-[-25deg] uppercase">Westar</span>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none select-none z-0">
+                        <span class="text-6xl font-black tracking-[0.2em] text-cyan-100 rotate-[-25deg] uppercase">Westar</span>
                     </div>
 
                     <!-- Loader for image -->
-                    <div class="absolute inset-0 flex items-center justify-center bg-slate-50 z-0 image-loader transition-opacity duration-300">
-                        <div class="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div class="absolute inset-0 flex items-center justify-center bg-cyber-dark z-0 image-loader transition-opacity duration-300">
+                        <div class="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin shadow-[0_0_10px_rgba(0,212,255,0.5)]"></div>
                     </div>
 
-                    <img src="${imgSrc}" alt="${product.name}" class="relative z-10 max-h-full max-w-full object-contain transition-all duration-200 group-hover:scale-110 group-hover:drop-shadow-xl opacity-0" loading="${loadStrategy}" ${priorityStrategy} onload="this.style.opacity='1'; this.previousElementSibling.style.opacity='0';" onerror="this.onerror=null; this.src='${imgPlaceholder}'; this.style.opacity='1'; this.previousElementSibling.style.opacity='0';">
+                    <img src="${imgSrc}" alt="${product.name}" class="relative z-10 max-h-full max-w-full object-contain transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_15px_rgba(0,212,255,0.2)] opacity-0" loading="${loadStrategy}" ${priorityStrategy} onload="this.style.opacity='1'; this.previousElementSibling.style.opacity='0';" onerror="this.onerror=null; this.src='${imgPlaceholder}'; this.style.opacity='1'; this.previousElementSibling.style.opacity='0';">
                     
                     <div class="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
-                        <div class="bg-white/90 backdrop-blur-md text-[11px] font-mono px-3 py-1.5 rounded-lg text-slate-700 border border-slate-200/80 shadow-sm font-bold tracking-wider group-hover/img:border-brand-300 group-hover/img:text-brand-700 transition-colors">
+                        <div class="bg-cyber-dark/90 backdrop-blur-md text-[10px] font-mono px-3 py-1.5 rounded-lg text-cyan-400 border border-cyan-900/50 shadow-[0_0_10px_rgba(0,0,0,0.5)] font-bold tracking-wider group-hover/img:border-cyan-400 transition-colors">
                             ${product.article}
                         </div>
                         ${product.oem ? `
-                        <div class="bg-gradient-to-r from-brand-500 to-blue-600 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md text-white shadow-md uppercase">
+                        <div class="bg-gradient-to-r from-cyan-600 to-blue-600 text-[9px] font-bold tracking-wider px-2.5 py-1 rounded-md text-white shadow-[0_0_10px_rgba(0,212,255,0.3)] border border-cyan-400/30 uppercase">
                             OEM
                         </div>
                         ` : ''}
                     </div>
                     
                     ${product.brand ? `
-                    <div class="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md p-2 rounded-xl border border-slate-200/80 shadow-sm group-hover/img:border-brand-300 group-hover/img:shadow-md transition-all duration-300">
-                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-5 w-auto object-contain opacity-70 grayscale group-hover/img:grayscale-0 group-hover/img:opacity-100 transition-all duration-300" alt="${product.brand}">
+                    <div class="absolute bottom-4 left-4 z-20 bg-cyber-dark/90 backdrop-blur-md p-2 rounded-xl border border-cyan-900/50 shadow-[0_0_10px_rgba(0,0,0,0.5)] group-hover/img:border-cyan-400 transition-all duration-300">
+                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-4 w-auto object-contain opacity-70 grayscale group-hover/img:grayscale-0 group-hover/img:opacity-100 transition-all duration-300" alt="${product.brand}">
                     </div>
                     ` : ''}
                 </div>
-                <div class="p-6 flex flex-col flex-grow bg-white relative z-10">
-                    <div class="text-[11px] font-bold text-brand-500 mb-3 uppercase tracking-wider flex items-center justify-between bg-brand-50/50 inline-flex w-fit px-2.5 py-1 rounded-md">
+                <div class="p-6 flex flex-col flex-grow bg-cyber-dark/40 relative z-10">
+                    <div class="text-[10px] font-mono text-cyan-400 mb-3 uppercase tracking-wider flex items-center justify-between bg-cyan-900/20 border border-cyan-900/40 inline-flex w-fit px-2.5 py-1 rounded-md">
                         ${product.category}
                     </div>
-                    <h3 class="text-slate-800 font-bold text-lg mb-2 flex-grow line-clamp-3 leading-snug group-hover:text-brand-600 transition-colors">${product.name}</h3>
+                    <h3 class="text-white font-bold text-lg mb-2 flex-grow line-clamp-3 leading-snug group-hover:text-cyan-300 transition-colors font-space">${product.name}</h3>
                     ${compatHtml}
-                    <div class="flex items-end justify-between mt-auto pt-5 border-t border-slate-100">
+                    <div class="flex items-end justify-between mt-auto pt-5 border-t border-cyan-900/30">
                         <div>
-                            <p class="text-xs font-semibold mb-1.5 flex items-center gap-2">
-                                <span class="relative flex h-2.5 w-2.5">
-                                  ${product.stock > 0 ? `<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>` : ''}
-                                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 ${product.stock > 0 ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                            <p class="text-xs font-mono mb-1.5 flex items-center gap-2">
+                                <span class="relative flex h-2 w-2">
+                                  ${product.stock > 0 ? `<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>` : ''}
+                                  <span class="relative inline-flex rounded-full h-2 w-2 ${product.stock > 0 ? 'bg-cyan-500 shadow-[0_0_8px_rgba(0,212,255,0.8)]' : 'bg-amber-500'}"></span>
                                 </span>
-                                <span class="${product.stock > 0 ? 'text-emerald-600' : 'text-amber-600'} uppercase tracking-wider text-[10px]">${product.stock > 0 ? 'В наличии: ' + product.stock + ' шт.' : 'Под заказ'}</span>
+                                <span class="${product.stock > 0 ? 'text-cyan-400' : 'text-amber-500'} uppercase tracking-wider text-[9px]">${product.stock > 0 ? 'В наличии: ' + product.stock + ' шт.' : 'Под заказ'}</span>
                             </p>
-                            <p class="text-2xl font-extrabold text-slate-900 tracking-tight">${formatPrice(product.price)}</p>
+                            <p class="text-2xl font-black text-white tracking-widest font-space">${formatPrice(product.price)}</p>
                         </div>
-                        <button onclick="event.stopPropagation(); window.addToCart('${product.id}')" class="w-12 h-12 rounded-full bg-brand-50 hover:bg-brand-600 flex items-center justify-center transition-all duration-300 border border-brand-100 group-hover:border-brand-500 text-brand-600 hover:text-white group-hover:shadow-md group-hover:-translate-y-1">
-                            <svg class="w-6 h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <button onclick="event.stopPropagation(); window.addToCart('${product.id}')" class="w-12 h-12 rounded-xl bg-cyber-dark hover:bg-cyan-900/40 flex items-center justify-center transition-all duration-300 border border-cyan-900/50 hover:border-cyan-400 text-cyan-500 hover:text-cyan-300 shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(0,212,255,0.3)] group/btn">
+                            <svg class="w-5 h-5 transform group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         </button>
                     </div>
                 </div>
@@ -475,84 +465,112 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     };
 
+    const getCarImageUrl = (make, model) => {
+        let cleanMake = make.trim().toLowerCase();
+        
+        if (cleanMake === 'mercedes-benz' || cleanMake === 'mercedes benz') cleanMake = 'mercedes';
+        if (cleanMake === 'vw') cleanMake = 'volkswagen';
+        
+        cleanMake = cleanMake.replace(/\s+/g, '-');
+        
+        let cleanModel = '';
+        if (model) {
+            cleanModel = model.trim().toLowerCase();
+            cleanModel = cleanModel.split('(')[0].split('/')[0].trim();
+            cleanModel = cleanModel.replace(/\s+[ivx]+$/i, ''); 
+            cleanModel = cleanModel.replace(/\s+/g, ''); 
+        }
+        
+        return `https://cdn.imagin.studio/getImage?customer=hr&make=${cleanMake}&modelFamily=${cleanModel}&angle=23`;
+    };
+
     const openProductModal = (id) => {
         const product = catalog.products.find(p => p.id === id);
         if (!product) return;
 
         const hasImage = !!product.imageUrl;
-        const imgPlaceholder = `https://ui-avatars.com/api/?name=${product.article}&background=f8fafc&color=94a3b8&size=500&font-size=0.2`;
+        const imgPlaceholder = `https://ui-avatars.com/api/?name=${product.article}&background=050b1a&color=00d4ff&size=500&font-size=0.2`;
         const imgSrc = hasImage ? product.imageUrl : imgPlaceholder;
 
-        let compatHtml = '<div class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm text-slate-500 italic">Сведения о совместимости отсутствуют</div>';
+        let compatHtml = '<div class="p-4 bg-cyber-dark/50 rounded-xl border border-cyan-900/30 text-sm text-cyan-500/50 italic font-mono uppercase text-center">Сведения о совместимости отсутствуют</div>';
         if (product.compatibility && product.compatibility.length > 0) {
             const makesGroup = {};
             product.compatibility.forEach(c => {
                 const make = c.make || 'Разное';
-                if (!makesGroup[make]) makesGroup[make] = [];
-                makesGroup[make].push(c);
+                if (!makesGroup[make]) makesGroup[make] = {};
+                const model = c.model || 'Разное';
+                if (!makesGroup[make][model]) makesGroup[make][model] = [];
+                makesGroup[make][model].push(c);
             });
             
             compatHtml = Object.keys(makesGroup).map(make => `
-                <div class="mb-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-brand-200 transition-colors">
-                    <h5 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
-                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="max-w-[20px] max-h-[20px] object-contain opacity-80" alt="">
+                <div class="mb-6">
+                    <h5 class="text-sm font-bold text-cyan-400 mb-4 flex items-center gap-3 font-space uppercase tracking-widest border-b border-cyan-900/30 pb-2">
+                        <div class="w-8 h-8 rounded-lg bg-cyber-dark flex items-center justify-center border border-cyan-900/50 shadow-[0_0_10px_rgba(0,212,255,0.1)]">
+                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" class="max-w-[20px] max-h-[20px] object-contain" alt="">
                         </div>
                         ${make}
                     </h5>
-                    <ul class="text-sm text-slate-600 space-y-2">
-                        ${makesGroup[make].map(c => `
-                            <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-brand-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <div>
-                                    <span class="font-semibold text-slate-800">${c.model}</span> 
-                                    ${c.years ? `<span class="text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">${c.years}</span>` : ''}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        ${Object.keys(makesGroup[make]).map(model => `
+                            <div class="bg-cyber-dark/40 rounded-xl border border-cyan-900/30 overflow-hidden hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(0,212,255,0.15)] transition-all group/model flex flex-col cursor-crosshair">
+                                <div class="h-28 bg-cyber-dark/80 relative flex items-center justify-center overflow-hidden border-b border-cyan-900/30">
+                                    <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjMDBkNGZmIiBmaWxsLW9wYWNpdHk9IjEuMCIvPgo8L3N2Zz4=')] mix-blend-screen"></div>
+                                    <!-- Scanline animation on hover -->
+                                    <div class="absolute left-0 right-0 h-0.5 bg-cyan-400/50 top-0 -translate-y-full opacity-0 group-hover/model:animate-[scan_2s_ease-in-out_infinite] group-hover/model:opacity-100 z-20 shadow-[0_0_8px_rgba(0,212,255,0.8)]"></div>
+                                    <img src="${getCarImageUrl(make, model)}" onerror="this.style.display='none'" class="h-full object-contain relative z-10 transition-transform duration-500 group-hover/model:scale-110 drop-shadow-xl opacity-90 group-hover/model:opacity-100" alt="${make} ${model}">
                                 </div>
-                            </li>
+                                <div class="p-3 flex-grow flex flex-col justify-center">
+                                    <h6 class="font-bold text-white text-xs mb-2 group-hover/model:text-cyan-400 transition-colors uppercase font-mono tracking-wider">${model !== 'Разное' ? model : make}</h6>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${makesGroup[make][model].map(c => c.years ? `<span class="bg-cyan-900/30 border border-cyan-700/50 text-cyan-300 px-2 py-0.5 rounded text-[9px] font-mono">${c.years}</span>` : '').join('')}
+                                    </div>
+                                </div>
+                            </div>
                         `).join('')}
-                    </ul>
+                    </div>
                 </div>
             `).join('');
         }
 
         DOM.modalContent.innerHTML = `
             <!-- Left: Media Gallery -->
-            <div class="w-full lg:w-2/5 bg-slate-50/50 p-6 md:p-10 flex flex-col items-center min-h-[400px] gap-6 border-r border-slate-200 relative overflow-hidden">
+            <div class="w-full lg:w-2/5 bg-cyber-dark/80 p-6 md:p-10 flex flex-col items-center min-h-[400px] gap-6 border-r border-cyan-900/50 relative overflow-hidden">
                 <!-- Decorative background -->
-                <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-slate-100 to-transparent z-0"></div>
-                <div class="absolute inset-4 border border-slate-200/80 rounded-2xl pointer-events-none z-0 border-dashed"></div>
+                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-cyan-900/20 to-transparent z-0"></div>
+                <div class="absolute inset-4 border border-cyan-900/30 rounded-2xl pointer-events-none z-0 border-dashed"></div>
 
-                <div class="flex-grow flex items-center justify-center w-full relative z-10 bg-white rounded-2xl shadow-sm p-8 border border-slate-200 hover:shadow-md transition-shadow" id="modalMainMediaContainer">
+                <div class="flex-grow flex items-center justify-center w-full relative z-10 bg-cyber-dark/50 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.5)] p-8 border border-cyan-500/20 hover:border-cyan-400/50 transition-colors" id="modalMainMediaContainer">
                     <!-- Brand Logo -->
                     ${product.brand ? `
-                    <div class="absolute top-5 left-5 z-20">
-                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-8 w-auto object-contain opacity-60 grayscale transition-all hover:grayscale-0 hover:opacity-100" alt="${product.brand}">
+                    <div class="absolute top-5 left-5 z-20 bg-cyber-dark/80 p-2 rounded-lg border border-cyan-900/50 backdrop-blur-sm">
+                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" class="h-6 w-auto object-contain opacity-70 grayscale transition-all hover:grayscale-0 hover:opacity-100" alt="${product.brand}">
                     </div>
                     ` : ''}
                     
                     <!-- OEM Badge -->
                     ${product.oem ? `
                     <div class="absolute bottom-5 right-5 z-20">
-                        <span class="bg-gradient-to-r from-brand-500 to-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-sm">Оригинал (OEM)</span>
+                        <span class="bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-[0_0_10px_rgba(0,212,255,0.4)] border border-cyan-400/30">Оригинал (OEM)</span>
                     </div>
                     ` : ''}
 
-                    <img id="modalMainImage" src="${imgSrc}" alt="${product.name}" class="relative z-10 max-w-full max-h-[400px] object-contain drop-shadow-xl transition-transform duration-700 hover:scale-110">
-                    <video id="modalMainVideo" class="relative z-10 max-w-full max-h-[400px] object-contain drop-shadow-xl hidden rounded-xl shadow-2xl border border-slate-100" controls></video>
+                    <img id="modalMainImage" src="${imgSrc}" alt="${product.name}" class="relative z-10 max-w-full max-h-[400px] object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-transform duration-700 hover:scale-110">
+                    <video id="modalMainVideo" class="relative z-10 max-w-full max-h-[400px] object-contain drop-shadow-xl hidden rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.8)] border border-cyan-900/50" controls></video>
                 </div>
                 
                 ${(product.imageUrls && product.imageUrls.length > 1) || (product.videoUrls && product.videoUrls.length > 0) ? `
                 <div class="flex items-center gap-4 overflow-x-auto custom-scrollbar pb-3 w-full px-2 z-10" id="modalThumbnails">
                     ${product.imageUrls ? product.imageUrls.map((url, i) => `
-                        <button class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 shadow-sm bg-white p-1 ${i === 0 ? 'border-brand-500 shadow-md opacity-100 scale-105' : 'border-transparent hover:border-brand-300 opacity-70 hover:opacity-100'}" data-src="${url}" data-type="image">
+                        <button class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 shadow-[0_0_10px_rgba(0,0,0,0.5)] bg-cyber-dark p-1 ${i === 0 ? 'border-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.3)] opacity-100 scale-105' : 'border-cyan-900/30 hover:border-cyan-50 opacity-60 hover:opacity-100'}" data-src="${url}" data-type="image">
                             <img src="${url}" class="w-full h-full object-cover rounded-lg" alt="Ракурс ${i+1}">
                         </button>
                     `).join('') : ''}
                     
                     ${product.videoUrls ? product.videoUrls.map((url, i) => `
-                        <button class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-transparent hover:border-brand-300 opacity-70 hover:opacity-100 transition-all duration-300 relative shadow-sm bg-slate-800 p-1 group/vid" data-src="${url}" data-type="video">
-                            <div class="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-white group-hover/vid:text-brand-400 transition-colors">
-                                <svg class="w-8 h-8 drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
+                        <button class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-cyan-900/30 hover:border-cyan-50 opacity-60 hover:opacity-100 transition-all duration-300 relative shadow-[0_0_10px_rgba(0,0,0,0.5)] bg-cyber-dark p-1 group/vid" data-src="${url}" data-type="video">
+                            <div class="w-full h-full bg-cyber-dark/80 rounded-lg flex items-center justify-center text-cyan-600 group-hover/vid:text-cyan-400 transition-colors">
+                                <svg class="w-8 h-8 drop-shadow-[0_0_5px_rgba(0,212,255,0.5)]" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
                             </div>
                         </button>
                     `).join('') : ''}
@@ -561,36 +579,36 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             
             <!-- Right: Details -->
-            <div class="w-full lg:w-3/5 p-6 md:p-10 flex flex-col bg-white relative z-10">
-                <div class="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-wider">
-                    <span class="text-brand-600 px-3 py-1.5 rounded-lg bg-brand-50 border border-brand-100">${product.category}</span>
-                    <span class="text-slate-300">•</span>
-                    <span class="text-slate-500">${product.purpose || 'Автозапчасть'}</span>
+            <div class="w-full lg:w-3/5 p-6 md:p-10 flex flex-col bg-cyber-panel relative z-10 border-l border-cyan-900/30">
+                <div class="mb-5 flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest font-mono">
+                    <span class="text-cyan-400 px-3 py-1.5 rounded-lg bg-cyan-900/20 border border-cyan-900/50">${product.category}</span>
+                    <span class="text-cyan-800">•</span>
+                    <span class="text-cyan-500/70">${product.purpose || 'Автозапчасть'}</span>
                 </div>
                 
-                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-8 leading-tight tracking-tight">${product.name}</h2>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 leading-tight font-space tracking-wider uppercase">${product.name}</h2>
                 
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-                    <div class="bg-slate-50 border border-slate-200/70 rounded-2xl p-5 hover:border-brand-300 transition-colors shadow-sm">
-                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Артикул</p>
-                        <p class="font-mono text-slate-900 text-xl font-bold">${product.article}</p>
+                    <div class="bg-cyber-dark/50 border border-cyan-900/30 rounded-xl p-5 hover:border-cyan-500/50 transition-colors shadow-sm">
+                        <p class="text-[10px] font-bold text-cyan-500/70 uppercase tracking-widest mb-2 font-mono">Артикул</p>
+                        <p class="font-mono text-cyan-400 text-lg font-bold">${product.article}</p>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200/70 rounded-2xl p-5 hover:border-brand-300 transition-colors shadow-sm">
-                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Остаток</p>
-                        <p class="font-bold ${product.stock > 0 ? 'text-emerald-600' : 'text-amber-600'} text-xl flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full ${product.stock > 0 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-amber-500'}"></span>
+                    <div class="bg-cyber-dark/50 border border-cyan-900/30 rounded-xl p-5 hover:border-cyan-500/50 transition-colors shadow-sm">
+                        <p class="text-[10px] font-bold text-cyan-500/70 uppercase tracking-widest mb-2 font-mono">Остаток</p>
+                        <p class="font-bold ${product.stock > 0 ? 'text-cyan-400' : 'text-amber-500'} text-lg flex items-center gap-2 font-mono">
+                            <span class="w-2.5 h-2.5 rounded-full ${product.stock > 0 ? 'bg-cyan-500 shadow-[0_0_10px_rgba(0,212,255,0.6)]' : 'bg-amber-500'}"></span>
                             ${product.stock > 0 ? product.stock + ' шт.' : 'Под заказ'}
                         </p>
                     </div>
-                    <div class="col-span-2 md:col-span-1 bg-gradient-to-br from-brand-500 to-blue-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden group/price flex flex-col justify-between">
-                        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 group-hover/price:opacity-40 transition-opacity"></div>
+                    <div class="col-span-2 md:col-span-1 bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-500/30 rounded-xl p-5 text-white shadow-[0_0_15px_rgba(0,212,255,0.1)] relative overflow-hidden group/price flex flex-col justify-between">
+                        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjMDBkNGZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 group-hover/price:opacity-40 transition-opacity"></div>
                         <div>
-                            <p class="text-[11px] font-bold text-brand-100 uppercase tracking-widest mb-2 relative z-10">Цена</p>
-                            <p class="text-3xl font-black tracking-tight relative z-10">${formatPrice(product.price)}</p>
+                            <p class="text-[10px] font-bold text-cyan-300 uppercase tracking-widest mb-2 relative z-10 font-mono">Цена</p>
+                            <p class="text-2xl font-black tracking-widest relative z-10 font-space text-cyan-50">${formatPrice(product.price)}</p>
                         </div>
-                        <button onclick="window.addToCart('${product.id}')" class="mt-4 w-full bg-white text-brand-600 font-bold py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all relative z-10 flex items-center justify-center gap-2 group/btn">
-                            <svg class="w-5 h-5 group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            В корзину
+                        <button onclick="window.addToCart('${product.id}')" class="mt-4 w-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-bold py-2.5 rounded-lg border border-cyan-500/50 shadow-[0_0_10px_rgba(0,212,255,0.2)] hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] transition-all relative z-10 flex items-center justify-center gap-2 group/btn font-mono uppercase text-[10px] tracking-wider">
+                            <svg class="w-4 h-4 group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            В КОРЗИНУ
                         </button>
                     </div>
                 </div>
@@ -598,13 +616,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="space-y-10 flex-grow">
                     ${product.description ? `
                     <div class="relative">
-                        <h4 class="text-xl font-extrabold text-slate-900 mb-4 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-3 font-space tracking-wider uppercase">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-900/30 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.1)]">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
                             Описание
                         </h4>
-                        <div class="text-base text-slate-600 leading-relaxed max-w-none bg-slate-50/80 p-6 rounded-2xl border border-slate-100">
+                        <div class="text-sm text-slate-300 leading-relaxed max-w-none bg-cyber-dark/50 p-6 rounded-xl border border-cyan-900/30 font-sans shadow-inner">
                             ${product.description.replace(/\\n/g, '<br>')}
                         </div>
                     </div>
@@ -612,9 +630,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <h4 class="text-xl font-extrabold text-slate-900 mb-4 flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                            <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-3 font-space tracking-wider uppercase">
+                                <div class="w-8 h-8 rounded-lg bg-cyan-900/30 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.1)]">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                                 </div>
                                 Совместимость
                             </h4>
@@ -624,25 +642,25 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         
                         <div>
-                            <h4 class="text-xl font-extrabold text-slate-900 mb-4 flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-3 font-space tracking-wider uppercase">
+                                <div class="w-8 h-8 rounded-lg bg-cyan-900/30 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.1)]">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                                 </div>
                                 Кросс-номера
                             </h4>
-                            <div class="bg-slate-50/80 p-6 rounded-2xl border border-slate-100 space-y-6">
+                            <div class="bg-cyber-dark/50 p-6 rounded-xl border border-cyan-900/30 space-y-6 shadow-inner">
                                 ${product.oem ? `
                                 <div>
-                                    <h5 class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Оригинальный OEM</h5>
-                                    <p class="text-base text-slate-900 font-mono bg-white px-3 py-2 rounded-lg border border-slate-200 font-bold shadow-sm inline-block">${product.oem}</p>
+                                    <h5 class="text-[10px] font-bold text-cyan-500/70 uppercase tracking-widest mb-2 font-mono">Оригинальный OEM</h5>
+                                    <p class="text-sm text-cyan-300 font-mono bg-cyber-dark px-3 py-2 rounded-lg border border-cyan-900/50 shadow-sm inline-block shadow-[0_0_10px_rgba(0,212,255,0.1)]">${product.oem}</p>
                                 </div>
                                 ` : ''}
                                 ${product.analogs ? `
                                 <div>
-                                    <h5 class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Аналоги</h5>
-                                    <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed font-mono bg-white p-4 rounded-xl border border-slate-200 shadow-sm">${product.analogs.replace(/\\n/g, '<br>')}</p>
+                                    <h5 class="text-[10px] font-bold text-cyan-500/70 uppercase tracking-widest mb-2 font-mono">Аналоги</h5>
+                                    <p class="text-xs text-slate-300 whitespace-pre-line leading-relaxed font-mono bg-cyber-dark p-4 rounded-xl border border-cyan-900/50 shadow-sm">${product.analogs.replace(/\\n/g, '<br>')}</p>
                                 </div>
-                                ` : '<p class="text-sm text-slate-400 italic bg-white p-4 rounded-xl border border-slate-100">Нет данных об аналогах</p>'}
+                                ` : '<p class="text-xs text-cyan-700/50 italic bg-cyber-dark p-4 rounded-xl border border-cyan-900/30 font-mono">Нет данных об аналогах</p>'}
                             </div>
                         </div>
                     </div>
@@ -679,11 +697,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     
                     thumbnails.forEach(t => {
-                        t.classList.remove('border-brand-500', 'shadow-md', 'opacity-100', 'scale-105');
-                        t.classList.add('border-transparent', 'opacity-70');
+                        t.classList.remove('border-cyan-400', 'shadow-[0_0_15px_rgba(0,212,255,0.3)]', 'opacity-100', 'scale-105');
+                        t.classList.add('border-cyan-900/30', 'opacity-60');
                     });
-                    this.classList.remove('border-transparent', 'opacity-70');
-                    this.classList.add('border-brand-500', 'shadow-md', 'opacity-100', 'scale-105');
+                    this.classList.remove('border-cyan-900/30', 'opacity-60');
+                    this.classList.add('border-cyan-400', 'shadow-[0_0_15px_rgba(0,212,255,0.3)]', 'opacity-100', 'scale-105');
                 });
             });
         }
@@ -808,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const trigger = document.createElement('div');
             trigger.id = 'loadingTrigger';
             trigger.className = 'w-full py-8 flex justify-center hidden';
-            trigger.innerHTML = `<div class="w-10 h-10 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin"></div>`;
+            trigger.innerHTML = `<div class="w-10 h-10 border-4 border-cyan-900/30 border-t-cyan-500 rounded-full animate-spin shadow-[0_0_15px_rgba(0,212,255,0.4)]"></div>`;
             DOM.productsGrid.parentNode.insertBefore(trigger, DOM.productsGrid.nextSibling);
             DOM.loadingTrigger = trigger;
         }
@@ -831,13 +849,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     DOM.searchInput.addEventListener('input', handleSearch);
     DOM.searchInputMobile.addEventListener('input', handleSearch);
-    
-    if (DOM.makeSearchInput) {
-        DOM.makeSearchInput.addEventListener('input', (e) => {
-            state.makeSearchQuery = e.target.value;
-            renderMakeFilters();
-        });
-    }
 
     DOM.sortSelect.addEventListener('change', (e) => {
         state.sortBy = e.target.value;
@@ -867,8 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.vehicleYear.value = '';
         DOM.vehicleYear.disabled = true;
         
-        document.querySelectorAll('.category-cb, .make-cb').forEach(cb => cb.checked = false);
-        renderMakeFilters();
+        document.querySelectorAll('.category-cb').forEach(cb => cb.checked = false);
         updateBrandGridState();
         applyFilters();
     };
