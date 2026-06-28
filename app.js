@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const getMakeLogoUrl = (make) => {
         if (!make) return '';
         const key = make.toLowerCase().trim();
+        if (key === 'westar') return 'images/westar-logo.svg';
         const slug = LOGO_MAP[key] || key.replace(/\s+/g, '-');
         return `https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/${slug}.png`;
     };
@@ -300,7 +301,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const originalMakesMap = new Map();
         catalog.makes.forEach(m => {
-            const clean = m.toLowerCase().trim();
+            let clean = m.toLowerCase().trim();
+            if (clean === 'mercedes-benz' || clean === 'mercedes benz') clean = 'mercedes';
+            if (clean === 'vw') clean = 'volkswagen';
+            if (clean === 'vaz' || clean === 'ваз') clean = 'lada';
+            if (clean === 'uaz' || clean === 'уаз') clean = 'uaz';
+            clean = clean.replace(/[^a-z0-9а-яё]/gi, '');
             if (!originalMakesMap.has(clean)) originalMakesMap.set(clean, m);
         });
 
@@ -385,8 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const makeBlocks = displayMakes.map(make => {
                     return `
-                        <div class="compat-car-thumb" title="${make}" style="align-items:center;justify-content:center;">
-                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" style="width:auto;height:18px;object-fit:contain;transform:none;opacity:0.5;mix-blend-mode:normal;" alt="${make}">
+                        <div class="compat-car-thumb" title="${make}" style="align-items:center;justify-content:center;background:rgba(255,255,255,0.95);padding:2px;">
+                            <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" style="width:auto;height:24px;object-fit:contain;transform:none;opacity:1;mix-blend-mode:normal;" alt="${make}">
                         </div>
                     `;
                 }).join('');
@@ -403,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return `
-            <div class="apex-product-card" data-id="${product.id}">
+            <div class="apex-product-card" data-id="${product.id}" onclick="window.openProductModal('${product.id}')">
                 <!-- Угловые декораторы -->
                 <div class="apex-corner apex-corner-tl"></div>
                 <div class="apex-corner apex-corner-tr"></div>
@@ -446,18 +452,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <h3 class="text-apex-text font-semibold text-sm leading-snug mb-2 flex-grow line-clamp-2 group-hover:text-white transition-colors">${product.name}</h3>
                     ${compatHtml}
-                    <div class="flex items-end justify-between mt-4 pt-4 border-t border-apex-border">
-                        <div class="flex flex-col">
-                            <span class="text-[9px] font-mono text-apex-muted uppercase tracking-widest mb-1">${product.stock > 0 ? 'В наличии' : 'Под заказ'}</span>
-                            <span class="text-lg font-semibold text-apex-text tracking-wide">${formatPrice(product.price)}</span>
+                    <div class="flex flex-col gap-3 mt-4 pt-4 border-t border-apex-border">
+                        <div class="flex items-end justify-between">
+                            <div class="flex flex-col">
+                                <span class="text-[9px] font-mono text-apex-muted uppercase tracking-widest mb-1">${product.stock > 0 ? 'В наличии' : 'Под заказ'}</span>
+                                <span class="text-lg font-semibold text-apex-text tracking-wide">${formatPrice(product.price)}</span>
+                            </div>
+                            <button onclick="event.stopPropagation(); window.addToCart('${product.id}')"
+                                class="h-9 px-4 border font-mono text-[10px] uppercase tracking-widest flex items-center gap-2 transition-all duration-300"
+                                style="border-color:rgba(212,175,55,0.35);color:#d4af37;background:rgba(212,175,55,0.07)"
+                                onmouseover="this.style.background='rgba(212,175,55,0.15)';this.style.borderColor='#d4af37'"
+                                onmouseout="this.style.background='rgba(212,175,55,0.07)';this.style.borderColor='rgba(212,175,55,0.35)'">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </button>
                         </div>
-                        <button onclick="event.stopPropagation(); window.addToCart('${product.id}')"
-                            class="h-9 px-4 border font-mono text-[10px] uppercase tracking-widest flex items-center gap-2 transition-all duration-300"
-                            style="border-color:rgba(212,175,55,0.35);color:#d4af37;background:rgba(212,175,55,0.07)"
-                            onmouseover="this.style.background='rgba(212,175,55,0.15)';this.style.borderColor='#d4af37'"
-                            onmouseout="this.style.background='rgba(212,175,55,0.07)';this.style.borderColor='rgba(212,175,55,0.35)'">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        </button>
+                        <div class="flex items-center gap-2 pt-2 border-t border-apex-border/50">
+                            <span class="text-[9px] font-mono text-apex-muted uppercase">Сравнить цены:</span>
+                            <a href="https://www.zzap.ru/public/search.aspx?partnumber=${product.article}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="text-[9px] font-mono text-apex-silver hover:text-apex-gold transition-colors underline decoration-apex-border hover:decoration-apex-gold underline-offset-2">Zzap</a>
+                            <span class="text-apex-border text-[9px]">|</span>
+                            <a href="https://www.exist.ru/Price/?pcode=${product.article}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="text-[9px] font-mono text-apex-silver hover:text-apex-gold transition-colors underline decoration-apex-border hover:decoration-apex-gold underline-offset-2">Exist</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -516,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
             compatHtml = Object.keys(makesGroup).map(make => `
                 <div class="mb-5">
                     <h5 class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest mb-3 pb-2" style="border-bottom:1px solid var(--apex-border);color:var(--apex-silver)">
-                        <img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" style="height:16px;width:auto;object-fit:contain;filter:grayscale(1);opacity:0.7" alt="">
+                        <span style="background:rgba(255,255,255,0.9);padding:4px;border-radius:4px;display:flex"><img src="${getMakeLogoUrl(make)}" onerror="this.style.display='none'" style="height:20px;width:auto;object-fit:contain;opacity:1" alt=""></span>
                         ${make}
                     </h5>
                     <div class="grid grid-cols-2 gap-3">
@@ -545,8 +559,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="modal-left">
                 <div class="modal-img-container" id="modalMainMediaContainer">
                     ${product.brand ? `
-                    <div style="position:absolute;top:12px;left:12px;z-index:20;padding:6px 10px;background:rgba(10,10,10,0.85);border:1px solid var(--apex-border);border-radius:3px;backdrop-filter:blur(8px)">
-                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" style="height:20px;width:auto;object-fit:contain;filter:grayscale(1);opacity:0.7" alt="${product.brand}">
+                    <div style="position:absolute;top:12px;left:12px;z-index:20;padding:8px 12px;background:rgba(255,255,255,0.95);border:1px solid rgba(212,175,55,0.5);border-radius:6px;box-shadow:0 4px 15px rgba(0,0,0,0.5)">
+                        <img src="${getMakeLogoUrl(product.brand)}" onerror="this.style.display='none'" style="height:28px;width:auto;object-fit:contain;opacity:1" alt="${product.brand}">
                     </div>` : ''}
                     ${product.oem ? `
                     <div style="position:absolute;top:12px;right:12px;z-index:20">
@@ -575,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h2 style="font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:20px;line-height:1.3;letter-spacing:0.03em">${product.name}</h2>
 
                 <!-- Параметры -->
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
                     <div class="modal-param-box">
                         <p class="modal-param-label">Артикул</p>
                         <p class="modal-param-value" style="color:var(--apex-gold)">${product.article}</p>
@@ -586,10 +600,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${product.stock > 0 ? product.stock + ' шт.' : 'Под заказ'}
                         </p>
                     </div>
-                    <div class="modal-param-box" style="border-color:rgba(212,175,55,0.3);background:rgba(212,175,55,0.05)">
-                        <p class="modal-param-label" style="color:var(--apex-gold)">Цена</p>
-                        <p class="modal-param-value" style="color:#fff;font-size:1.1rem">${formatPrice(product.price)}</p>
-                        <button onclick="window.addToCart('${product.id}')" class="modal-add-btn">В корзину</button>
+                </div>
+                
+                <!-- Цена и Корзина -->
+                <div class="modal-param-box" style="border-color:rgba(212,175,55,0.3);background:rgba(212,175,55,0.05);margin-bottom:24px;flex-direction:row;align-items:center;justify-content:space-between">
+                    <div>
+                        <p class="modal-param-label" style="color:var(--apex-gold)">Цена Westar</p>
+                        <p class="modal-param-value" style="color:#fff;font-size:1.4rem">${formatPrice(product.price)}</p>
+                    </div>
+                    <button onclick="window.addToCart('${product.id}')" class="modal-add-btn" style="margin-top:0;width:auto;padding:10px 24px;font-size:12px">В корзину</button>
+                </div>
+
+                <!-- Сравнение цен -->
+                <div class="modal-section" style="padding-top:0;border-top:none;margin-bottom:24px">
+                    <h4 class="modal-section-title" style="margin-bottom:8px">Проверить рыночные цены</h4>
+                    <div class="flex gap-3">
+                        <a href="https://www.zzap.ru/public/search.aspx?partnumber=${product.article}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 py-2 border border-apex-border rounded bg-apex-container hover:border-apex-silver hover:bg-apex-border/30 transition-colors text-xs font-mono text-apex-text">
+                            🔍 Искать на Zzap.ru
+                        </a>
+                        <a href="https://www.exist.ru/Price/?pcode=${product.article}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 py-2 border border-apex-border rounded bg-apex-container hover:border-apex-silver hover:bg-apex-border/30 transition-colors text-xs font-mono text-apex-text">
+                            🔍 Искать на Exist.ru
+                        </a>
                     </div>
                 </div>
 
@@ -635,6 +666,8 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.modal.classList.add('hidden');
         document.body.style.overflow = '';
     };
+
+    window.openProductModal = openProductModal;
 
     DOM.closeModalBtn.addEventListener('click', closeModal);
     DOM.modalBackdrop.addEventListener('click', closeModal);

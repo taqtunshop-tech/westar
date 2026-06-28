@@ -1,4 +1,4 @@
-window.WESTAR_CATALOG = {
+{
   "generatedAt": "2026-06-28T17:21:59.850Z",
   "totalProducts": 46,
   "categories": [
@@ -2097,4 +2097,4 @@ window.WESTAR_CATALOG = {
       ]
     }
   ]
-};
+}
