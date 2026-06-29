@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
         chunkSize: 100,
         filteredProducts: [],
         
-        cart: JSON.parse(localStorage.getItem('westar_cart')) || []
+        cart: JSON.parse(localStorage.getItem('westar_cart')) || [],
+        competitors: {}
     };
 
     const DOM = {
@@ -614,13 +615,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <!-- Сравнение цен -->
                 <div class="modal-section" style="padding-top:0;border-top:none;margin-bottom:24px">
-                    <h4 class="modal-section-title" style="margin-bottom:8px">Проверить рыночные цены</h4>
-                    <div class="flex gap-3">
-                        <a href="https://www.zzap.ru/public/search.aspx?partnumber=${product.article}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 py-2 border border-apex-border rounded bg-apex-container hover:border-apex-silver hover:bg-apex-border/30 transition-colors text-xs font-mono text-apex-text">
-                            🔍 Искать на Zzap.ru
+                    <h4 class="modal-section-title" style="margin-bottom:8px">Цены на рынке (онлайн)</h4>
+                    ${state.competitors && state.competitors[product.article] && state.competitors[product.article].length > 0 ? `
+                        <div class="flex flex-col gap-2 mb-3">
+                            ${state.competitors[product.article].map(comp => `
+                                <div class="flex items-center justify-between p-2 rounded bg-apex-border/20 border border-apex-border">
+                                    <span class="text-xs text-apex-silver font-medium">${comp.store}</span>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-sm font-bold ${comp.price > product.price ? 'text-green-400' : 'text-red-400'}">${formatPrice(comp.price)}</span>
+                                        ${comp.link ? `<a href="${comp.link}" target="_blank" rel="noopener noreferrer" class="text-[10px] text-apex-gold hover:underline">открыть ↗</a>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <p class="text-xs text-apex-muted mb-3 italic">Идет сбор данных о ценах конкурентов...</p>
+                    `}
+                    <div class="flex gap-2">
+                        <a href="https://www.zzap.ru/public/search.aspx?partnumber=${product.article}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 py-1.5 border border-apex-border rounded bg-apex-container hover:border-apex-silver hover:bg-apex-border/30 transition-colors text-[10px] font-mono text-apex-text">
+                            🔍 Искать Zzap
                         </a>
-                        <a href="https://www.exist.ru/Price/?pcode=${product.article}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 py-2 border border-apex-border rounded bg-apex-container hover:border-apex-silver hover:bg-apex-border/30 transition-colors text-xs font-mono text-apex-text">
-                            🔍 Искать на Exist.ru
+                        <a href="https://www.exist.ru/Price/?pcode=${product.article}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 py-1.5 border border-apex-border rounded bg-apex-container hover:border-apex-silver hover:bg-apex-border/30 transition-colors text-[10px] font-mono text-apex-text">
+                            🔍 Искать Exist
                         </a>
                     </div>
                 </div>
@@ -852,10 +868,22 @@ document.addEventListener('DOMContentLoaded', () => {
     DOM.clearSearchBtn.addEventListener('click', resetAll);
 
     // Initial setup
-    initFilters();
-    renderBrandGrid();
-    initVehicleSelector();
-    updateCartUI();
-    setupIntersectionObserver();
+    fetch('data/competitors.json')
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            state.competitors = data;
+        })
+        .catch(err => console.warn('Цены конкурентов пока не загружены:', err))
+        .finally(() => {
+            initFilters();
+            renderBrandGrid();
+            initVehicleSelector();
+            updateCartUI();
+            setupIntersectionObserver();
+            applyFilters();
+        });
     applyFilters();
 });
