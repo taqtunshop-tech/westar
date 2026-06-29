@@ -20,8 +20,8 @@ body { background: #051424; color: #f8fafc; font-family: 'Inter', sans-serif; }
 </head>
 <body class="p-4 min-h-screen">
 
-<!-- Экран авторизации -->
-<div id="authScreen" class="max-w-md mx-auto mt-20">
+<!-- Экран авторизации (скрыт) -->
+<div id="authScreen" class="max-w-md mx-auto mt-20 hidden">
   <div class="card p-8">
     <h1 class="text-2xl font-bold text-yellow-400 mb-2">WESTAR Admin</h1>
     <p class="text-gray-400 text-sm mb-6">Для работы нужен GitHub Personal Access Token с правами <code class="text-yellow-400">repo</code></p>
@@ -38,7 +38,7 @@ body { background: #051424; color: #f8fafc; font-family: 'Inter', sans-serif; }
 </div>
 
 <!-- Главный экран -->
-<div id="mainScreen" class="hidden max-w-7xl mx-auto">
+<div id="mainScreen" class="max-w-7xl mx-auto">
   <header class="flex justify-between items-center mb-6 pb-4 border-b border-blue-900">
     <div>
       <h1 class="text-xl font-bold text-yellow-400">WESTAR Admin Panel</h1>
@@ -158,46 +158,11 @@ const REPO = 'taqtunshop-tech/westar';
 const FILE_PATH = 'westar-app/data/catalog.json';
 const API = 'https://api.github.com';
 
-let token = '';
+let token = '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';
 let catalog = { products: [] };
 let fileSha = '';
 let editingId = null;
 let deleteId = null;
-
-// --- Auth ---
-function login() {
-  token = document.getElementById('tokenInput').value.trim();
-  if (!token) return showAuthError('Введите токен');
-  verifyToken();
-}
-
-async function verifyToken() {
-  try {
-    const r = await ghFetch('/user');
-    if (!r.ok) throw new Error('Неверный токен');
-    const user = await r.json();
-    document.getElementById('userInfo').textContent = '👤 ' + user.login;
-    localStorage.setItem('gh_token', token);
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('mainScreen').classList.remove('hidden');
-    loadCatalog();
-  } catch(e) {
-    showAuthError('Ошибка: ' + e.message);
-  }
-}
-
-function logout() {
-  localStorage.removeItem('gh_token');
-  token = '';
-  document.getElementById('mainScreen').classList.add('hidden');
-  document.getElementById('authScreen').classList.remove('hidden');
-}
-
-function showAuthError(msg) {
-  const el = document.getElementById('authError');
-  el.textContent = msg;
-  el.classList.remove('hidden');
-}
 
 // --- GitHub API ---
 function ghFetch(path, opts = {}) {
@@ -431,13 +396,14 @@ function setStatus(msg) {
 }
 
 // --- Init ---
-window.addEventListener('load', () => {
-  const saved = localStorage.getItem('gh_token');
-  if (saved) {
-    token = saved;
-    document.getElementById('tokenInput').value = saved;
-    verifyToken();
-  }
+window.addEventListener('load', async () => {
+  // Получаем имя пользователя для отображения
+  try {
+    const r = await ghFetch('/user');
+    const user = await r.json();
+    document.getElementById('userInfo').textContent = '👤 ' + user.login;
+  } catch(e) {}
+  loadCatalog();
 });
 </script>
 </body>
