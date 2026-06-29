@@ -159,11 +159,44 @@ const FILE_PATH = 'data/catalog.json';
 const JS_PATH = 'data/catalog.js';
 const API = 'https://api.github.com';
 
-let token = ['ghp_48TPvd','ZbrxSjoEP4UEPR2L4En','ABHby0ohQGf'].join('');
+let token = localStorage.getItem('westar_gh_token') || '';
 let catalog = { products: [] };
 let fileSha = '';
 let editingId = null;
 let deleteId = null;
+
+// --- Auth ---
+function login() {
+  const t = document.getElementById('tokenInput').value.trim();
+  if (!t) return;
+  token = t;
+  localStorage.setItem('westar_gh_token', token);
+  document.getElementById('authError').classList.add('hidden');
+  init();
+}
+
+function logout() {
+  token = '';
+  localStorage.removeItem('westar_gh_token');
+  document.getElementById('userInfo').textContent = '';
+  document.getElementById('tokenInput').value = '';
+  showAuth();
+}
+
+function showAuth(err = '') {
+  document.getElementById('mainScreen').classList.add('hidden');
+  document.getElementById('authScreen').classList.remove('hidden');
+  if (err) {
+    const errEl = document.getElementById('authError');
+    errEl.textContent = err;
+    errEl.classList.remove('hidden');
+  }
+}
+
+function showMain() {
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('mainScreen').classList.remove('hidden');
+}
 
 // --- GitHub API ---
 function ghFetch(path, opts = {}) {
@@ -180,10 +213,17 @@ function ghFetch(path, opts = {}) {
 
 // --- Catalog ---
 async function loadCatalog() {
+  if (!token) return showAuth();
   setStatus('Загрузка каталога...');
   try {
     const r = await ghFetch('/repos/' + REPO + '/contents/' + FILE_PATH);
     const data = await r.json();
+    if (!r.ok) {
+      if (r.status === 401 || r.status === 403 || r.status === 404) {
+        throw new Error('Ошибка доступа (' + r.status + '). Проверьте токен.');
+      }
+      throw new Error(data.message || 'Ошибка');
+    }
     fileSha = data.sha;
     const decoded = atob(data.content.replace(/\n/g, ''));
     const bytes = new Uint8Array(decoded.length);
@@ -193,7 +233,7 @@ async function loadCatalog() {
     renderTable();
     setStatus('Загружено: ' + (catalog.products || []).length + ' товаров');
   } catch(e) {
-    setStatus('Ошибка загрузки: ' + e.message);
+    showAuth(e.message);
   }
 }
 
@@ -229,8 +269,11 @@ async function syncCatalogJs(json) {
   const jsPath = 'westar-app/data/catalog.js';
   try {
     const r1 = await ghFetch('/repos/' + REPO + '/contents/' + jsPath);
-    const existing = await r1.json();
-    const jsSha = existing.sha;
+    let jsSha = '';
+    if (r1.ok) {
+      const existing = await r1.json();
+      jsSha = existing.sha;
+    }
 
     const jsContent = 'window.WESTAR_CATALOG = ' + json + ';';
     const encoded = btoa(unescape(encodeURIComponent(jsContent)));
@@ -240,7 +283,7 @@ async function syncCatalogJs(json) {
       body: JSON.stringify({
         message: 'Admin: синхронизация catalog.js',
         content: encoded,
-        sha: jsSha
+        ...(jsSha ? { sha: jsSha } : {})
       })
     });
   } catch(e) {
@@ -397,15 +440,23 @@ function setStatus(msg) {
 }
 
 // --- Init ---
-window.addEventListener('load', async () => {
-  // Получаем имя пользователя для отображения
+async function init() {
+  if (!token) {
+    showAuth();
+    return;
+  }
+  showMain();
   try {
     const r = await ghFetch('/user');
-    const user = await r.json();
-    document.getElementById('userInfo').textContent = '👤 ' + user.login;
+    if (r.ok) {
+      const user = await r.json();
+      document.getElementById('userInfo').textContent = '👤 ' + user.login;
+    }
   } catch(e) {}
   loadCatalog();
-});
+}
+
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
