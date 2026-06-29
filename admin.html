@@ -124,8 +124,14 @@ body { background: #051424; color: #f8fafc; font-family: 'Inter', sans-serif; }
     </div>
 
     <div class="mb-3">
-      <label class="block text-xs text-blue-300 mb-1">URL изображения</label>
-      <input id="f_imageUrl" class="inp" placeholder="images/EM-2292-1.jpg">
+      <label class="block text-xs text-blue-300 mb-1">Изображение</label>
+      <div class="flex gap-2 items-center">
+        <input id="f_imageUrl" class="inp flex-1" placeholder="images/EM-2292.jpg">
+        <input type="file" id="f_imageFile" accept="image/*" class="hidden" onchange="uploadImage(this)">
+        <button type="button" onclick="document.getElementById('f_imageFile').click()" class="btn-gold whitespace-nowrap">📤 Загрузить</button>
+        <button type="button" onclick="deleteImage()" id="btnDeleteImage" class="btn-red whitespace-nowrap hidden">🗑 Удалить</button>
+      </div>
+      <div id="imageUploadStatus" class="text-xs text-gray-400 mt-1"></div>
     </div>
 
     <div class="mb-4">
@@ -336,6 +342,8 @@ function openAddModal() {
   ['article','brand','name','price','stock','category','oem','imageUrl','description'].forEach(k => {
     document.getElementById('f_' + k).value = '';
   });
+  document.getElementById('btnDeleteImage').classList.add('hidden');
+  document.getElementById('imageUploadStatus').textContent = '';
   document.getElementById('editModal').classList.remove('hidden');
 }
 
@@ -353,6 +361,14 @@ function openEditModal(id) {
   document.getElementById('f_oem').value = p.oem || '';
   document.getElementById('f_imageUrl').value = p.imageUrl || (p.imageUrls && p.imageUrls[0]) || '';
   document.getElementById('f_description').value = p.description || '';
+  
+  if (document.getElementById('f_imageUrl').value) {
+    document.getElementById('btnDeleteImage').classList.remove('hidden');
+  } else {
+    document.getElementById('btnDeleteImage').classList.add('hidden');
+  }
+  document.getElementById('imageUploadStatus').textContent = '';
+  
   document.getElementById('editModal').classList.remove('hidden');
 }
 
@@ -403,6 +419,84 @@ async function saveProduct() {
   } finally {
     btn.disabled = false;
     spinner.classList.add('hidden');
+  }
+}
+
+async function uploadImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const article = document.getElementById('f_article').value.trim();
+  if (!article) return alert('Сначала введите артикул!');
+
+  const ext = file.name.split('.').pop().toLowerCase();
+  const filePath = `images/${article}.${ext}`;
+  
+  document.getElementById('imageUploadStatus').textContent = 'Загрузка... ⏳';
+  
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    try {
+      let fileSha = '';
+      try {
+        const r = await ghFetch('/repos/' + REPO + '/contents/' + filePath);
+        if (r.ok) {
+          const data = await r.json();
+          fileSha = data.sha;
+        }
+      } catch(e) {}
+
+      const body = {
+        message: 'Upload image for ' + article,
+        content: base64
+      };
+      if (fileSha) body.sha = fileSha;
+
+      const uploadRes = await ghFetch('/repos/' + REPO + '/contents/' + filePath, {
+        method: 'PUT',
+        body: JSON.stringify(body)
+      });
+      
+      if (!uploadRes.ok) throw new Error('Ошибка загрузки в GitHub');
+      
+      document.getElementById('f_imageUrl').value = filePath;
+      document.getElementById('imageUploadStatus').textContent = '✅ Изображение загружено!';
+      document.getElementById('btnDeleteImage').classList.remove('hidden');
+    } catch (error) {
+      document.getElementById('imageUploadStatus').textContent = '❌ Ошибка: ' + error.message;
+    }
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function deleteImage() {
+  const imgUrl = document.getElementById('f_imageUrl').value.trim();
+  if (!imgUrl) return;
+  
+  if (!confirm('Точно удалить изображение из репозитория GitHub?')) return;
+  
+  document.getElementById('imageUploadStatus').textContent = 'Удаление... ⏳';
+  try {
+    const r = await ghFetch('/repos/' + REPO + '/contents/' + imgUrl);
+    if (!r.ok) throw new Error('Файл не найден на GitHub');
+    const data = await r.json();
+    
+    const delRes = await ghFetch('/repos/' + REPO + '/contents/' + imgUrl, {
+      method: 'DELETE',
+      body: JSON.stringify({
+        message: 'Delete image ' + imgUrl,
+        sha: data.sha
+      })
+    });
+    
+    if (!delRes.ok) throw new Error('Ошибка удаления на GitHub');
+    
+    document.getElementById('f_imageUrl').value = '';
+    document.getElementById('imageUploadStatus').textContent = '✅ Изображение удалено!';
+    document.getElementById('btnDeleteImage').classList.add('hidden');
+  } catch (error) {
+    document.getElementById('imageUploadStatus').textContent = '❌ Ошибка: ' + error.message;
   }
 }
 
