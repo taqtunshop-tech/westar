@@ -306,6 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (clean === 'vw') clean = 'volkswagen';
             if (clean === 'vaz' || clean === 'ваз') clean = 'lada';
             if (clean === 'uaz' || clean === 'уаз') clean = 'uaz';
+            if (clean === 'gm') clean = 'gmc';
             clean = clean.replace(/[^a-z0-9а-яё]/gi, '');
             if (!originalMakesMap.has(clean)) originalMakesMap.set(clean, m);
         });
