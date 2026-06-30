@@ -63,6 +63,7 @@ body { background: #051424; color: #f8fafc; font-family: 'Inter', sans-serif; }
     <table class="w-full text-left text-sm">
       <thead>
         <tr class="border-b border-blue-900 text-blue-300 text-xs uppercase tracking-wider">
+          <th class="p-3 w-16">Фото</th>
           <th class="p-3">Артикул</th>
           <th class="p-3">Название</th>
           <th class="p-3">Бренд</th>
@@ -72,7 +73,7 @@ body { background: #051424; color: #f8fafc; font-family: 'Inter', sans-serif; }
         </tr>
       </thead>
       <tbody id="tableBody">
-        <tr><td colspan="6" class="text-center p-8 text-gray-500">Загрузка...</td></tr>
+        <tr><td colspan="7" class="text-center p-8 text-gray-500">Загрузка...</td></tr>
       </tbody>
     </table>
   </div>
@@ -125,8 +126,11 @@ body { background: #051424; color: #f8fafc; font-family: 'Inter', sans-serif; }
 
     <div class="mb-3">
       <label class="block text-xs text-blue-300 mb-1">Изображение</label>
+      <div id="imagePreviewContainer" class="mb-3 hidden">
+        <img id="f_imagePreview" src="" class="max-h-40 rounded border border-blue-900 object-contain bg-black/20">
+      </div>
       <div class="flex gap-2 items-center">
-        <input id="f_imageUrl" class="inp flex-1" placeholder="images/EM-2292.jpg">
+        <input id="f_imageUrl" class="inp flex-1" placeholder="images/EM-2292.jpg" oninput="updateImagePreview()">
         <input type="file" id="f_imageFile" accept="image/*" class="hidden" onchange="uploadImage(this)">
         <button type="button" onclick="document.getElementById('f_imageFile').click()" class="btn-gold whitespace-nowrap">📤 Загрузить</button>
         <button type="button" onclick="deleteImage()" id="btnDeleteImage" class="btn-red whitespace-nowrap hidden">🗑 Удалить</button>
@@ -309,13 +313,19 @@ function renderTable() {
 
   const tbody = document.getElementById('tableBody');
   if (!products.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-gray-500">Ничего не найдено</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-gray-500">Ничего не найдено</td></tr>';
     document.getElementById('countInfo').textContent = '';
     return;
   }
 
   tbody.innerHTML = products.map(p => `
     <tr class="border-b border-blue-900/40 hover:bg-blue-900/20 transition">
+      <td class="p-2">
+        ${p.imageUrl || (p.imageUrls && p.imageUrls[0])
+          ? `<img src="https://raw.githubusercontent.com/${REPO}/main/${p.imageUrl || p.imageUrls[0]}" class="w-10 h-10 object-cover rounded border border-blue-900 bg-black/40" loading="lazy">`
+          : `<div class="w-10 h-10 bg-black/30 border border-blue-900/50 rounded flex items-center justify-center text-[10px] text-gray-500">Нет</div>`
+        }
+      </td>
       <td class="p-3 font-mono text-yellow-400 text-xs">${p.article || '-'}</td>
       <td class="p-3 text-sm max-w-xs truncate" title="${p.name}">${p.name}</td>
       <td class="p-3 text-xs text-gray-300">${p.brand || '-'}</td>
@@ -336,6 +346,24 @@ function renderTable() {
 }
 
 // --- Modal Edit ---
+function updateImagePreview(src) {
+  const container = document.getElementById('imagePreviewContainer');
+  const img = document.getElementById('f_imagePreview');
+  const url = src || document.getElementById('f_imageUrl').value.trim();
+  
+  if (url) {
+    if (url.startsWith('data:') || url.startsWith('http')) {
+      img.src = url;
+    } else {
+      img.src = `https://raw.githubusercontent.com/${REPO}/main/${url}`;
+    }
+    container.classList.remove('hidden');
+  } else {
+    container.classList.add('hidden');
+    img.src = '';
+  }
+}
+
 function openAddModal() {
   editingId = null;
   document.getElementById('modalTitle').textContent = 'Новый товар';
@@ -344,6 +372,7 @@ function openAddModal() {
   });
   document.getElementById('btnDeleteImage').classList.add('hidden');
   document.getElementById('imageUploadStatus').textContent = '';
+  updateImagePreview('');
   document.getElementById('editModal').classList.remove('hidden');
 }
 
@@ -368,6 +397,7 @@ function openEditModal(id) {
     document.getElementById('btnDeleteImage').classList.add('hidden');
   }
   document.getElementById('imageUploadStatus').textContent = '';
+  updateImagePreview();
   
   document.getElementById('editModal').classList.remove('hidden');
 }
@@ -435,7 +465,9 @@ async function uploadImage(input) {
   
   const reader = new FileReader();
   reader.onload = async (e) => {
-    const base64 = e.target.result.split(',')[1];
+    const dataUrl = e.target.result;
+    updateImagePreview(dataUrl);
+    const base64 = dataUrl.split(',')[1];
     try {
       let fileSha = '';
       try {
@@ -495,6 +527,7 @@ async function deleteImage() {
     document.getElementById('f_imageUrl').value = '';
     document.getElementById('imageUploadStatus').textContent = '✅ Изображение удалено!';
     document.getElementById('btnDeleteImage').classList.add('hidden');
+    updateImagePreview('');
   } catch (error) {
     document.getElementById('imageUploadStatus').textContent = '❌ Ошибка: ' + error.message;
   }
