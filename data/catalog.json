@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-28T17:21:59.850Z",
+  "generatedAt": "2026-06-30T06:07:51.366Z",
   "totalProducts": 46,
   "categories": [
     "Двигатель",
@@ -317,7 +317,9 @@
       "imageUrl": "images/EM-4139-1.jpg",
       "brand": "FORD",
       "oem": "DB5Z6038A",
-      "analogs": "Oem-Номера: Db5Z6038C, Db5Z6038A Eagle Bhp (Cont.) 4382H Dea / Mrc (Cont.) A5663Hy Anchor (Cont.) 3273",
+      "analogs": [
+        "Oem-Номера: Db5Z6038C, Db5Z6038A Eagle Bhp (Cont.) 4382H Dea / Mrc (Cont.) A5663Hy Anchor (Cont.) 3273"
+      ],
       "compatibility": [
         {
           "make": "Ford",
