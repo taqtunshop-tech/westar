@@ -1,0 +1,11 @@
+node_modules/
+westar-app/node_modules/
+package-lock.json
+data/export/
+data/templates/
+*.tmp
+images/
+static/images/
+scripts/
+data/catalog.json
+data/catalog.js

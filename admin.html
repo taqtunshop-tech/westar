@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Westar Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body { background: #051424; color: #f8fafc; font-family: 'Inter', sans-serif; }
+.card { background: #0a1f35; border: 1px solid #1a365d; border-radius: 8px; }
+.btn-gold { background: rgba(212,175,55,0.1); color: #d4af37; border: 1px solid #d4af37; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.btn-gold:hover { background: rgba(212,175,55,0.2); }
+.btn-red { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid #f87171; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+.inp { background: rgba(0,0,0,0.3); border: 1px solid #1a365d; color: #fff; padding: 8px 10px; border-radius: 4px; width: 100%; outline: none; font-size: 13px; }
+.inp:focus { border-color: #d4af37; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: flex-start; justify-content: center; z-index: 50; overflow-y: auto; padding: 20px; }
+.tag-ok { background: rgba(34,197,94,0.15); color: #4ade80; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+.tag-no { background: rgba(239,68,68,0.15); color: #f87171; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+</style>
+</head>
+<body class="p-4 min-h-screen">
+
+<!-- Экран авторизации (скрыт) -->
+<div id="authScreen" class="max-w-md mx-auto mt-20 hidden">
+  <div class="card p-8">
+    <h1 class="text-2xl font-bold text-yellow-400 mb-2">WESTAR Admin</h1>
+    <p class="text-gray-400 text-sm mb-6">Для работы нужен GitHub Personal Access Token с правами <code class="text-yellow-400">repo</code></p>
+    <div class="mb-4">
+      <label class="block text-xs text-blue-300 mb-1 uppercase tracking-wider">GitHub Token</label>
+      <input id="tokenInput" type="password" class="inp" placeholder="ghp_xxxxxxxxxxxx">
+    </div>
+    <button onclick="login()" class="btn-gold w-full py-2">Войти</button>
+    <p class="text-xs text-gray-500 mt-4">
+      Получить токен: <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" class="text-blue-400 underline">github.com/settings/tokens</a> → Выбрать <strong>repo</strong> → Generate
+    </p>
+    <div id="authError" class="text-red-400 text-sm mt-3 hidden"></div>
+  </div>
+</div>
+
+<!-- Главный экран -->
+<div id="mainScreen" class="max-w-7xl mx-auto">
+  <header class="flex justify-between items-center mb-6 pb-4 border-b border-blue-900">
+    <div>
+      <h1 class="text-xl font-bold text-yellow-400">WESTAR Admin Panel</h1>
+      <p class="text-xs text-gray-500 mt-1">GitHub API → taqtunshop-tech/westar</p>
+    </div>
+    <div class="flex gap-3 items-center">
+      <span id="userInfo" class="text-xs text-gray-400"></span>
+      <nav class="flex items-center gap-1 text-xs">
+        <a href="/index.html" class="text-gray-400 hover:text-yellow-400 px-2 py-1 rounded hover:bg-white/5 transition">Каталог</a>
+        <a href="/pulse.html" class="text-gray-400 hover:text-yellow-400 px-2 py-1 rounded hover:bg-white/5 transition">Пульт</a>
+        <a href="/admin.html" class="text-yellow-400 px-2 py-1 rounded bg-yellow-400/10 border border-yellow-400/30">Админ</a>
+        <a href="/dashboard.html" class="text-gray-400 hover:text-yellow-400 px-2 py-1 rounded hover:bg-white/5 transition">Dashboard</a>
+      </nav>
+      <button onclick="openAddModal()" class="btn-gold">+ Добавить товар</button>
+      <a href="/index.html" target="_blank" class="text-blue-400 text-sm underline">Открыть сайт</a>
+      <button onclick="logout()" class="text-gray-500 text-sm hover:text-red-400">Выйти</button>
+    </div>
+  </header>
+
+  <!-- Поиск -->
+  <div class="mb-4 flex gap-3">
+    <input id="searchBox" oninput="renderTable()" type="text" class="inp max-w-sm" placeholder="Поиск по артикулу или названию...">
+    <span id="statusMsg" class="text-xs text-gray-400 self-center"></span>
+  </div>
+
+  <!-- Таблица -->
+  <div class="card overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead>
+        <tr class="border-b border-blue-900 text-blue-300 text-xs uppercase tracking-wider">
+          <th class="p-3 w-16">Фото</th>
+          <th class="p-3">Артикул</th>
+          <th class="p-3">Название</th>
+          <th class="p-3">Бренд</th>
+          <th class="p-3">Цена</th>
+          <th class="p-3">Остаток</th>
+          <th class="p-3">Действия</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="7" class="text-center p-8 text-gray-500">Загрузка...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="text-xs text-gray-600 mt-2" id="countInfo"></p>
+</div>
+
+<!-- Модальное окно редактирования -->
+<div id="editModal" class="modal hidden">
+  <div class="card p-6 w-full max-w-2xl my-4">
+    <div class="flex justify-between items-center mb-5">
+      <h2 id="modalTitle" class="text-lg font-bold text-yellow-400">Товар</h2>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-white text-xl">✕</button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <div>
+        <label class="block text-xs text-blue-300 mb-1">Артикул *</label>
+        <input id="f_article" class="inp" placeholder="EM-2292">
+      </div>
+      <div>
+        <label class="block text-xs text-blue-300 mb-1">Бренд</label>
+        <input id="f_brand" class="inp" placeholder="CHEVROLET">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="block text-xs text-blue-300 mb-1">Название *</label>
+      <input id="f_name" class="inp" placeholder="Подушка двигателя...">
+    </div>
+
+    <div class="grid grid-cols-3 gap-3 mb-3">
+      <div>
+        <label class="block text-xs text-blue-300 mb-1">Цена (₽) *</label>
+        <input id="f_price" type="number" class="inp">
+      </div>
+      <div>
+        <label class="block text-xs text-blue-300 mb-1">Остаток *</label>
+        <input id="f_stock" type="number" class="inp">
+      </div>
+      <div>
+        <label class="block text-xs text-blue-300 mb-1">Категория</label>
+        <input id="f_category" class="inp" placeholder="Двигатель">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="block text-xs text-blue-300 mb-1">OEM номер</label>
+      <input id="f_oem" class="inp">
+    </div>
+
+    <div class="mb-3">
+      <label class="block text-xs text-blue-300 mb-1">Изображение</label>
+      <div id="imagePreviewContainer" class="mb-3 hidden">
+        <img id="f_imagePreview" src="" class="max-h-40 rounded border border-blue-900 object-contain bg-black/20">
+      </div>
+      <div class="flex gap-2 items-center">
+        <input id="f_imageUrl" class="inp flex-1" placeholder="images/EM-2292.jpg" oninput="updateImagePreview()">
+        <input type="file" id="f_imageFile" accept="image/*" class="hidden" onchange="uploadImage(this)">
+        <button type="button" onclick="document.getElementById('f_imageFile').click()" class="btn-gold whitespace-nowrap">📤 Загрузить</button>
+        <button type="button" onclick="deleteImage()" id="btnDeleteImage" class="btn-red whitespace-nowrap hidden">🗑 Удалить</button>
+      </div>
+      <div id="imageUploadStatus" class="text-xs text-gray-400 mt-1"></div>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-xs text-blue-300 mb-1">Описание</label>
+      <textarea id="f_description" class="inp h-20 resize-none"></textarea>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-4 border-t border-blue-900">
+      <button onclick="closeModal()" class="text-gray-400 text-sm hover:text-white px-4 py-2">Отмена</button>
+      <button onclick="saveProduct()" id="saveBtn" class="btn-gold px-6 py-2">
+        <span id="saveSpinner" class="hidden">⏳ </span>Сохранить
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Подтверждение удаления -->
+<div id="deleteModal" class="modal hidden">
+  <div class="card p-6 max-w-sm mx-auto mt-32">
+    <p class="text-center mb-6">Удалить товар <strong id="deleteArticle" class="text-yellow-400"></strong>?</p>
+    <div class="flex justify-center gap-4">
+      <button onclick="closeDeleteModal()" class="text-gray-400 hover:text-white px-4 py-2">Отмена</button>
+      <button onclick="confirmDelete()" class="btn-red px-6 py-2">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const REPO = 'taqtunshop-tech/westar';
+const FILE_PATH = 'data/catalog.json';
+const JS_PATH = 'data/catalog.js';
+const API = 'https://api.github.com';
+
+let token = localStorage.getItem('westar_gh_token') || '';
+let catalog = { products: [] };
+let fileSha = '';
+let editingId = null;
+let deleteId = null;
+
+// --- Auth ---
+function login() {
+  const t = document.getElementById('tokenInput').value.trim();
+  if (!t) return;
+  token = t;
+  localStorage.setItem('westar_gh_token', token);
+  document.getElementById('authError').classList.add('hidden');
+  init();
+}
+
+function logout() {
+  token = '';
+  localStorage.removeItem('westar_gh_token');
+  document.getElementById('userInfo').textContent = '';
+  document.getElementById('tokenInput').value = '';
+  showAuth();
+}
+
+function showAuth(err = '') {
+  document.getElementById('mainScreen').classList.add('hidden');
+  document.getElementById('authScreen').classList.remove('hidden');
+  if (err) {
+    const errEl = document.getElementById('authError');
+    errEl.textContent = err;
+    errEl.classList.remove('hidden');
+  }
+}
+
+function showMain() {
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('mainScreen').classList.remove('hidden');
+}
+
+// --- GitHub API ---
+function ghFetch(path, opts = {}) {
+  return fetch(API + path, {
+    ...opts,
+    headers: {
+      'Authorization': 'token ' + token,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github.v3+json',
+      ...(opts.headers || {})
+    }
+  });
+}
+
+// --- Catalog ---
+async function loadCatalog() {
+  if (!token) return showAuth();
+  setStatus('Загрузка каталога...');
+  try {
+    const r = await ghFetch('/repos/' + REPO + '/contents/' + FILE_PATH);
+    const data = await r.json();
+    if (!r.ok) {
+      if (r.status === 401 || r.status === 403 || r.status === 404) {
+        throw new Error('Ошибка доступа (' + r.status + '). Проверьте токен.');
+      }
+      throw new Error(data.message || 'Ошибка');
+    }
+    fileSha = data.sha;
+    const decoded = atob(data.content.replace(/\n/g, ''));
+    const bytes = new Uint8Array(decoded.length);
+    for (let i = 0; i < decoded.length; i++) bytes[i] = decoded.charCodeAt(i);
+    const text = new TextDecoder('utf-8').decode(bytes);
+    catalog = JSON.parse(text);
+    renderTable();
+    setStatus('Загружено: ' + (catalog.products || []).length + ' товаров');
+  } catch(e) {
+    showAuth(e.message);
+  }
+}
+
+async function saveCatalog() {
+  catalog.generatedAt = new Date().toISOString();
+  catalog.totalProducts = catalog.products.length;
+
+  const json = JSON.stringify(catalog, null, 2);
+  const encoded = btoa(unescape(encodeURIComponent(json)));
+
+  const r = await ghFetch('/repos/' + REPO + '/contents/' + FILE_PATH, {
+    method: 'PUT',
+    body: JSON.stringify({
+      message: 'Admin: обновление каталога ' + new Date().toLocaleString('ru'),
+      content: encoded,
+      sha: fileSha
+    })
+  });
+
+  if (!r.ok) {
+    const err = await r.json();
+    throw new Error(err.message || 'Ошибка сохранения');
+  }
+
+  const result = await r.json();
+  fileSha = result.content.sha;
+
+  // Синхронизируем catalog.js
+  await syncCatalogJs(json);
+}
+
+async function syncCatalogJs(json) {
+  const jsPath = 'westar-app/data/catalog.js';
+  try {
+    const r1 = await ghFetch('/repos/' + REPO + '/contents/' + jsPath);
+    let jsSha = '';
+    if (r1.ok) {
+      const existing = await r1.json();
+      jsSha = existing.sha;
+    }
+
+    const jsContent = 'window.WESTAR_CATALOG = ' + json + ';';
+    const encoded = btoa(unescape(encodeURIComponent(jsContent)));
+
+    await ghFetch('/repos/' + REPO + '/contents/' + jsPath, {
+      method: 'PUT',
+      body: JSON.stringify({
+        message: 'Admin: синхронизация catalog.js',
+        content: encoded,
+        ...(jsSha ? { sha: jsSha } : {})
+      })
+    });
+  } catch(e) {
+    console.warn('Не удалось обновить catalog.js:', e.message);
+  }
+}
+
+// --- Table ---
+function renderTable() {
+  const q = (document.getElementById('searchBox')?.value || '').toLowerCase();
+  const products = (catalog.products || []).filter(p => {
+    if (!q) return true;
+    return (p.article || '').toLowerCase().includes(q) ||
+           (p.name || '').toLowerCase().includes(q) ||
+           (p.brand || '').toLowerCase().includes(q);
+  });
+
+  const tbody = document.getElementById('tableBody');
+  if (!products.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-gray-500">Ничего не найдено</td></tr>';
+    document.getElementById('countInfo').textContent = '';
+    return;
+  }
+
+  tbody.innerHTML = products.map(p => `
+    <tr class="border-b border-blue-900/40 hover:bg-blue-900/20 transition">
+      <td class="p-2">
+        ${p.imageUrl || (p.imageUrls && p.imageUrls[0])
+          ? `<img src="${p.imageUrl || p.imageUrls[0]}" class="w-10 h-10 object-cover rounded border border-blue-900 bg-black/40" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%23111%22 width=%2240%22 height=%2240%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2210%22>нет</text></svg>'">`
+          : `<div class="w-10 h-10 bg-black/30 border border-blue-900/50 rounded flex items-center justify-center text-[10px] text-gray-500">Нет</div>`
+        }
+      </td>
+      <td class="p-3 font-mono text-yellow-400 text-xs">${p.article || '-'}</td>
+      <td class="p-3 text-sm max-w-xs truncate" title="${p.name}">${p.name}</td>
+      <td class="p-3 text-xs text-gray-300">${p.brand || '-'}</td>
+      <td class="p-3 text-sm font-semibold">${(p.price || 0).toLocaleString('ru')} ₽</td>
+      <td class="p-3">
+        ${p.stock > 0
+          ? '<span class="tag-ok">' + p.stock + ' шт</span>'
+          : '<span class="tag-no">Нет</span>'}
+      </td>
+      <td class="p-3 flex gap-2">
+        <button onclick="openEditModal('${p.id || p.article}')" class="text-blue-400 hover:text-blue-200 text-xs px-2 py-1 border border-blue-800 rounded">✎ Ред.</button>
+        <button onclick="openDeleteModal('${p.id || p.article}')" class="btn-red text-xs">🗑</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.getElementById('countInfo').textContent = 'Показано: ' + products.length + ' из ' + catalog.products.length;
+}
+
+// --- Modal Edit ---
+function updateImagePreview(src) {
+  const container = document.getElementById('imagePreviewContainer');
+  const img = document.getElementById('f_imagePreview');
+  const url = src || document.getElementById('f_imageUrl').value.trim();
+  
+  if (url) {
+    if (url.startsWith('data:') || url.startsWith('http')) {
+      img.src = url;
+    } else {
+      img.src = url;
+    }
+    container.classList.remove('hidden');
+  } else {
+    container.classList.add('hidden');
+    img.src = '';
+  }
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Новый товар';
+  ['article','brand','name','price','stock','category','oem','imageUrl','description'].forEach(k => {
+    document.getElementById('f_' + k).value = '';
+  });
+  document.getElementById('btnDeleteImage').classList.add('hidden');
+  document.getElementById('imageUploadStatus').textContent = '';
+  updateImagePreview('');
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+function openEditModal(id) {
+  const p = catalog.products.find(x => (x.id || x.article) === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Редактировать: ' + p.article;
+  document.getElementById('f_article').value = p.article || '';
+  document.getElementById('f_brand').value = p.brand || '';
+  document.getElementById('f_name').value = p.name || '';
+  document.getElementById('f_price').value = p.price || 0;
+  document.getElementById('f_stock').value = p.stock || 0;
+  document.getElementById('f_category').value = p.category || '';
+  document.getElementById('f_oem').value = p.oem || '';
+  document.getElementById('f_imageUrl').value = p.imageUrl || (p.imageUrls && p.imageUrls[0]) || '';
+  document.getElementById('f_description').value = p.description || '';
+  
+  if (document.getElementById('f_imageUrl').value) {
+    document.getElementById('btnDeleteImage').classList.remove('hidden');
+  } else {
+    document.getElementById('btnDeleteImage').classList.add('hidden');
+  }
+  document.getElementById('imageUploadStatus').textContent = '';
+  updateImagePreview();
+  
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.add('hidden');
+  editingId = null;
+}
+
+async function saveProduct() {
+  const article = document.getElementById('f_article').value.trim();
+  const name = document.getElementById('f_name').value.trim();
+  if (!article || !name) return alert('Артикул и название обязательны');
+
+  const btn = document.getElementById('saveBtn');
+  const spinner = document.getElementById('saveSpinner');
+  btn.disabled = true;
+  spinner.classList.remove('hidden');
+  setStatus('Сохранение...');
+
+  try {
+    const data = {
+      id: editingId || article,
+      article,
+      brand: document.getElementById('f_brand').value.trim(),
+      name,
+      price: Number(document.getElementById('f_price').value) || 0,
+      stock: Number(document.getElementById('f_stock').value) || 0,
+      category: document.getElementById('f_category').value.trim() || 'Двигатель',
+      oem: document.getElementById('f_oem').value.trim(),
+      imageUrl: document.getElementById('f_imageUrl').value.trim(),
+      description: document.getElementById('f_description').value.trim()
+    };
+
+    if (editingId) {
+      const idx = catalog.products.findIndex(p => (p.id || p.article) === editingId);
+      if (idx !== -1) catalog.products[idx] = { ...catalog.products[idx], ...data };
+    } else {
+      catalog.products.push(data);
+    }
+
+    await saveCatalog();
+    closeModal();
+    renderTable();
+    setStatus('✅ Сохранено! Сайт обновится через ~1-2 минуты.');
+  } catch(e) {
+    setStatus('❌ Ошибка: ' + e.message);
+    alert('Ошибка сохранения: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add('hidden');
+  }
+}
+
+async function uploadImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const article = document.getElementById('f_article').value.trim();
+  if (!article) return alert('Сначала введите артикул!');
+
+  const ext = file.name.split('.').pop().toLowerCase();
+  const filePath = `images/${article}.${ext}`;
+  
+  document.getElementById('imageUploadStatus').textContent = 'Загрузка... ⏳';
+  
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result;
+    updateImagePreview(dataUrl);
+    const base64 = dataUrl.split(',')[1];
+    try {
+      let fileSha = '';
+      try {
+        const r = await ghFetch('/repos/' + REPO + '/contents/' + filePath);
+        if (r.ok) {
+          const data = await r.json();
+          fileSha = data.sha;
+        }
+      } catch(e) {}
+
+      const body = {
+        message: 'Upload image for ' + article,
+        content: base64
+      };
+      if (fileSha) body.sha = fileSha;
+
+      const uploadRes = await ghFetch('/repos/' + REPO + '/contents/' + filePath, {
+        method: 'PUT',
+        body: JSON.stringify(body)
+      });
+      
+      if (!uploadRes.ok) throw new Error('Ошибка загрузки в GitHub');
+      
+      document.getElementById('f_imageUrl').value = filePath;
+      document.getElementById('imageUploadStatus').textContent = '✅ Изображение загружено!';
+      document.getElementById('btnDeleteImage').classList.remove('hidden');
+    } catch (error) {
+      document.getElementById('imageUploadStatus').textContent = '❌ Ошибка: ' + error.message;
+    }
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function deleteImage() {
+  const imgUrl = document.getElementById('f_imageUrl').value.trim();
+  if (!imgUrl) return;
+  
+  if (!confirm('Точно удалить изображение из репозитория GitHub?')) return;
+  
+  document.getElementById('imageUploadStatus').textContent = 'Удаление... ⏳';
+  try {
+    const r = await ghFetch('/repos/' + REPO + '/contents/' + imgUrl);
+    if (!r.ok) throw new Error('Файл не найден на GitHub');
+    const data = await r.json();
+    
+    const delRes = await ghFetch('/repos/' + REPO + '/contents/' + imgUrl, {
+      method: 'DELETE',
+      body: JSON.stringify({
+        message: 'Delete image ' + imgUrl,
+        sha: data.sha
+      })
+    });
+    
+    if (!delRes.ok) throw new Error('Ошибка удаления на GitHub');
+    
+    document.getElementById('f_imageUrl').value = '';
+    document.getElementById('imageUploadStatus').textContent = '✅ Изображение удалено!';
+    document.getElementById('btnDeleteImage').classList.add('hidden');
+    updateImagePreview('');
+  } catch (error) {
+    document.getElementById('imageUploadStatus').textContent = '❌ Ошибка: ' + error.message;
+  }
+}
+
+// --- Delete ---
+function openDeleteModal(id) {
+  deleteId = id;
+  const p = catalog.products.find(x => (x.id || x.article) === id);
+  document.getElementById('deleteArticle').textContent = p ? p.article : id;
+  document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.add('hidden');
+  deleteId = null;
+}
+
+async function confirmDelete() {
+  if (!deleteId) return;
+  closeDeleteModal();
+  setStatus('Удаление...');
+  try {
+    catalog.products = catalog.products.filter(p => (p.id || p.article) !== deleteId);
+    await saveCatalog();
+    renderTable();
+    setStatus('✅ Удалено. Сайт обновится через ~1-2 минуты.');
+  } catch(e) {
+    setStatus('❌ Ошибка удаления: ' + e.message);
+  }
+  deleteId = null;
+}
+
+// --- Helpers ---
+function setStatus(msg) {
+  document.getElementById('statusMsg').textContent = msg;
+}
+
+// --- Init ---
+async function init() {
+  if (!token) {
+    showAuth();
+    return;
+  }
+  showMain();
+  try {
+    const r = await ghFetch('/user');
+    if (r.ok) {
+      const user = await r.json();
+      document.getElementById('userInfo').textContent = '👤 ' + user.login;
+    }
+  } catch(e) {}
+  loadCatalog();
+}
+
+window.addEventListener('load', init);
+</script>
+</body>
+</html>

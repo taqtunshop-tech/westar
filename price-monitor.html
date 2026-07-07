@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мониторинг цен — Westar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], mono: ['JetBrains Mono','monospace'] } } }
+}
+</script>
+<style>
+:root { --gold:#FDB913; --bg:#08090d; --surface:#0f1117; --surface2:#141620; --border:#1e2230; }
+body { background:var(--bg); color:#e5e7eb; font-family:'Inter',sans-serif; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+.badge-both { background:rgba(74,222,128,.1); color:#4ade80; border:1px solid rgba(74,222,128,.3); border-radius:6px; padding:2px 8px; font-size:10px; white-space:nowrap; }
+.badge-ozon { background:rgba(96,165,250,.1); color:#60a5fa; border:1px solid rgba(96,165,250,.3); border-radius:6px; padding:2px 8px; font-size:10px; white-space:nowrap; }
+.badge-our { background:rgba(251,146,60,.1); color:#fb923c; border:1px solid rgba(251,146,60,.3); border-radius:6px; padding:2px 8px; font-size:10px; white-space:nowrap; }
+.badge-wb { background:rgba(168,85,247,.1); color:#a855f7; border:1px solid rgba(168,85,247,.3); border-radius:6px; padding:2px 8px; font-size:10px; white-space:nowrap; }
+.btn-primary { background:var(--gold); color:#000; font-weight:600; border-radius:8px; padding:8px 16px; font-size:13px; cursor:pointer; transition:.2s; }
+.btn-primary:hover { opacity:.85; }
+.btn-ghost { background:transparent; border:1px solid var(--border); color:#9ca3af; border-radius:8px; padding:8px 14px; font-size:12px; cursor:pointer; transition:.2s; }
+.btn-ghost:hover { border-color:#6b7280; color:#e5e7eb; }
+.acc-tab { border-radius:8px; padding:10px 16px; cursor:pointer; transition:.2s; border:1px solid transparent; font-size:13px; }
+.acc-tab.active { border-color:var(--gold); background:rgba(253,185,19,.08); }
+.acc-tab:hover:not(.active) { background:#1a1d27; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+th { text-align:left; padding:10px 10px; color:#6b7280; font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; white-space:nowrap; position:sticky; top:0; background:var(--surface); z-index:1; }
+th:hover { color:#9ca3af; }
+th .sort-arrow { margin-left:4px; font-size:9px; }
+td { padding:8px 10px; border-bottom:1px solid rgba(30,34,48,.6); vertical-align:middle; }
+tr:hover td { background:rgba(255,255,255,.02); }
+.loader { border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; width:20px; height:20px; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.diff-positive { background:rgba(239,68,68,.1); color:#ef4444; border-radius:4px; padding:1px 5px; font-family:monospace; font-size:11px; white-space:nowrap; }
+.diff-negative { background:rgba(34,197,94,.1); color:#22c55e; border-radius:4px; padding:1px 5px; font-family:monospace; font-size:11px; white-space:nowrap; }
+.diff-zero { background:rgba(107,114,128,.1); color:#6b7280; border-radius:4px; padding:1px 5px; font-family:monospace; font-size:11px; white-space:nowrap; }
+.bar-container { width:100%; height:6px; background:#1a1d27; border-radius:3px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:3px; transition:width .3s; }
+.price-cell { font-family:'JetBrains Mono',monospace; font-size:11px; white-space:nowrap; }
+.price-old { text-decoration:line-through; color:#6b7280; font-size:10px; }
+.price-sale { color:#ef4444; font-weight:600; }
+.price-current { color:#e5e7eb; font-weight:500; }
+.price-our { color:var(--gold); font-weight:600; }
+.expand-row { cursor:pointer; }
+.expand-row:hover { background:rgba(253,185,19,.03); }
+.competitor-row { background:var(--surface2); }
+.competitor-row td { padding:6px 10px; font-size:11px; }
+.section-label { font-size:10px; color:#6b7280; text-transform:uppercase; letter-spacing:.08em; padding:4px 8px; background:rgba(30,34,48,.5); border-radius:4px; margin-bottom:4px; display:inline-block; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<header style="border-bottom:1px solid var(--border); padding:0 24px; height:60px; display:flex; align-items:center; justify-content:space-between; background:rgba(8,9,13,.9); backdrop-filter:blur(10px); position:sticky; top:0; z-index:50;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div style="width:28px; height:28px; background:var(--gold); border-radius:6px; display:flex; align-items:center; justify-content:center;">
+      <span style="font-weight:700; color:#000; font-size:13px;">W</span>
+    </div>
+    <span style="font-weight:600; letter-spacing:.05em;">WESTAR</span>
+    <span style="color:var(--border); margin:0 4px;">|</span>
+    <nav style="display:flex; align-items:center; gap:2px; font-size:12px;">
+      <a href="/index.html" style="color:#9ca3af; padding:4px 8px; border-radius:6px; text-decoration:none;">Каталог</a>
+      <a href="/pulse.html" style="color:#9ca3af; padding:4px 8px; border-radius:6px; text-decoration:none;">Пульт</a>
+      <a href="/admin.html" style="color:#9ca3af; padding:4px 8px; border-radius:6px; text-decoration:none;">Админ</a>
+      <a href="/dashboard.html" style="color:#9ca3af; padding:4px 8px; border-radius:6px; text-decoration:none;">Dashboard</a>
+      <a href="/price-monitor.html" style="color:#FDB913; padding:4px 8px; border-radius:6px; background:rgba(253,185,19,.08); border:1px solid rgba(253,185,19,.3); text-decoration:none;">Цены</a>
+    </nav>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <span id="serverStatus" style="font-size:12px; color:#6b7280; display:flex; align-items:center; gap:6px;">
+      <span style="width:8px; height:8px; border-radius:50%; background:#6b7280; display:inline-block;" id="statusDot"></span>
+      <span id="statusText">Подключение...</span>
+    </span>
+    <button class="btn-ghost" onclick="location.reload()">⟳ Обновить</button>
+  </div>
+    <a href="admin.html" class="btn-ghost" style="text-decoration:none; font-size:11px; padding:6px 12px;">Админка</a>
+    <span id="serverStatus" style="font-size:11px; color:#6b7280; display:flex; align-items:center; gap:5px;">
+      <span style="width:7px; height:7px; border-radius:50%; background:#6b7280; display:inline-block;" id="statusDot"></span>
+      <span id="statusText">...</span>
+    </span>
+    <button class="btn-primary" onclick="loadData()" style="font-size:12px; padding:6px 14px;">⟳ Обновить</button>
+  </div>
+</header>
+
+<div style="max-width:1800px; margin:0 auto; padding:20px;">
+
+  <!-- Аккаунты -->
+  <div id="accountTabs" style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+    <div style="color:#6b7280; font-size:13px; display:flex; align-items:center; padding:10px 4px;">Загрузка...</div>
+  </div>
+
+  <!-- Статистика -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px;">
+    <div class="card" style="padding:16px;">
+      <div style="font-size:10px; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em;">Всего</div>
+      <div style="font-size:24px; font-weight:600;" id="statTotal">—</div>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div style="font-size:10px; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em;">Совпадение</div>
+      <div style="font-size:24px; font-weight:600; color:#4ade80;" id="statMatched">—</div>
+      <div class="bar-container" style="margin-top:6px;"><div class="bar-fill" id="barMatched" style="width:0%; background:#4ade80;"></div></div>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div style="font-size:10px; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em;">Только Ozon</div>
+      <div style="font-size:24px; font-weight:600; color:#60a5fa;" id="statOzonOnly">—</div>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div style="font-size:10px; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em;">Только наш</div>
+      <div style="font-size:24px; font-weight:600; color:#fb923c;" id="statOurOnly">—</div>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div style="font-size:10px; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em;">Ozon дороже</div>
+      <div style="font-size:24px; font-weight:600; color:#ef4444;" id="statHigher">—</div>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div style="font-size:10px; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em;">Ozon дешевле</div>
+      <div style="font-size:24px; font-weight:600; color:#22c55e;" id="statLower">—</div>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div style="font-size:10px; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em;">Средняя разница</div>
+      <div style="font-size:24px; font-weight:600; color:var(--gold);" id="statAvgDiff">—</div>
+    </div>
+  </div>
+
+  <!-- Легенда цен -->
+  <div class="card" style="padding:12px 16px; margin-bottom:16px; display:flex; gap:20px; flex-wrap:wrap; font-size:11px; color:#9ca3af;">
+    <div><span class="section-label">Цены Ozon</span></div>
+    <div>Наша цена — розничная из каталога (=закупка x1.8)</div>
+    <div>Закупка — наша закупочная цена</div>
+    <div>Цена в ЛК — что мы поставили в личном кабинете Ozon</div>
+    <div style="color:#ef4444;">Акция — marketing_price (если задана и ниже основной)</div>
+    <div>Витрина — реальная цена для покупателя (с учётом скидки Ozon)</div>
+    <div style="text-decoration:line-through; color:#6b7280;">Старая цена — зачёркнутая для покупателя</div>
+  </div>
+
+  <!-- Панель управления -->
+  <div class="card" style="padding:12px 16px; margin-bottom:12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <input type="text" id="searchInput" placeholder="Поиск..." style="background:#0a0b0f; border:1px solid var(--border); border-radius:8px; padding:7px 12px; color:#e5e7eb; font-size:12px; width:220px;" oninput="filterTable()">
+    <select id="sourceFilter" onchange="filterTable()" style="background:#0a0b0f; border:1px solid var(--border); border-radius:8px; padding:7px 10px; color:#e5e7eb; font-size:12px;">
+      <option value="">Все источники</option>
+      <option value="both">Есть и там, и там</option>
+      <option value="ozon_only">Только Ozon</option>
+      <option value="our_only">Только наш</option>
+    </select>
+    <select id="diffFilter" onchange="filterTable()" style="background:#0a0b0f; border:1px solid var(--border); border-radius:8px; padding:7px 10px; color:#e5e7eb; font-size:12px;">
+      <option value="">Все расхождения</option>
+      <option value="higher">Витрина дороже</option>
+      <option value="lower">Витрина дешевле</option>
+      <option value="same">Цены совпадают</option>
+      <option value="big">Большое расхождение (>20%)</option>
+    </select>
+    <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+      <button class="btn-ghost" onclick="searchAllCompetitors()" id="competitorBtn" style="font-size:11px;">🔍 Поиск конкурентов (WB)</button>
+      <button class="btn-ghost" onclick="exportToCSV()" style="font-size:11px;">↓ CSV</button>
+    </div>
+  </div>
+
+  <!-- Таблица -->
+  <div class="card" style="overflow:hidden;">
+    <div id="loadingState" style="padding:48px; text-align:center; color:#6b7280;">
+      <div class="loader" style="margin:0 auto 16px;"></div>
+      <div style="font-size:13px;">Загрузка данных...</div>
+    </div>
+    <div id="tableWrap" style="display:none; overflow-x:auto; max-height:75vh; overflow-y:auto;">
+      <table id="productsTable">
+        <thead>
+          <tr>
+            <th style="width:30px;"></th>
+            <th onclick="sortTable('article')">Артикул <span class="sort-arrow" id="sort-article"></span></th>
+            <th onclick="sortTable('name')">Название <span class="sort-arrow" id="sort-name"></span></th>
+            <th>Ист.</th>
+            <th onclick="sortTable('ourPrice')" style="text-align:right;">Наша цена <span class="sort-arrow" id="sort-ourPrice"></span></th>
+            <th onclick="sortTable('purchasePrice')" style="text-align:right;">Закупка <span class="sort-arrow" id="sort-purchasePrice"></span></th>
+            <th style="text-align:center; min-width:160px;">— Ozon —</th>
+            <th style="text-align:center; min-width:160px;">— Витрина —</th>
+            <th onclick="sortTable('diff')" style="text-align:right;">Δ ₽ <span class="sort-arrow" id="sort-diff"></span></th>
+            <th onclick="sortTable('diffPercent')" style="text-align:right;">Δ % <span class="sort-arrow" id="sort-diffPercent"></span></th>
+            <th onclick="sortTable('stock')" style="text-align:right;">Ост. <span class="sort-arrow" id="sort-stock"></span></th>
+            <th>WB</th>
+          </tr>
+        </thead>
+        <tbody id="productsBody"></tbody>
+      </table>
+    </div>
+    <div id="emptyState" style="display:none; padding:48px; text-align:center; color:#6b7280; font-size:13px;">Нет данных</div>
+  </div>
+
+</div>
+
+<div id="toast" style="position:fixed; bottom:24px; right:24px; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:500; display:none; z-index:1000; max-width:320px;"></div>
+
+<script>
+const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin;
+let currentAccount = null;
+let allProducts = [];
+let filteredProducts = [];
+let currentSort = { field: 'diff', dir: 'desc' };
+let expandedRows = {};
+let competitorCache = {};
+
+async function init() {
+  try {
+    const res = await fetch(`${API}/api/ozon/accounts`);
+    if (!res.ok) throw new Error('Сервер недоступен');
+    const data = await res.json();
+    renderAccountTabs(data.accounts);
+    if (data.accounts.length > 0) selectAccount(data.accounts[0].key);
+    setStatus(true);
+  } catch(e) {
+    setStatus(false);
+    document.getElementById('accountTabs').innerHTML = `<div style="color:#ef4444; font-size:13px;">⚠ Сервер недоступен</div>`;
+    document.getElementById('loadingState').innerHTML = `<div style="color:#ef4444;">Ошибка: ${e.message}</div>`;
+  }
+}
+
+function setStatus(ok) {
+  document.getElementById('statusDot').style.background = ok ? '#4ade80' : '#ef4444';
+  document.getElementById('statusText').textContent = ok ? 'Online' : 'Offline';
+}
+
+function renderAccountTabs(accounts) {
+  document.getElementById('accountTabs').innerHTML = accounts.map(acc => `
+    <div class="acc-tab" id="tab-${acc.key}" onclick="selectAccount('${acc.key}')"
+      style="display:flex; align-items:center; gap:8px;">
+      <span style="width:10px; height:10px; border-radius:50%; background:${acc.color}; flex-shrink:0;"></span>
+      <span>${acc.name}</span>
+      <span style="font-size:10px; color:#6b7280; font-family:monospace;">${acc.clientId}</span>
+    </div>
+  `).join('');
+}
+
+function selectAccount(key) {
+  currentAccount = key;
+  document.querySelectorAll('.acc-tab').forEach(t => t.classList.remove('active'));
+  const tab = document.getElementById(`tab-${key}`);
+  if (tab) tab.classList.add('active');
+  loadData();
+}
+
+async function loadData() {
+  if (!currentAccount) return;
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('tableWrap').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'none';
+  try {
+    const res = await fetch(`${API}/api/price-monitor/${currentAccount}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    allProducts = data.products || [];
+    renderStats(data.stats);
+    filterTable();
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById(allProducts.length === 0 ? 'emptyState' : 'tableWrap').style.display = 'block';
+  } catch(e) {
+    document.getElementById('loadingState').innerHTML = `<div style="color:#ef4444;">Ошибка: ${e.message}</div>`;
+  }
+}
+
+function renderStats(stats) {
+  document.getElementById('statTotal').textContent = stats.total;
+  document.getElementById('statMatched').textContent = stats.matched;
+  document.getElementById('statOzonOnly').textContent = stats.ozonOnly;
+  document.getElementById('statOurOnly').textContent = stats.ourOnly;
+  document.getElementById('statHigher').textContent = stats.priceHigherOnOzon;
+  document.getElementById('statLower').textContent = stats.priceLowerOnOzon;
+  const avg = stats.avgDiff;
+  const el = document.getElementById('statAvgDiff');
+  el.textContent = (avg >= 0 ? '+' : '') + fmtNum(avg) + ' ₽';
+  el.style.color = avg > 0 ? '#ef4444' : avg < 0 ? '#22c55e' : '#6b7280';
+  document.getElementById('barMatched').style.width = (stats.total > 0 ? Math.round(stats.matched / stats.total * 100) : 0) + '%';
+}
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const src = document.getElementById('sourceFilter').value;
+  const diff = document.getElementById('diffFilter').value;
+  filteredProducts = allProducts.filter(p => {
+    const matchQ = !q || (p.article||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q);
+    const matchSrc = !src || p.source === src;
+    let matchDiff = true;
+    if (diff === 'higher') matchDiff = p.source === 'both' && p.diff > 0;
+    else if (diff === 'lower') matchDiff = p.source === 'both' && p.diff < 0;
+    else if (diff === 'same') matchDiff = p.source === 'both' && p.diff === 0;
+    else if (diff === 'big') matchDiff = p.source === 'both' && Math.abs(p.diffPercent) > 20;
+    return matchQ && matchSrc && matchDiff;
+  });
+  sortAndRender();
+}
+
+function sortTable(field) {
+  if (currentSort.field === field) currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+  else { currentSort.field = field; currentSort.dir = field === 'name' || field === 'article' ? 'asc' : 'desc'; }
+  document.querySelectorAll('.sort-arrow').forEach(s => s.textContent = '');
+  const arrow = document.getElementById('sort-' + field);
+  if (arrow) arrow.textContent = currentSort.dir === 'asc' ? '▲' : '▼';
+  sortAndRender();
+}
+
+function sortAndRender() {
+  const { field, dir } = currentSort;
+  filteredProducts.sort((a, b) => {
+    let va = a[field], vb = b[field];
+    if (typeof va === 'string') { va = va.toLowerCase(); vb = (vb||'').toLowerCase(); }
+    if (va < vb) return dir === 'asc' ? -1 : 1;
+    if (va > vb) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+  renderTable(filteredProducts);
+}
+
+function renderTable(products) {
+  const body = document.getElementById('productsBody');
+  if (products.length === 0) { body.innerHTML = '<tr><td colspan="12" style="text-align:center; color:#6b7280; padding:32px;">Нет товаров</td></tr>'; return; }
+
+  let html = '';
+  products.slice(0, 500).forEach((p, idx) => {
+    const isExpanded = expandedRows[p.article];
+    const srcBadge = p.source === 'both' ? '<span class="badge-both">OK</span>'
+      : p.source === 'ozon_only' ? '<span class="badge-ozon">Ozon</span>'
+      : '<span class="badge-our">Наш</span>';
+
+    const diffClass = p.source === 'both' ? (p.diff > 0 ? 'diff-positive' : p.diff < 0 ? 'diff-negative' : 'diff-zero') : '';
+    const diffText = p.source === 'both' ? (p.diff > 0 ? '+' + fmtNum(p.diff) : p.diff === 0 ? '0' : fmtNum(p.diff)) : '—';
+    const pctText = p.source === 'both' ? (p.diffPercent > 0 ? '+' + p.diffPercent + '%' : p.diffPercent === 0 ? '0%' : p.diffPercent + '%') : '—';
+
+    // Ozon колонка: показываем цену в ЛК и старую цену
+    const ozonLkPrice = p.ozonPrice || 0;
+    const ozonMktg = p.ozonMarketingPrice || 0;
+    const ozonOld = p.ozonOldPrice || 0;
+    const ozonMin = p.ozonMinPrice || 0;
+
+    // Витрина: реальная цена для покупателя
+    const storefront = p.ozonStorefrontPrice || 0;
+
+    // WB конкуренты
+    const wbData = competitorCache[p.article];
+
+    html += `<tr class="expand-row" onclick="toggleExpand('${p.article}')" title="Нажмите для подробностей">
+      <td style="font-size:10px; color:#6b7280; text-align:center;">${isExpanded ? '▼' : '▶'}</td>
+      <td style="font-family:monospace; font-size:11px; color:#9ca3af; white-space:nowrap;">${p.article || '—'}</td>
+      <td style="max-width:200px;">
+        <div style="font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name||''}">${p.name || '—'}</div>
+      </td>
+      <td>${srcBadge}</td>
+      <td class="price-cell" style="text-align:right;">
+        ${p.ourPrice > 0 ? `<span class="price-our">${fmtPrice(p.ourPrice)}</span>` : '<span style="color:#4b5563;">—</span>'}
+      </td>
+      <td class="price-cell" style="text-align:right;">
+        ${p.purchasePrice > 0 ? `<span style="color:#6b7280;">${fmtPrice(p.purchasePrice)}</span>` : '<span style="color:#4b5563;">—</span>'}
+      </td>
+      <td class="price-cell" style="text-align:center; background:rgba(96,165,250,.03);">
+        ${ozonLkPrice > 0 ? `
+          <div class="price-current">${fmtPrice(ozonLkPrice)}</div>
+          ${ozonMktg > 0 && ozonMktg < ozonLkPrice ? `<div class="price-sale">Акция: ${fmtPrice(ozonMktg)}</div>` : ''}
+          ${ozonOld > 0 ? `<div class="price-old">${fmtPrice(ozonOld)}</div>` : ''}
+          ${ozonMin > 0 && ozonMin !== ozonLkPrice ? `<div style="font-size:9px; color:#6b7280;">мин: ${fmtPrice(ozonMin)}</div>` : ''}
+        ` : '<span style="color:#4b5563;">—</span>'}
+      </td>
+      <td class="price-cell" style="text-align:center; background:rgba(239,68,68,.03);">
+        ${storefront > 0 ? `
+          <div class="price-current" style="color:${storefront > (p.ourPrice || 0) ? '#ef4444' : '#22c55e'}; font-weight:700;">${fmtPrice(storefront)}</div>
+          ${storefront !== ozonLkPrice && ozonLkPrice > 0 ? `<div style="font-size:9px; color:#6b7280;">разница: ${fmtNum(storefront - ozonLkPrice)} ₽</div>` : ''}
+        ` : '<span style="color:#4b5563;">—</span>'}
+      </td>
+      <td style="text-align:right;"><span class="${diffClass}">${diffText}</span></td>
+      <td style="text-align:right;"><span class="${diffClass}">${pctText}</span></td>
+      <td class="price-cell" style="text-align:right; ${p.stock > 0 ? 'color:#e5e7eb;' : 'color:#4b5563;'}">
+        ${p.stock > 0 ? fmtNum(p.stock) : '—'}
+      </td>
+      <td style="text-align:center;">
+        ${wbData && wbData.length > 0 ? `<span class="badge-wb">${wbData.length}</span>` : '<span style="color:#4b5563; font-size:10px;">—</span>'}
+      </td>
+    </tr>`;
+
+    // Развернутые подробности
+    if (isExpanded) {
+      html += `<tr class="competitor-row"><td colspan="12" style="padding:10px 20px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+          <div>
+            <div class="section-label">Наш каталог</div>
+            <div style="font-size:12px; margin-top:4px;">
+              <div>Розница: <b style="color:var(--gold);">${p.ourPrice > 0 ? fmtPrice(p.ourPrice) : '—'}</b></div>
+              <div>Закупка: ${p.purchasePrice > 0 ? fmtPrice(p.purchasePrice) : '—'}</div>
+              <div>Наценка: ${p.purchasePrice > 0 && p.ourPrice > 0 ? Math.round((p.ourPrice / p.purchasePrice - 1) * 100) + '%' : '—'}</div>
+              <div>Остаток: ${p.stock || 0} шт.</div>
+            </div>
+          </div>
+          <div>
+            <div class="section-label">Ozon</div>
+            <div style="font-size:12px; margin-top:4px;">
+              <div>Цена в ЛК: <b>${ozonLkPrice > 0 ? fmtPrice(ozonLkPrice) : '—'}</b></div>
+              ${ozonMktg > 0 && ozonMktg < ozonLkPrice ? `<div style="color:#ef4444;">Акция: <b>${fmtPrice(ozonMktg)}</b></div>` : ''}
+              <div>Витрина: <b style="color:${storefront > (p.ourPrice || 0) ? '#ef4444' : '#22c55e'};">${storefront > 0 ? fmtPrice(storefront) : '—'}</b></div>
+              <div>Старая цена: ${ozonOld > 0 ? fmtPrice(ozonOld) : '—'}</div>
+              <div>Минимум: ${ozonMin > 0 ? fmtPrice(ozonMin) : '—'}</div>
+              <div>Статус: ${p.visible ? '✅ Активен' : '❌ Скрыт'}</div>
+              ${p.productId ? `<div><a href="https://seller.ozon.ru/app/products/list?offer_id=${p.article}" target="_blank" style="color:var(--gold); font-size:11px;">↗ Ozon Seller</a></div>` : ''}
+            </div>
+          </div>
+          <div>
+            <div class="section-label">Wildberries</div>
+            <div style="font-size:12px; margin-top:4px;">
+              ${wbData && wbData.length > 0 ? wbData.map(w => `
+                <div style="margin-bottom:4px; padding:4px; background:rgba(168,85,247,.05); border-radius:4px;">
+                  <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:250px;" title="${w.name}">${w.brand ? w.brand + ' ' : ''}${w.name}</div>
+                  <div>
+                    <b style="color:#a855f7;">${w.price > 0 ? fmtPrice(w.price) : '—'}</b>
+                    ${w.oldPrice > 0 && w.oldPrice !== w.price ? `<span style="text-decoration:line-through; color:#6b7280; font-size:10px;"> ${fmtPrice(w.oldPrice)}</span>` : ''}
+                  </div>
+                  <div style="font-size:10px; color:#6b7280;">⭐ ${w.rating || '—'} | 💬 ${w.feedbacks || 0}</div>
+                  <a href="${w.url}" target="_blank" style="color:#a855f7; font-size:10px;">↗ Посмотреть</a>
+                </div>
+              `).join('') : '<div style="color:#6b7280;">Нажмите "Поиск конкурентов" для загрузки</div>'}
+            </div>
+          </div>
+        </div>
+      </td></tr>`;
+    }
+  });
+
+  body.innerHTML = html;
+}
+
+function toggleExpand(article) {
+  expandedRows[article] = !expandedRows[article];
+  renderTable(filteredProducts);
+}
+
+async function searchAllCompetitors() {
+  const btn = document.getElementById('competitorBtn');
+  btn.textContent = '⏳ Поиск...';
+  btn.disabled = true;
+
+  const toSearch = filteredProducts.filter(p => p.article && !competitorCache[p.article]).slice(0, 20);
+  if (toSearch.length === 0) {
+    btn.textContent = '🔍 Поиск конкурентов (WB)';
+    btn.disabled = false;
+    showToast('Все артикулы уже проверены');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/competitors/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ articles: toSearch.map(p => ({ article: p.article, name: p.name })) })
+    });
+    const data = await res.json();
+    (data.results || []).forEach(r => {
+      competitorCache[r.article] = r.competitors || [];
+    });
+    renderTable(filteredProducts);
+    showToast(`Найдено конкурентов для ${toSearch.length} товаров`);
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, '#ef4444');
+  }
+
+  btn.textContent = '🔍 Поиск конкурентов (WB)';
+  btn.disabled = false;
+}
+
+function fmtPrice(v) {
+  const n = parseFloat(v);
+  if (!n || isNaN(n)) return '—';
+  return new Intl.NumberFormat('ru-RU').format(n) + ' ₽';
+}
+
+function fmtNum(v) {
+  return new Intl.NumberFormat('ru-RU').format(v);
+}
+
+function exportToCSV() {
+  const rows = [['Артикул','Название','Источник','Наша цена','Закупка','Цена ЛК Ozon','Акция Ozon','Витрина Ozon','Старая цена','Мин цена','Δ ₽','Δ %','Остаток','Статус']];
+  filteredProducts.forEach(p => {
+    rows.push([
+      p.article, p.name, p.source,
+      p.ourPrice, p.purchasePrice,
+      p.ozonPrice, p.ozonMarketingPrice || '', p.ozonStorefrontPrice || '',
+      p.ozonOldPrice, p.ozonMinPrice,
+      p.source === 'both' ? p.diff : '',
+      p.source === 'both' ? p.diffPercent : '',
+      p.stock, p.visible ? 'Активен' : p.source === 'our_only' ? 'Нет на Ozon' : 'Скрыт'
+    ]);
+  });
+  const csv = rows.map(r => r.map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `price-monitor-${Date.now()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function showToast(msg, color='#4ade80') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color === '#4ade80' ? '#052e16' : '#2d0a0a';
+  t.style.color = color;
+  t.style.border = `1px solid ${color}33`;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3500);
+}
+
+init();
+</script>
+</body>
+</html>

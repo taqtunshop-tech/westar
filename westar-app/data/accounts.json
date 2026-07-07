@@ -1,0 +1,29 @@
+{
+  "accounts": [
+    {
+      "id": "acc_westar_3317657",
+      "name": "Westar (источник)",
+      "clientId": "3317657",
+      "apiKey": "6d250903-edb5-4776-aea2-ed3f7614bd66",
+      "color": "#22c55e",
+      "markup": { "type": "percent", "value": 0 },
+      "prefix": "",
+      "warehouseId": null,
+      "enabled": true,
+      "createdAt": "2026-07-04T20:00:00.000Z"
+    },
+    {
+      "id": "acc_17831736536578",
+      "name": "PnDn",
+      "clientId": "1202121",
+      "apiKey": "bcf699a6-403a-4625-8601-de8efdf2b816",
+      "color": "#60a5fa",
+      "markup": { "type": "percent", "value": 30 },
+      "prefix": "PnDn-",
+      "prefixes": ["PnDn-", "PnDn2-"],
+      "warehouseId": "1020001968119000",
+      "enabled": true,
+      "createdAt": "2026-07-04T14:00:53.657Z"
+    }
+  ]
+}

@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="westar-app/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Пульт Westar — Управление товарами Ozon</title>
+<meta name="description" content="Пульт управления выгрузкой товаров Westar на различные аккаунты Ozon">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter','sans-serif'], mono: ['JetBrains Mono','monospace'] },
+      colors: {
+        gold: { DEFAULT: '#FDB913', light: '#ffe082', dark: '#c78c00' },
+        surface: { DEFAULT: '#0f1117', light: '#161923', dark: '#08090d' },
+        border: '#1e2230'
+      }
+    }
+  }
+}
+</script>
+<style>
+  :root {
+    --gold: #FDB913;
+    --gold-glow: rgba(253, 185, 19, 0.15);
+    --bg: #08090d;
+    --surface: #0f1117;
+    --surface-light: #161923;
+    --border: #1e2230;
+    --text: #e5e7eb;
+    --text-muted: #6b7280;
+    --success: #4ade80;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #60a5fa;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2d3348; }
+  .glass-card { background: rgba(15,17,23,0.8); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 16px; transition: all 0.3s ease; }
+  .glass-card:hover { border-color: rgba(253,185,19,0.15); }
+  .pulse-dot { animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(74,222,128,0.4)} 50%{opacity:0.8;box-shadow:0 0 0 6px rgba(74,222,128,0)} }
+  .btn-gold { background: linear-gradient(135deg,var(--gold),#e5a30e); color:#000; font-weight:600; border-radius:10px; padding:10px 20px; font-size:13px; cursor:pointer; transition:all 0.3s; border:none; position:relative; overflow:hidden; }
+  .btn-gold:hover { transform:translateY(-1px); box-shadow:0 4px 20px var(--gold-glow); }
+  .btn-gold:disabled { opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text-muted); border-radius:10px; padding:10px 16px; font-size:13px; cursor:pointer; transition:all 0.3s; }
+  .btn-ghost:hover { border-color:var(--text-muted); color:var(--text); background:var(--surface-light); }
+  .btn-sm { padding:6px 12px; font-size:11px; border-radius:8px; cursor:pointer; transition:all 0.2s; border:none; }
+  .btn-danger { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:var(--error); }
+  .btn-danger:hover { background:rgba(239,68,68,0.2); }
+  .input-field { background:rgba(10,11,15,0.8); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-size:13px; transition:all 0.3s; outline:none; width:100%; }
+  .input-field:focus { border-color:var(--gold); box-shadow:0 0 0 3px var(--gold-glow); }
+  .input-field::placeholder { color:#4b5563; }
+  .select-field { background:rgba(10,11,15,0.8); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-size:13px; transition:all 0.3s; outline:none; appearance:none; cursor:pointer; }
+  .select-field:focus { border-color:var(--gold); box-shadow:0 0 0 3px var(--gold-glow); }
+  .products-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .products-table th { text-align:left; padding:12px 14px; color:var(--text-muted); font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--surface); z-index:2; }
+  .products-table td { padding:10px 14px; border-bottom:1px solid rgba(30,34,48,0.6); vertical-align:middle; }
+  .products-table tr:hover td { background:rgba(255,255,255,0.015); }
+  .products-table tr.selected td { background:rgba(253,185,19,0.04); }
+  .cb-custom { -webkit-appearance:none; width:18px; height:18px; border:1.5px solid var(--border); border-radius:5px; background:transparent; cursor:pointer; transition:all 0.2s; position:relative; }
+  .cb-custom:checked { background:var(--gold); border-color:var(--gold); }
+  .cb-custom:checked::after { content:'✓'; position:absolute; top:-1px; left:3px; color:#000; font-size:12px; font-weight:700; }
+  .badge { border-radius:6px; padding:3px 10px; font-size:11px; font-weight:500; display:inline-block; }
+  .badge-success { background:rgba(74,222,128,0.1); color:var(--success); border:1px solid rgba(74,222,128,0.2); }
+  .badge-error { background:rgba(239,68,68,0.1); color:var(--error); border:1px solid rgba(239,68,68,0.2); }
+  .badge-info { background:rgba(96,165,250,0.1); color:var(--info); border:1px solid rgba(96,165,250,0.2); }
+  .progress-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--gold),#ffe082); border-radius:3px; transition:width 0.5s ease; }
+  .export-log { max-height:300px; overflow-y:auto; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.8; }
+  .log-entry { padding:2px 0; display:flex; align-items:center; gap:8px; }
+  .log-entry.success { color:var(--success); }
+  .log-entry.error { color:var(--error); }
+  .log-entry.processing { color:var(--warning); }
+  .spinner { border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; width:18px; height:18px; animation:spin 0.8s linear infinite; flex-shrink:0; display:inline-block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .section-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .section-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .toast { position:fixed; bottom:24px; right:24px; padding:14px 22px; border-radius:12px; font-size:13px; font-weight:500; display:none; z-index:9999; max-width:380px; backdrop-filter:blur(10px); animation:toastIn 0.3s ease; }
+  @keyframes toastIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .nav-link { color:var(--text-muted); font-size:12px; text-decoration:none; padding:6px 10px; border-radius:6px; transition:all 0.2s; }
+  .nav-link:hover { color:var(--text); background:var(--surface-light); }
+  .header-glow { position:absolute; top:-50%; left:50%; transform:translateX(-50%); width:600px; height:100px; background:radial-gradient(ellipse,rgba(253,185,19,0.06) 0%,transparent 70%); pointer-events:none; }
+  .acc-card { background:rgba(10,11,15,0.5); border:1px solid var(--border); border-radius:12px; padding:16px; transition:all 0.2s; }
+  .acc-card:hover { border-color:rgba(253,185,19,0.2); }
+  .acc-card.source { border-color:rgba(74,222,128,0.3); background:rgba(74,222,128,0.03); }
+  .field-label { font-size:10px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+  .field-value { font-size:13px; color:var(--text); }
+  .inline-select { background:rgba(10,11,15,0.8); border:1px solid var(--border); border-radius:6px; padding:4px 8px; color:var(--text); font-size:12px; outline:none; cursor:pointer; }
+  .inline-select:focus { border-color:var(--gold); }
+  .inline-input { background:rgba(10,11,15,0.8); border:1px solid var(--border); border-radius:6px; padding:4px 8px; color:var(--text); font-size:12px; outline:none; width:60px; font-family:'JetBrains Mono',monospace; }
+  .inline-input:focus { border-color:var(--gold); }
+  .inline-input.wide { width:100px; }
+  .wh-select { background:rgba(10,11,15,0.8); border:1px solid var(--border); border-radius:6px; padding:4px 8px; color:var(--text); font-size:12px; outline:none; cursor:pointer; width:100%; }
+  .wh-select:focus { border-color:var(--gold); }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ХЕДЕР -->
+<header class="sticky top-0 z-50" style="border-bottom:1px solid var(--border);background:rgba(8,9,13,0.92);backdrop-filter:blur(16px);position:relative;overflow:hidden;">
+  <div class="header-glow"></div>
+  <div class="max-w-[1500px] mx-auto px-6 h-[60px] flex items-center justify-between relative">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:var(--gold);"><span class="font-extrabold text-black text-sm">W</span></div>
+      <span class="font-semibold tracking-wider text-sm">WESTAR</span>
+      <span style="color:var(--border);" class="mx-1">|</span>
+      <span style="color:var(--gold);" class="text-sm font-medium">Пульт</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="/index.html" class="nav-link">Каталог</a>
+      <a href="/pulse.html" class="nav-link" style="color:var(--gold);">Пульт</a>
+      <a href="/admin.html" class="nav-link">Админка</a>
+      <a href="/dashboard.html" class="nav-link">Dashboard</a>
+      <div class="h-4 w-px" style="background:var(--border);"></div>
+      <div id="serverStatus" class="flex items-center gap-2 text-xs" style="color:var(--text-muted);">
+        <span id="statusDot" class="w-2 h-2 rounded-full inline-block" style="background:var(--text-muted);"></span>
+        <span id="statusText">Подключение...</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-[1500px] mx-auto px-6 py-8 flex flex-col gap-6">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- БЛОК 1: ТОВАРЫ                                        -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="glass-card p-6">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(253,185,19,0.15);color:var(--gold);">📦</div>
+    <div>
+      <div class="text-base font-semibold">Товары</div>
+      <div class="text-xs" style="color:var(--text-muted);">Загрузка, обновление и управление товарами</div>
+    </div>
+  </div>
+
+  <!-- Источник -->
+  <div class="rounded-xl p-4 mb-4" style="background:rgba(10,11,15,0.5);border:1px solid var(--border);">
+    <div class="text-xs font-medium mb-3" style="color:var(--text-muted);">Источник товаров (Ozon Seller API)</div>
+    <div class="flex items-center gap-3 flex-wrap">
+      <select id="selectSourceAccount" class="select-field text-xs" style="width:220px;" onchange="selectSourceFromSaved()">
+        <option value="">— Выбрать из сохранённых —</option>
+      </select>
+      <input id="inputSourceClientId" type="text" class="input-field text-xs font-mono" style="width:140px;" placeholder="Client ID">
+      <input id="inputSourceApiKey" type="password" class="input-field text-xs font-mono" style="width:260px;" placeholder="API Key">
+      <button id="btnConnectSource" class="btn-ghost text-xs flex items-center gap-2" onclick="connectSourceAccount()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        Подключить источник
+      </button>
+    </div>
+  </div>
+
+  <!-- Поиск и фильтры -->
+  <div class="flex items-center gap-3 mb-4 flex-wrap">
+    <div class="relative flex-1" style="min-width:250px;">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-muted);font-size:14px;">🔍</span>
+      <input id="searchCatalog" type="text" class="input-field text-xs" style="padding-left:32px;" placeholder="Поиск по артикулу: EM-4181 (находит и PnDn-EM-4181, и ARS-EM-4181)" oninput="filterCatalog()">
+    </div>
+    <select id="filterCategory" class="select-field text-xs" style="width:180px;" onchange="filterCatalog()"><option value="">Все категории</option></select>
+    <select id="filterBrand" class="select-field text-xs" style="width:140px;" onchange="filterCatalog()"><option value="">Все бренды</option></select>
+    <span id="selectedCount" class="text-xs font-medium" style="color:var(--gold);">Выбрано: 0</span>
+  </div>
+
+  <!-- Таблица товаров -->
+  <div id="catalogLoading" class="text-center py-12" style="color:var(--text-muted);">
+    <div class="spinner mx-auto mb-3"></div>
+    <div class="text-xs">Подключите источник для загрузки товаров</div>
+  </div>
+  <div id="catalogEmpty" style="display:none;" class="text-center py-12" style="color:var(--text-muted);">Товары не найдены</div>
+  <div id="catalogTableWrap" style="display:none;max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;">
+    <table class="products-table">
+      <thead><tr>
+        <th style="width:36px;"><input type="checkbox" class="cb-custom" id="selectAllCb" onchange="toggleAllCheckboxes(this)"></th>
+        <th style="width:60px;">Фото</th>
+        <th>Артикул</th>
+        <th>Название</th>
+        <th>Цена</th>
+        <th>Остаток</th>
+      </tr></thead>
+      <tbody id="catalogBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Опции выгрузки -->
+  <div id="exportOptions" class="mt-4 rounded-xl p-4" style="background:rgba(10,11,15,0.5);border:1px solid var(--border);display:none;">
+    <div class="flex items-center gap-6 flex-wrap text-xs">
+      <label class="flex items-center gap-2 cursor-pointer" style="color:var(--text-muted);">
+        <input type="checkbox" class="cb-custom" id="optSkipExisting"> Не обновлять существующие
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer" style="color:var(--text-muted);">
+        <input type="checkbox" class="cb-custom" id="optStocks" checked> Установить остатки
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer" style="color:var(--text-muted);">
+        <input type="checkbox" class="cb-custom" id="optImages" checked> Загружать изображения
+      </label>
+      <div class="flex items-center gap-2" style="color:var(--text-muted);">
+        Префикс: <input id="optPrefix" type="text" class="input-field text-xs font-mono" style="width:100px;padding:6px 10px;" placeholder="PnDn-">
+      </div>
+    </div>
+  </div>
+
+  <!-- Кнопки действий -->
+  <div class="mt-4 flex items-center gap-3 flex-wrap">
+    <button class="btn-gold text-xs flex items-center gap-2" onclick="startClone('new')" id="btnCloneNew" disabled>
+      📥 Загрузить новые
+    </button>
+    <button class="btn-ghost text-xs flex items-center gap-2" onclick="startClone('update')" id="btnCloneUpdate" disabled>
+      🔄 Обновить существующие
+    </button>
+    <button class="btn-ghost text-xs flex items-center gap-2" onclick="startUpdateAttributes()" id="btnUpdateAttrs" disabled>
+      🔧 Обновить атрибуты
+    </button>
+    <button class="btn-ghost text-xs flex items-center gap-2" onclick="startUpdateDescriptions()" id="btnUpdateDesc" disabled>
+      📝 Обновить описания
+    </button>
+    <button class="btn-ghost text-xs flex items-center gap-2" onclick="exportExcel()">
+      📊 Экспорт CSV
+    </button>
+    <div class="flex-1"></div>
+    <span id="exportSummary" class="text-xs" style="color:var(--text-muted);"></span>
+  </div>
+
+  <!-- Прогресс -->
+  <div id="exportProgress" class="mt-4" style="display:none;">
+    <div class="progress-bar mb-2"><div class="progress-fill" id="exportBar" style="width:0%"></div></div>
+    <div class="export-log p-4 rounded-xl" style="background:rgba(10,11,15,0.6);border:1px solid var(--border);" id="exportLog"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- БЛОК 2: СИНХРОНИЗАЦИЯ                                  -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="glass-card p-6">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(74,222,128,0.15);color:var(--success);">🔄</div>
+    <div>
+      <div class="text-base font-semibold">Синхронизация цен и остатков</div>
+      <div class="text-xs" style="color:var(--text-muted);">Настройте каждый аккаунт и нажмите «Синхронизировать все»</div>
+    </div>
+  </div>
+
+  <!-- GitHub Token -->
+  <div class="flex items-center gap-3 mb-4 p-3 rounded-lg" style="background:rgba(253,185,19,0.05);border:1px solid rgba(253,185,19,0.15);">
+    <span style="font-size:14px;">🔑</span>
+    <div class="flex-1">
+      <div class="text-xs font-medium" style="color:var(--gold);">GitHub Token</div>
+      <div class="text-[10px]" style="color:var(--text-muted);">Для сохранения аккаунтов между браузерами</div>
+    </div>
+    <input id="ghTokenInput" type="password" class="text-xs bg-transparent border rounded px-2 py-1 font-mono" style="border-color:var(--border);color:var(--text);width:220px;" placeholder="ghp_xxxxxxxxxxxx">
+    <button onclick="saveGhToken()" class="btn-sm" style="background:rgba(253,185,19,0.15);color:var(--gold);border:1px solid rgba(253,185,19,0.3);">Сохранить</button>
+  </div>
+
+  <!-- Карточки аккаунтов -->
+  <div id="accountsContainer" class="flex flex-col gap-3 mb-4"></div>
+
+  <!-- Добавить аккаунт -->
+  <div class="rounded-xl p-4 mb-4" style="border:1px dashed var(--border);background:rgba(10,11,15,0.4);">
+    <div class="text-xs font-medium mb-3" style="color:var(--text-muted);">➕ Добавить аккаунт</div>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <input type="text" id="newAccName" class="input-field text-xs" placeholder="Название">
+      <input type="text" id="newAccClientId" class="input-field text-xs font-mono" placeholder="Client ID">
+      <input type="password" id="newAccApiKey" class="input-field text-xs font-mono" placeholder="API Key">
+      <input type="text" id="newAccPrefix" class="input-field text-xs font-mono" placeholder="Префикс (напр. PnDn-)">
+      <button class="btn-gold text-xs" onclick="addAccount()">Добавить</button>
+    </div>
+  </div>
+
+  <!-- Кнопка синхронизации -->
+  <div class="flex items-center justify-between">
+    <div id="syncSummary" class="text-sm" style="color:var(--text-muted);">Добавьте аккаунты для синхронизации</div>
+    <button id="btnSyncAll" class="btn-gold flex items-center gap-2 text-base px-6 py-3" onclick="startMultiSync()" disabled>
+      🔄 Синхронизировать все
+    </button>
+  </div>
+
+  <!-- Прогресс синка -->
+  <div id="syncProgress" class="mt-4" style="display:none;">
+    <div class="progress-bar mb-2"><div class="progress-fill" id="syncBar" style="width:0%"></div></div>
+    <div class="export-log p-4 rounded-xl" style="background:rgba(10,11,15,0.6);border:1px solid var(--border);" id="syncLog"></div>
+  </div>
+</section>
+
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const API = window.location.origin;
+let sourceAccount = null;
+let savedAccountsData = [];
+let catalogProducts = [];
+let filteredCatalog = [];
+let selectedProducts = new Set();
+let warehouses = {};
+let multiAccounts = [];
+let syncHistory = JSON.parse(localStorage.getItem('pulse_sync_history') || '{}');
+const GH_REPO = 'taqtunshop-tech/westar';
+const ACCOUNTS_PATH = 'westar-app/data/accounts.json';
+
+// ════════════════════════════════════════════════════════
+// ИНИЦИАЛИЗАЦИЯ
+// ════════════════════════════════════════════════════════
+async function init() {
+  try {
+    const res = await fetch(`${API}/api/pulse/catalog`);
+    if (!res.ok) throw new Error('Сервер недоступен');
+    setServerStatus(true);
+    await loadSavedAccounts();
+    await loadMultiAccounts();
+    document.getElementById('ghTokenInput').value = localStorage.getItem('gh_token') || '';
+
+    const savedSource = localStorage.getItem('pulse_source');
+    if (savedSource) {
+      try {
+        const src = JSON.parse(savedSource);
+        document.getElementById('inputSourceClientId').value = src.clientId || '';
+        document.getElementById('inputSourceApiKey').value = src.apiKey || '';
+        await doConnectSource(src.clientId, src.apiKey, true);
+      } catch (e) { console.warn('Ошибка авто-подключения:', e); }
+    }
+  } catch (e) {
+    setServerStatus(false);
+    document.getElementById('catalogLoading').innerHTML = `<div style="color:var(--error);">⚠ Сервер недоступен</div>`;
+  }
+}
+
+function setServerStatus(ok) {
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  dot.style.background = ok ? 'var(--success)' : 'var(--error)';
+  ok ? dot.classList.add('pulse-dot') : dot.classList.remove('pulse-dot');
+  text.textContent = ok ? 'Сервер онлайн' : 'Нет подключения';
+}
+
+// ════════════════════════════════════════════════════════
+// ИСТОЧНИК
+// ════════════════════════════════════════════════════════
+async function connectSourceAccount() {
+  const clientId = document.getElementById('inputSourceClientId').value.trim();
+  const apiKey = document.getElementById('inputSourceApiKey').value.trim();
+  if (!clientId || !apiKey) return showToast('Введите Client ID и API Key', 'warning');
+  await doConnectSource(clientId, apiKey, false);
+}
+
+async function doConnectSource(clientId, apiKey, silent) {
+  const btn = document.getElementById('btnConnectSource');
+  btn.disabled = true;
+  if (!silent) btn.innerHTML = '<div class="spinner"></div> Проверка...';
+  try {
+    const res = await fetch(`${API}/api/pulse/validate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId, apiKey }) });
+    const data = await res.json();
+    if (data.valid) {
+      sourceAccount = { clientId, apiKey, seller: data.seller };
+      localStorage.setItem('pulse_source', JSON.stringify({ clientId, apiKey }));
+      const name = data.seller?.name || data.seller?.company_name || 'Источник';
+      btn.style.borderColor = 'var(--success)'; btn.style.color = 'var(--success)'; btn.innerHTML = `✅ ${name}`;
+      if (!silent) showToast(`✅ ${name} подключён`, 'success');
+      await loadSourceProducts(clientId, apiKey);
+      updateActionButtons();
+    } else {
+      if (!silent) showToast('❌ ' + (data.error || 'Неверный ключ'), 'error');
+      sourceAccount = null; localStorage.removeItem('pulse_source');
+    }
+  } catch (e) { if (!silent) showToast('Ошибка: ' + e.message, 'error'); }
+  btn.disabled = false;
+  if (!sourceAccount) btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Подключить источник';
+}
+
+async function loadSourceProducts(clientId, apiKey) {
+  showToast('📦 Загрузка товаров...', 'processing');
+  try {
+    const res = await fetch(`${API}/api/pulse/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId, apiKey }) });
+    const data = await res.json();
+    if (data.products && data.products.length > 0) {
+      catalogProducts = data.products.map(p => {
+        const primaryImg = typeof p.primary_image === 'string' ? p.primary_image : (p.primary_image?.img_url || '');
+        const imgUrls = [primaryImg];
+        if (Array.isArray(p.images)) for (const img of p.images) { const url = typeof img === 'string' ? img : (img?.img_url || img?.url || ''); if (url && !imgUrls.includes(url)) imgUrls.push(url); }
+        return { id: p.product_id, article: p.offer_id || '', name: p.name || '', price: parseFloat(p.price) || 0, stock: p.stocks?.stocks?.[0]?.present || 0, imageUrl: primaryImg, imageUrls: imgUrls, brand: 'Westar', weight: p.weight || 1000, length: p.depth || 100, width: p.width || 100, height: p.height || 100 };
+      });
+      filteredCatalog = [...catalogProducts];
+      renderCatalog(filteredCatalog);
+      showToast(`✅ ${catalogProducts.length} товаров загружено`, 'success');
+    }
+  } catch (e) { showToast('⚠ Ошибка: ' + e.message, 'error'); }
+}
+
+// ════════════════════════════════════════════════════════
+// ПОИСК — убирает префикс и ищет по чистому артикулу
+// ════════════════════════════════════════════════════════
+function stripPrefix(offerId) {
+  const match = offerId.match(/^(.*?)(EM-\d+.*)$/i);
+  return match ? match[2] : offerId;
+}
+
+function filterCatalog() {
+  const q = document.getElementById('searchCatalog').value.toLowerCase().trim();
+  filteredCatalog = catalogProducts.filter(p => {
+    if (!q) return true;
+    const article = (p.article || '').toLowerCase();
+    const name = (p.name || '').toLowerCase();
+    const id = String(p.id || '').toLowerCase();
+    const bare = stripPrefix(article).toLowerCase();
+    return article.includes(q) || name.includes(q) || id.includes(q) || bare.includes(q);
+  });
+  renderCatalog(filteredCatalog);
+}
+
+function renderCatalog(products) {
+  document.getElementById('catalogLoading').style.display = products.length > 0 || catalogProducts.length > 0 ? 'none' : 'block';
+  document.getElementById('catalogEmpty').style.display = products.length === 0 && catalogProducts.length > 0 ? 'block' : 'none';
+  document.getElementById('catalogTableWrap').style.display = products.length > 0 ? 'block' : 'none';
+  document.getElementById('exportOptions').style.display = catalogProducts.length > 0 ? 'block' : 'none';
+
+  const body = document.getElementById('catalogBody');
+  body.innerHTML = products.map(p => {
+    const sel = selectedProducts.has(p.id);
+    const img = p.imageUrl || '';
+    return `<tr class="${sel?'selected':''}" id="row-${p.id}">
+      <td><input type="checkbox" class="cb-custom product-cb" data-id="${p.id}" ${sel?'checked':''} onchange="toggleProduct('${p.id}',this.checked)"></td>
+      <td>${img ? `<img src="${img}" style="width:40px;height:40px;object-fit:contain;border-radius:8px;background:#111;" onerror="this.style.display='none'">` : '<div style="width:40px;height:40px;border-radius:8px;background:var(--surface-light);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);">нет</div>'}</td>
+      <td class="font-mono text-xs" style="color:var(--gold);">${p.article || p.id}</td>
+      <td><div class="text-xs" style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${(p.name||'').replace(/"/g,'&quot;')}">${p.name||'—'}</div></td>
+      <td class="font-mono font-semibold text-xs">${formatPrice(p.price)}</td>
+      <td class="font-mono text-xs" style="color:${(p.stock||0)>0?'var(--success)':'var(--error)'};">${p.stock||0}</td>
+    </tr>`;
+  }).join('');
+  updateSelectedCount();
+}
+
+function toggleProduct(id, checked) { checked ? selectedProducts.add(id) : selectedProducts.delete(id); const row = document.getElementById(`row-${id}`); if (row) row.classList.toggle('selected', checked); updateSelectedCount(); }
+function toggleAllCheckboxes(cb) { document.querySelectorAll('.product-cb').forEach(c => { c.checked = cb.checked; toggleProduct(c.dataset.id, cb.checked); }); }
+function updateSelectedCount() {
+  const n = selectedProducts.size;
+  document.getElementById('selectedCount').textContent = `Выбрано: ${n}`;
+  updateActionButtons();
+}
+
+function updateActionButtons() {
+  const hasProducts = selectedProducts.size > 0;
+  const hasSource = sourceAccount !== null;
+  document.getElementById('btnCloneNew').disabled = !hasProducts || !hasSource;
+  document.getElementById('btnCloneUpdate').disabled = !hasSource;
+  document.getElementById('btnUpdateAttrs').disabled = !hasSource;
+  document.getElementById('btnUpdateDesc').disabled = !hasSource;
+}
+
+// ════════════════════════════════════════════════════════
+// КЛОНИРОВАНИЕ
+// ════════════════════════════════════════════════════════
+async function startClone(mode) {
+  if (!sourceAccount) return showToast('Подключите источник', 'warning');
+  const targets = multiAccounts.filter(a => !(a.name && a.name.toLowerCase().includes('westar')));
+  if (targets.length === 0) return showToast('Добавьте целевой аккаунт в блоке "Синхронизация"', 'warning');
+
+  const prefix = document.getElementById('optPrefix').value || '';
+  const setStocks = document.getElementById('optStocks').checked;
+  const setImages = document.getElementById('optImages').checked;
+  const skipExisting = document.getElementById('optSkipExisting').checked;
+
+  document.getElementById('exportProgress').style.display = 'block';
+  document.getElementById('exportLog').innerHTML = '';
+  document.getElementById('exportBar').style.width = '0%';
+
+  const log = (msg, type = 'processing') => {
+    const icons = { success: '✅', error: '❌', processing: '⚡' };
+    const entry = document.createElement('div');
+    entry.className = `log-entry ${type}`;
+    entry.innerHTML = `<span>${icons[type]||'•'}</span><span>${msg}</span>`;
+    const el = document.getElementById('exportLog');
+    el.appendChild(entry); el.scrollTop = el.scrollHeight;
+  };
+
+  for (const target of targets) {
+    log(`🔄 ${sourceAccount.seller?.name || sourceAccount.clientId} → ${target.name || target.clientId} (префикс: ${prefix || 'нет'})`);
+    try {
+      const res = await fetch(`${API}/api/pulse/clone`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceClientId: sourceAccount.clientId, sourceApiKey: sourceAccount.apiKey,
+          targetClientId: target.clientId, targetApiKey: target.apiKey,
+          productIds: mode === 'new' ? Array.from(selectedProducts) : [],
+          markup: target.markup || { type: 'percent', value: 0 },
+          warehouseId: target.warehouseId ? parseInt(target.warehouseId) : null,
+          categoryId: 17028756, typeId: 970782919,
+          skipImages: !setImages, offerPrefix: prefix
+        })
+      });
+      const data = await res.json();
+      if (data.error) { log(`❌ ${target.name}: ${data.error}`, 'error'); continue; }
+      if (data.taskId) {
+        await new Promise(resolve => {
+          let lastIdx = 0;
+          const poll = setInterval(async () => {
+            try {
+              const st = await (await fetch(`${API}/api/pulse/clone/status?taskId=${data.taskId}`)).json();
+              if (st.log && st.log.length > lastIdx) { for (let i = lastIdx; i < st.log.length; i++) log(st.log[i]); lastIdx = st.log.length; }
+              document.getElementById('exportBar').style.width = (st.progress || 0) + '%';
+              if (st.status === 'completed' || st.status === 'failed') { clearInterval(poll); log(st.status === 'completed' ? `✅ ${target.name}: готово` : `❌ ${target.name}: ошибка`, st.status === 'completed' ? 'success' : 'error'); resolve(); }
+            } catch (e) {}
+          }, 3000);
+        });
+      }
+    } catch (e) { log(`❌ ${target.name}: ${e.message}`, 'error'); }
+  }
+  document.getElementById('exportBar').style.width = '100%';
+  log('✅ Все задачи выполнены', 'success');
+  showToast('✅ Клонирование завершено', 'success');
+}
+
+// ════════════════════════════════════════════════════════
+// СОХРАНЁННЫЕ АККАУНТЫ
+// ════════════════════════════════════════════════════════
+async function loadSavedAccounts() {
+  try {
+    const res = await fetch(`${API}/api/pulse/accounts`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.accounts && data.accounts.length > 0) { savedAccountsData = data.accounts; populateAccountSelects(data.accounts); }
+  } catch (e) {}
+}
+function populateAccountSelects(accounts) {
+  const opts = accounts.map(a => `<option value="${a.clientId}" data-key="${a.apiKey}">${a.name||'Аккаунт'} (${a.clientId})</option>`).join('');
+  document.getElementById('selectSourceAccount').innerHTML = '<option value="">— Выбрать из сохранённых —</option>' + opts;
+}
+function selectSourceFromSaved() {
+  const sel = document.getElementById('selectSourceAccount');
+  const opt = sel.options[sel.selectedIndex];
+  if (!sel.value) return;
+  document.getElementById('inputSourceClientId').value = sel.value;
+  document.getElementById('inputSourceApiKey').value = opt.dataset.key || '';
+  connectSourceAccount();
+}
+
+// ════════════════════════════════════════════════════════
+// МУЛЬТИ-АКАУНТЫ
+// ════════════════════════════════════════════════════════
+async function ghFetch(path, opts = {}) {
+  const token = localStorage.getItem('gh_token');
+  if (!token) return null;
+  const res = await fetch(`https://api.github.com${path}`, { ...opts, headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', ...opts.headers } });
+  return res.ok ? res.json() : null;
+}
+async function saveAccountsToGitHub() {
+  const existing = await ghFetch(`/repos/${GH_REPO}/contents/${ACCOUNTS_PATH}`);
+  if (!existing) return false;
+  const body = btoa(unescape(encodeURIComponent(JSON.stringify({ accounts: multiAccounts.map(a => ({...a})) }, null, 2))));
+  await ghFetch(`/repos/${GH_REPO}/contents/${ACCOUNTS_PATH}`, { method: 'PUT', body: JSON.stringify({ message: 'sync: update accounts', content: body, sha: existing.sha }) });
+  return true;
+}
+async function loadAccountsFromGitHub() {
+  const data = await ghFetch(`/repos/${GH_REPO}/contents/${ACCOUNTS_PATH}`);
+  if (!data?.content) return null;
+  try { return JSON.parse(decodeURIComponent(escape(atob(data.content)))); } catch { return null; }
+}
+async function loadMultiAccounts() {
+  try { const gh = await loadAccountsFromGitHub(); if (gh?.accounts?.length) { multiAccounts = gh.accounts; localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts)); renderMultiAccounts(); return; } } catch {}
+  try { const res = await fetch(`${API}/api/pulse/accounts`); if (res.ok) { const d = await res.json(); if (d.accounts?.length) { multiAccounts = d.accounts; localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts)); renderMultiAccounts(); return; } } } catch {}
+  try { const s = localStorage.getItem('pulse_accounts'); if (s) { multiAccounts = JSON.parse(s); renderMultiAccounts(); } } catch {}
+}
+
+// ════════════════════════════════════════════════════════
+// РЕНДЕР КАРТОЧЕК АККАУНТОВ
+// ════════════════════════════════════════════════════════
+function renderMultiAccounts() {
+  const container = document.getElementById('accountsContainer');
+  if (!multiAccounts.length) {
+    container.innerHTML = '<div class="text-center text-xs py-8" style="color:var(--text-muted);">Добавьте аккаунты ниже</div>';
+    document.getElementById('btnSyncAll').disabled = true;
+    return;
+  }
+
+  container.innerHTML = multiAccounts.map(acc => {
+    const m = acc.markup || { type: 'percent', value: 0 };
+    const sm = acc.stockMode || 'sync';
+    const sv = acc.stockValue || 0;
+    const sync = syncHistory[acc.clientId];
+    const isSrc = acc.name && acc.name.toLowerCase().includes('westar');
+    const whOptions = warehouses[acc.clientId] || [];
+
+    const syncInfo = isSrc ? '<span class="badge badge-info">Источник</span>' :
+      sync ? `<span class="badge ${sync.success ? 'badge-success' : 'badge-error'}">${sync.success ? '✅' : '❌'} ${new Date(sync.lastSync).toLocaleString('ru-RU',{timeZone:'Europe/Moscow',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} — ${sync.matched} тов.</span>` :
+      '<span class="badge" style="background:rgba(107,114,128,0.1);color:var(--text-muted);border:1px solid rgba(107,114,128,0.2);">Не синхронизирован</span>';
+
+    const whSelect = isSrc ? `<span class="text-xs" style="color:var(--text-muted);">—</span>` :
+      `<div class="flex items-center gap-1">
+        <select id="wh-${acc.id}" class="wh-select" onchange="updateAccountField('${acc.id}','warehouseId',this.value)">
+          <option value="">Загрузить склады...</option>
+        </select>
+        <button class="btn-sm" style="background:rgba(96,165,250,0.15);color:var(--info);border:1px solid rgba(96,165,250,0.3);white-space:nowrap;" onclick="loadWarehouses('${acc.id}')">🔍</button>
+      </div>`;
+
+    const stockModeSelect = isSrc ? `<span class="text-xs" style="color:var(--text-muted);">—</span>` :
+      `<select class="inline-select" onchange="updateStockMode('${acc.id}',this.value)">
+        <option value="sync" ${sm==='sync'?'selected':''}>Точная синхр.</option>
+        <option value="plus" ${sm==='plus'?'selected':''}>+% прибавить</option>
+        <option value="minus" ${sm==='minus'?'selected':''}>-% уменьшить</option>
+        <option value="fixed" ${sm==='fixed'?'selected':''}>= Фикс. значение</option>
+      </select>
+      ${sm !== 'sync' ? `<input type="number" class="inline-input mt-1" value="${sv}" onchange="updateStockValue('${acc.id}',this.value)" placeholder="${sm==='plus'||sm==='minus'?'%':'кол-во'}">` : ''}`;
+
+    const markupInput = isSrc ? `<span class="text-xs" style="color:var(--text-muted);">—</span>` :
+      `<div class="flex items-center gap-1">
+        <input type="number" class="inline-input" value="${m.value||0}" onchange="updateMarkup('${acc.id}',this.value)">
+        <select class="inline-select" onchange="updateMarkupType('${acc.id}',this.value)">
+          <option value="percent" ${m.type==='percent'?'selected':''}>%</option>
+          <option value="fixed" ${m.type==='fixed'?'selected':''}>₽</option>
+        </select>
+      </div>`;
+
+    return `<div class="acc-card ${isSrc ? 'source' : ''}">
+      <div class="flex items-start justify-between gap-4">
+        <!-- Левая часть: название + ID -->
+        <div class="flex-shrink-0" style="min-width:180px;">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:${acc.color||'var(--gold)'};"></div>
+            <span class="text-sm font-semibold" contenteditable="true" onblur="updateAccountField('${acc.id}','name',this.textContent)">${acc.name||''}</span>
+          </div>
+          <div class="font-mono text-[11px] ml-5" style="color:var(--text-muted);">ID: ${acc.clientId}</div>
+          ${!isSrc ? `<div class="mt-2 ml-5">
+            <div class="field-label">Префикс</div>
+            <input type="text" class="inline-input wide font-mono" value="${acc.prefix||''}" onchange="updateAccountField('${acc.id}','prefix',this.value)" placeholder="нет">
+          </div>` : ''}
+        </div>
+
+        <!-- Центр: настройки -->
+        <div class="flex-1 grid grid-cols-3 gap-4">
+          <!-- Наценка -->
+          <div>
+            <div class="field-label">Наценка</div>
+            ${markupInput}
+          </div>
+
+          <!-- Склад -->
+          <div>
+            <div class="field-label">Склад</div>
+            ${whSelect}
+          </div>
+
+          <!-- Остатки -->
+          <div>
+            <div class="field-label">Остатки</div>
+            ${stockModeSelect}
+          </div>
+        </div>
+
+        <!-- Правая часть: статус + удалить -->
+        <div class="flex flex-col items-end gap-2 flex-shrink-0">
+          ${syncInfo}
+          ${!isSrc ? `<button class="btn-sm btn-danger" onclick="removeAccount('${acc.id}')" title="Удалить">✕</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('btnSyncAll').disabled = multiAccounts.length < 2;
+  document.getElementById('syncSummary').textContent = `Аккаунтов: ${multiAccounts.length} (${multiAccounts.filter(a=>!(a.name&&a.name.toLowerCase().includes('westar'))).length} целевых)`;
+
+  // Загружаем склады для аккаунтов где есть warehouseId
+  for (const acc of multiAccounts) {
+    if (acc.warehouseId && warehouses[acc.clientId]?.length) {
+      const sel = document.getElementById(`wh-${acc.id}`);
+      if (sel) {
+        sel.innerHTML = warehouses[acc.clientId].map(wh =>
+          `<option value="${wh.warehouse_id}" ${String(wh.warehouse_id)===String(acc.warehouseId)?'selected':''}>${wh.name || wh.warehouse_id}</option>`
+        ).join('');
+      }
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// ЗАГРУЗКА СКЛАДОВ С OZON API
+// ════════════════════════════════════════════════════════
+async function loadWarehouses(accId) {
+  const acc = multiAccounts.find(x => x.id === accId);
+  if (!acc) return;
+  showToast(`🔍 Загрузка складов для ${acc.name}...`, 'processing');
+  try {
+    const res = await fetch(`${API}/api/pulse/warehouses`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId: acc.clientId, apiKey: acc.apiKey })
+    });
+    const data = await res.json();
+    if (data.warehouses && data.warehouses.length > 0) {
+      warehouses[acc.clientId] = data.warehouses;
+      const sel = document.getElementById(`wh-${accId}`);
+      if (sel) {
+        sel.innerHTML = data.warehouses.map(wh =>
+          `<option value="${wh.warehouse_id}" ${String(wh.warehouse_id)===String(acc.warehouseId)?'selected':''}>${wh.name || wh.warehouse_id}</option>`
+        ).join('');
+      }
+      showToast(`✅ ${data.warehouses.length} складов загружено`, 'success');
+    } else {
+      showToast('⚠ Склады не найдены', 'warning');
+    }
+  } catch (e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+// ════════════════════════════════════════════════════════
+// ОБНОВЛЕНИЕ НАСТРОЕК АККАУНТОВ
+// ════════════════════════════════════════════════════════
+function saveGhToken() { const t = document.getElementById('ghTokenInput').value.trim(); if (t) { localStorage.setItem('gh_token', t); showToast('✅ Token сохранён', 'success'); } else { localStorage.removeItem('gh_token'); showToast('Token удалён', 'warning'); } }
+
+async function addAccount() {
+  const name = document.getElementById('newAccName').value.trim();
+  const clientId = document.getElementById('newAccClientId').value.trim();
+  const apiKey = document.getElementById('newAccApiKey').value.trim();
+  const prefix = document.getElementById('newAccPrefix').value.trim();
+  if (!name || !clientId || !apiKey) return showToast('Заполните название, Client ID и API Key', 'warning');
+  const acc = { id: 'acc_' + Date.now(), name, clientId, apiKey, prefix, color: '#4ade80', markup: { type: 'percent', value: 30 }, warehouseId: null, stockMode: 'sync', stockValue: 0 };
+  multiAccounts.push(acc);
+  localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts));
+  renderMultiAccounts();
+  const gh = await saveAccountsToGitHub();
+  try { await fetch(`${API}/api/pulse/accounts/save`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(acc) }); } catch {}
+  showToast(gh ? '✅ Сохранено в GitHub' : '✅ Добавлено', gh ? 'success' : 'warning');
+  ['newAccName','newAccClientId','newAccApiKey','newAccPrefix'].forEach(id => document.getElementById(id).value = '');
+  // Автоматически загружаем склады
+  await loadWarehouses(acc.id);
+}
+
+async function removeAccount(id) {
+  if (!confirm('Удалить аккаунт?')) return;
+  multiAccounts = multiAccounts.filter(a => a.id !== id);
+  localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts));
+  renderMultiAccounts();
+  await saveAccountsToGitHub();
+  showToast('Удалено', 'warning');
+}
+
+async function updateAccountField(id, field, value) {
+  const a = multiAccounts.find(x => x.id === id);
+  if (a) { a[field] = value.trim(); localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts)); }
+  try { await fetch(`${API}/api/pulse/accounts/update`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, [field]: value.trim() }) }); } catch {}
+  saveAccountsToGitHub();
+}
+
+async function updateMarkup(id, value) {
+  const a = multiAccounts.find(x => x.id === id);
+  if (!a) return;
+  a.markup = a.markup || { type: 'percent', value: 0 };
+  a.markup.value = parseFloat(value) || 0;
+  localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts));
+  saveAccountsToGitHub();
+}
+
+async function updateMarkupType(id, type) {
+  const a = multiAccounts.find(x => x.id === id);
+  if (!a) return;
+  a.markup = a.markup || { type: 'percent', value: 0 };
+  a.markup.type = type;
+  localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts));
+  saveAccountsToGitHub();
+}
+
+async function updateStockMode(id, mode) {
+  const a = multiAccounts.find(x => x.id === id);
+  if (a) {
+    a.stockMode = mode;
+    localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts));
+    renderMultiAccounts();
+    saveAccountsToGitHub();
+  }
+}
+
+async function updateStockValue(id, value) {
+  const a = multiAccounts.find(x => x.id === id);
+  if (a) {
+    a.stockValue = parseFloat(value) || 0;
+    localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts));
+    saveAccountsToGitHub();
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// СИНХРОНИЗАЦИЯ
+// ════════════════════════════════════════════════════════
+async function startMultiSync() {
+  if (multiAccounts.length < 2) return showToast('Нужно минимум 2 аккаунта', 'warning');
+  const source = multiAccounts.find(a => a.name && a.name.toLowerCase().includes('westar')) || multiAccounts[0];
+  const targets = multiAccounts.filter(a => a.clientId !== source.clientId);
+  if (!targets.length) return showToast('Нет целевых аккаунтов', 'warning');
+
+  const btn = document.getElementById('btnSyncAll');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Синхронизация...';
+  document.getElementById('syncProgress').style.display = 'block';
+  document.getElementById('syncLog').innerHTML = '';
+  document.getElementById('syncBar').style.width = '0%';
+
+  const addLog = (type, msg) => { const icons = { success:'✅', error:'❌', processing:'⚡' }; const entry = document.createElement('div'); entry.className = `log-entry ${type}`; entry.innerHTML = `<span>${icons[type]||'•'}</span><span><span style="color:var(--text-muted);">[${moscowTime()}]</span> ${msg}</span>`; const el = document.getElementById('syncLog'); el.appendChild(entry); el.scrollTop = el.scrollHeight; };
+  addLog('processing', `🔄 ${source.name} → ${targets.map(t=>t.name).join(', ')}`);
+
+  try {
+    const res = await fetch(`${API}/api/pulse/sync/multi`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+      sourceClientId: source.clientId, sourceApiKey: source.apiKey,
+      accounts: targets.map(t => ({ clientId: t.clientId, apiKey: t.apiKey, name: t.name, markup: t.markup || { type: 'percent', value: 0 }, prefix: t.prefix || '', prefixes: t.prefixes || (t.prefix ? [t.prefix] : []), warehouseId: t.warehouseId || null, stockMode: t.stockMode || 'sync', stockValue: t.stockValue || 0 }))
+    })});
+    const data = await res.json();
+    if (data.error) { addLog('error', data.error); btn.disabled = false; btn.innerHTML = '🔄 Синхронизировать все'; return; }
+    if (data.taskId) {
+      await new Promise(resolve => {
+        let lastIdx = 0;
+        const poll = setInterval(async () => {
+          try {
+            const st = await (await fetch(`${API}/api/pulse/sync/status?taskId=${data.taskId}`)).json();
+            if (st.log?.length > lastIdx) { for (let i = lastIdx; i < st.log.length; i++) { const l = st.log[i]; addLog(l.includes('ОШИБКА') ? 'error' : l.includes('обновлен') ? 'success' : 'processing', l); } lastIdx = st.log.length; }
+            document.getElementById('syncBar').style.width = (st.progress||0)+'%';
+            if (st.status === 'completed' || st.status === 'failed') { clearInterval(poll); addLog(st.status === 'completed' ? 'success' : 'error', st.status === 'completed' ? '✅ Синхронизация завершена!' : '❌ Ошибка'); if (st.results) saveSyncHistory(st.results, source.name); renderMultiAccounts(); resolve(); }
+          } catch {}
+        }, 3000);
+      });
+    }
+  } catch (e) { addLog('error', e.message); }
+  btn.disabled = false; btn.innerHTML = '🔄 Синхронизировать все';
+}
+
+function saveSyncHistory(results, sourceName) {
+  const now = new Date().toISOString();
+  for (const r of results) {
+    syncHistory[r.clientId] = { lastSync: now, matched: r.matched||0, prices: r.prices||0, stocks: r.stocks||0, success: r.success, sourceName, error: r.error||null };
+  }
+  localStorage.setItem('pulse_sync_history', JSON.stringify(syncHistory));
+}
+
+function moscowTime() { return new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow', hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
+
+// ════════════════════════════════════════════════════════
+// ОБНОВЛЕНИЕ АТРИБУТОВ
+// ════════════════════════════════════════════════════════
+async function startUpdateAttributes() {
+  const source = multiAccounts.find(a => a.name && a.name.toLowerCase().includes('westar')) || sourceAccount;
+  const targets = multiAccounts.filter(a => !(a.name && a.name.toLowerCase().includes('westar')));
+  if (!source) return showToast('Нет источника', 'warning');
+  if (!targets.length) return showToast('Нет целевых аккаунтов', 'warning');
+  showToast(`🔧 Атрибуты: ${targets.length} аккаунтов...`, 'processing');
+  for (const acc of targets) {
+    try {
+      const res = await fetch(`${API}/api/pulse/update-attributes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sourceClientId: source.clientId, sourceApiKey: source.apiKey, targetClientId: acc.clientId, targetApiKey: acc.apiKey, prefix: acc.prefix || '' }) });
+      const data = await res.json();
+      if (data.taskId) {
+        await new Promise(resolve => { const poll = setInterval(async () => { try { const st = await (await fetch(`${API}/api/pulse/update-attributes/status?taskId=${data.taskId}`)).json(); if (st.status === 'done' || st.status === 'error') { clearInterval(poll); const r = st.results || {}; showToast(r.error ? `❌ ${acc.name}` : `✅ ${acc.name}: ${r.updated||0}/${r.matched||0}`, r.error ? 'error' : 'success'); resolve(); } } catch {} }, 3000); });
+      }
+    } catch (e) { showToast(`❌ ${acc.name}: ${e.message}`, 'error'); }
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// ОБНОВЛЕНИЕ ОПИСАНИЙ
+// ════════════════════════════════════════════════════════
+async function startUpdateDescriptions() {
+  const targets = multiAccounts.filter(a => !(a.name && a.name.toLowerCase().includes('westar')));
+  if (!targets.length) return showToast('Нет целевых аккаунтов', 'warning');
+  showToast(`📝 Описания: ${targets.length} аккаунтов...`, 'processing');
+  for (const acc of targets) {
+    try {
+      const res = await fetch(`${API}/api/pulse/update-descriptions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: acc.clientId, apiKey: acc.apiKey }) });
+      const data = await res.json();
+      if (data.taskId) {
+        await new Promise(resolve => { const poll = setInterval(async () => { try { const st = await (await fetch(`${API}/api/pulse/update-descriptions/status?taskId=${data.taskId}`)).json(); if (st.status === 'completed' || st.status === 'failed') { clearInterval(poll); showToast(`${acc.name}: ${st.status === 'completed' ? '✅' : '❌'}`, st.status === 'completed' ? 'success' : 'error'); resolve(); } } catch {} }, 3000); });
+      }
+    } catch (e) { showToast(`❌ ${acc.name}: ${e.message}`, 'error'); }
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// ЭКСПОРТ CSV
+// ════════════════════════════════════════════════════════
+function exportExcel() {
+  const source = multiAccounts.find(a => a.name && a.name.toLowerCase().includes('westar')) || multiAccounts[0];
+  if (!source) return showToast('Нет источника', 'warning');
+  showToast('📊 Загрузка...', 'processing');
+  fetch(`${API}/api/pulse/export-excel`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: source.clientId, apiKey: source.apiKey }) })
+    .then(r => { if (!r.ok) throw new Error(); return r.blob(); })
+    .then(blob => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = `products_${source.clientId}_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(u); showToast('✅ CSV загружен', 'success'); })
+    .catch(e => showToast('❌ Ошибка', 'error'));
+}
+
+// ════════════════════════════════════════════════════════
+// УТИЛИТЫ
+// ════════════════════════════════════════════════════════
+function formatPrice(v) { const n = parseFloat(v); return !n || isNaN(n) ? '—' : new Intl.NumberFormat('ru-RU').format(n) + ' ₽'; }
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const c = { success:{bg:'#052e16',color:'#4ade80',border:'rgba(74,222,128,0.3)'}, error:{bg:'#2d0a0a',color:'#ef4444',border:'rgba(239,68,68,0.3)'}, warning:{bg:'#2d1f0a',color:'#f59e0b',border:'rgba(245,158,11,0.3)'}, processing:{bg:'#0a1a2d',color:'#60a5fa',border:'rgba(96,165,250,0.3)'} }[type] || {bg:'#052e16',color:'#4ade80',border:'rgba(74,222,128,0.3)'};
+  t.textContent = msg; t.style.background = c.bg; t.style.color = c.color; t.style.border = `1px solid ${c.border}`; t.style.display = 'block'; t.style.animation = 'none'; setTimeout(() => t.style.animation = 'toastIn 0.3s ease', 10); setTimeout(() => t.style.display = 'none', 4000);
+}
+
+init();
+</script>
+</body>
+</html>

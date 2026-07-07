@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WESTAR — Full Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], mono: ['JetBrains Mono','monospace'] } } }
+}
+</script>
+<style>
+:root { --gold:#FDB913; --bg:#08090d; --surface:#0f1117; --surface2:#141620; --border:#1e2230; }
+body { background:var(--bg); color:#e5e7eb; font-family:'Inter',sans-serif; margin:0; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+.btn-primary { background:var(--gold); color:#000; font-weight:600; border-radius:8px; padding:8px 16px; font-size:13px; cursor:pointer; transition:.2s; border:none; }
+.btn-primary:hover { opacity:.85; }
+.btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+.btn-ghost { background:transparent; border:1px solid var(--border); color:#9ca3af; border-radius:8px; padding:8px 14px; font-size:12px; cursor:pointer; transition:.2s; }
+.btn-ghost:hover { border-color:#6b7280; color:#e5e7eb; }
+.btn-ghost:disabled { opacity:.4; cursor:not-allowed; }
+.btn-sm { padding:5px 10px; font-size:11px; }
+.acc-tab { border-radius:8px; padding:10px 16px; cursor:pointer; transition:.2s; border:1px solid transparent; font-size:13px; }
+.acc-tab.active { border-color:var(--gold); background:rgba(253,185,19,.08); }
+.acc-tab:hover:not(.active) { background:#1a1d27; }
+.nav-tab { border-radius:8px; padding:8px 14px; cursor:pointer; transition:.2s; font-size:13px; color:#9ca3af; border:1px solid transparent; background:transparent; }
+.nav-tab.active { border-color:var(--gold); color:var(--gold); background:rgba(253,185,19,.08); font-weight:600; }
+.nav-tab:hover:not(.active) { background:#1a1d27; color:#e5e7eb; }
+.badge { border-radius:6px; padding:2px 8px; font-size:10px; white-space:nowrap; display:inline-block; }
+.badge-both { background:rgba(74,222,128,.1); color:#4ade80; border:1px solid rgba(74,222,128,.3); }
+.badge-ozon { background:rgba(96,165,250,.1); color:#60a5fa; border:1px solid rgba(96,165,250,.3); }
+.badge-our { background:rgba(251,146,60,.1); color:#fb923c; border:1px solid rgba(251,146,60,.3); }
+.badge-wb { background:rgba(168,85,247,.1); color:#a855f7; border:1px solid rgba(168,85,247,.3); }
+.badge-green { background:rgba(74,222,128,.1); color:#4ade80; border:1px solid rgba(74,222,128,.3); }
+.badge-red { background:rgba(239,68,68,.1); color:#ef4444; border:1px solid rgba(239,68,68,.3); }
+.badge-blue { background:rgba(96,165,250,.1); color:#60a5fa; border:1px solid rgba(96,165,250,.3); }
+.badge-yellow { background:rgba(253,185,19,.1); color:#FDB913; border:1px solid rgba(253,185,19,.3); }
+.badge-purple { background:rgba(168,85,247,.1); color:#a855f7; border:1px solid rgba(168,85,247,.3); }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+th { text-align:left; padding:10px 10px; color:#6b7280; font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; white-space:nowrap; position:sticky; top:0; background:var(--surface); z-index:1; }
+th:hover { color:#9ca3af; }
+th .sort-arrow { margin-left:4px; font-size:9px; }
+td { padding:8px 10px; border-bottom:1px solid rgba(30,34,48,.6); vertical-align:middle; }
+tr:hover td { background:rgba(255,255,255,.02); }
+.loader { border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; width:20px; height:20px; animation:spin .8s linear infinite; }
+.loader-sm { border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; width:14px; height:14px; animation:spin .8s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.diff-positive { background:rgba(239,68,68,.1); color:#ef4444; border-radius:4px; padding:1px 5px; font-family:monospace; font-size:11px; white-space:nowrap; }
+.diff-negative { background:rgba(34,197,94,.1); color:#22c55e; border-radius:4px; padding:1px 5px; font-family:monospace; font-size:11px; white-space:nowrap; }
+.diff-zero { background:rgba(107,114,128,.1); color:#6b7280; border-radius:4px; padding:1px 5px; font-family:monospace; font-size:11px; white-space:nowrap; }
+.price-cell { font-family:'JetBrains Mono',monospace; font-size:11px; white-space:nowrap; }
+.price-old { text-decoration:line-through; color:#6b7280; font-size:10px; }
+.price-sale { color:#ef4444; font-weight:600; }
+.price-current { color:#e5e7eb; font-weight:500; }
+.price-our { color:var(--gold); font-weight:600; }
+.section-label { font-size:10px; color:#6b7280; text-transform:uppercase; letter-spacing:.08em; padding:4px 8px; background:rgba(30,34,48,.5); border-radius:4px; margin-bottom:4px; display:inline-block; }
+.expand-row { cursor:pointer; }
+.expand-row:hover { background:rgba(253,185,19,.03); }
+.competitor-row { background:var(--surface2); }
+.competitor-row td { padding:6px 10px; font-size:11px; }
+.bar-container { width:100%; height:6px; background:#1a1d27; border-radius:3px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:3px; transition:width .3s; }
+input[type=date], input[type=text], select {
+  background:#0a0b0f; border:1px solid var(--border); border-radius:8px; padding:7px 12px; color:#e5e7eb; font-size:12px;
+}
+input[type=date]:focus, input[type=text]:focus, select:focus { outline:none; border-color:var(--gold); }
+input[type=date]::-webkit-calendar-picker-indicator { filter:invert(0.6); }
+.empty-state { padding:48px; text-align:center; color:#6b7280; font-size:13px; }
+.toast { position:fixed; bottom:24px; right:24px; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:500; display:none; z-index:1000; max-width:320px; }
+.summary-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.summary-label { font-size:10px; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em; }
+.summary-value { font-size:24px; font-weight:600; }
+.date-range { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.date-range button { background:#1a1d27; border:1px solid var(--border); color:#9ca3af; border-radius:6px; padding:5px 12px; font-size:11px; cursor:pointer; transition:.2s; }
+.date-range button:hover, .date-range button.active { border-color:var(--gold); color:var(--gold); background:rgba(253,185,19,.08); }
+.scroll-table { overflow-x:auto; max-height:70vh; overflow-y:auto; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- HEADER -->
+<header style="border-bottom:1px solid var(--border); padding:0 24px; height:60px; display:flex; align-items:center; justify-content:space-between; background:rgba(8,9,13,.9); backdrop-filter:blur(10px); position:sticky; top:0; z-index:50;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div style="width:28px; height:28px; background:var(--gold); border-radius:6px; display:flex; align-items:center; justify-content:center;">
+      <span style="font-weight:700; color:#000; font-size:13px;">W</span>
+    </div>
+    <span style="font-weight:600; letter-spacing:.05em;">WESTAR</span>
+    <span style="color:var(--border); margin:0 4px;">|</span>
+    <nav style="display:flex; align-items:center; gap:2px; font-size:12px;">
+      <a href="/index.html" style="color:#9ca3af; padding:4px 8px; border-radius:6px; text-decoration:none;">Каталог</a>
+      <a href="/pulse.html" style="color:#9ca3af; padding:4px 8px; border-radius:6px; text-decoration:none;">Пульт</a>
+      <a href="/admin.html" style="color:#9ca3af; padding:4px 8px; border-radius:6px; text-decoration:none;">Админ</a>
+      <a href="/dashboard.html" style="color:#9ca3af; padding:4px 8px; border-radius:6px; text-decoration:none;">Dashboard</a>
+      <a href="/price-monitor.html" style="color:#9ca3af; padding:4px 8px; border-radius:6px; text-decoration:none;">Цены</a>
+    </nav>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <span id="serverStatus" style="font-size:11px; color:#6b7280; display:flex; align-items:center; gap:5px;">
+      <span style="width:7px; height:7px; border-radius:50%; background:#6b7280; display:inline-block;" id="statusDot"></span>
+      <span id="statusText">...</span>
+    </span>
+    <button class="btn-primary btn-sm" onclick="refreshCurrentTab()">⟳ Обновить</button>
+  </div>
+</header>
+
+<div style="max-width:1800px; margin:0 auto; padding:20px;">
+
+  <!-- ACCOUNT TABS -->
+  <div id="accountTabs" style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+    <div style="color:#6b7280; font-size:13px; display:flex; align-items:center; padding:10px 4px;">Загрузка аккаунтов...</div>
+  </div>
+
+  <!-- MAIN NAV TABS -->
+  <div id="mainTabs" style="display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; border-bottom:1px solid var(--border); padding-bottom:12px;">
+    <button class="nav-tab active" data-tab="prices" onclick="switchTab('prices')">💰 Цены</button>
+    <button class="nav-tab" data-tab="analytics" onclick="switchTab('analytics')">📈 Аналитика</button>
+    <button class="nav-tab" data-tab="orders" onclick="switchTab('orders')">📦 Заказы FBS</button>
+    <button class="nav-tab" data-tab="finance" onclick="switchTab('finance')">💳 Финансы</button>
+    <button class="nav-tab" data-tab="returns" onclick="switchTab('returns')">🔄 Возвраты</button>
+    <button class="nav-tab" data-tab="competitors" onclick="switchTab('competitors')">🏪 Конкуренты</button>
+  </div>
+
+  <!-- TAB CONTENT: PRICES -->
+  <div id="tab-prices" class="tab-content">
+    <!-- Stats -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px;">
+      <div class="summary-card"><div class="summary-label">Всего</div><div class="summary-value" id="pmStatTotal">—</div></div>
+      <div class="summary-card"><div class="summary-label">Совпадение</div><div class="summary-value" style="color:#4ade80;" id="pmStatMatched">—</div>
+        <div class="bar-container" style="margin-top:6px;"><div class="bar-fill" id="pmBarMatched" style="width:0%; background:#4ade80;"></div></div></div>
+      <div class="summary-card"><div class="summary-label">Только Ozon</div><div class="summary-value" style="color:#60a5fa;" id="pmStatOzonOnly">—</div></div>
+      <div class="summary-card"><div class="summary-label">Только наш</div><div class="summary-value" style="color:#fb923c;" id="pmStatOurOnly">—</div></div>
+      <div class="summary-card"><div class="summary-label">Ozon дороже</div><div class="summary-value" style="color:#ef4444;" id="pmStatHigher">—</div></div>
+      <div class="summary-card"><div class="summary-label">Ozon дешевле</div><div class="summary-value" style="color:#22c55e;" id="pmStatLower">—</div></div>
+      <div class="summary-card"><div class="summary-label">Средняя разница</div><div class="summary-value" id="pmStatAvgDiff">—</div></div>
+    </div>
+    <!-- Filters -->
+    <div class="card" style="padding:12px 16px; margin-bottom:12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <input type="text" id="pmSearch" placeholder="Поиск..." style="width:220px;" oninput="filterPriceTable()">
+      <select id="pmSourceFilter" onchange="filterPriceTable()">
+        <option value="">Все источники</option>
+        <option value="both">Есть и там, и там</option>
+        <option value="ozon_only">Только Ozon</option>
+        <option value="our_only">Только наш</option>
+      </select>
+      <select id="pmDiffFilter" onchange="filterPriceTable()">
+        <option value="">Все расхождения</option>
+        <option value="higher">Витрина дороже</option>
+        <option value="lower">Витрина дешевле</option>
+        <option value="same">Цены совпадают</option>
+        <option value="big">Большое расхождение (&gt;20%)</option>
+      </select>
+      <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+        <button class="btn-ghost btn-sm" onclick="searchAllCompetitors()" id="pmCompetitorBtn">🔍 Поиск конкурентов</button>
+        <button class="btn-ghost btn-sm" onclick="exportPricesCSV()">↓ CSV</button>
+      </div>
+    </div>
+    <!-- Table -->
+    <div class="card" style="overflow:hidden;">
+      <div id="pmLoading" class="empty-state"><div class="loader" style="margin:0 auto 16px;"></div>Загрузка данных...</div>
+      <div id="pmTableWrap" class="scroll-table" style="display:none;">
+        <table id="pmTable">
+          <thead>
+            <tr>
+              <th style="width:30px;"></th>
+              <th onclick="sortPriceTable('article')">Артикул <span class="sort-arrow" id="pm-sort-article"></span></th>
+              <th onclick="sortPriceTable('name')">Название <span class="sort-arrow" id="pm-sort-name"></span></th>
+              <th>Ист.</th>
+              <th onclick="sortPriceTable('ourPrice')" style="text-align:right;">Наша цена <span class="sort-arrow" id="pm-sort-ourPrice"></span></th>
+              <th onclick="sortPriceTable('purchasePrice')" style="text-align:right;">Закупка <span class="sort-arrow" id="pm-sort-purchasePrice"></span></th>
+              <th style="text-align:center; min-width:160px;">— Ozon —</th>
+              <th style="text-align:center; min-width:160px;">— Витрина —</th>
+              <th onclick="sortPriceTable('diff')" style="text-align:right;">Δ ₽ <span class="sort-arrow" id="pm-sort-diff"></span></th>
+              <th onclick="sortPriceTable('diffPercent')" style="text-align:right;">Δ % <span class="sort-arrow" id="pm-sort-diffPercent"></span></th>
+              <th onclick="sortPriceTable('stock')" style="text-align:right;">Ост. <span class="sort-arrow" id="pm-sort-stock"></span></th>
+              <th>WB</th>
+            </tr>
+          </thead>
+          <tbody id="pmBody"></tbody>
+        </table>
+      </div>
+      <div id="pmEmpty" class="empty-state" style="display:none;">Нет данных</div>
+    </div>
+  </div>
+
+  <!-- TAB CONTENT: ANALYTICS -->
+  <div id="tab-analytics" class="tab-content" style="display:none;">
+    <div class="date-range" style="margin-bottom:16px;">
+      <span style="color:#6b7280; font-size:12px;">Период:</span>
+      <button class="active" data-days="7" onclick="setAnalyticsRange(7, this)">7 дней</button>
+      <button data-days="30" onclick="setAnalyticsRange(30, this)">30 дней</button>
+      <button data-days="90" onclick="setAnalyticsRange(90, this)">90 дней</button>
+      <input type="date" id="analyticsFrom" style="width:140px;">
+      <span style="color:#6b7280;">—</span>
+      <input type="date" id="analyticsTo" style="width:140px;">
+      <button class="btn-ghost btn-sm" onclick="loadAnalytics()">Загрузить</button>
+      <button class="btn-ghost btn-sm" onclick="exportAnalyticsCSV()" style="margin-left:auto;">↓ CSV</button>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px;">
+      <div class="summary-card"><div class="summary-label">Выручка</div><div class="summary-value" style="color:var(--gold);" id="anRevenue">—</div></div>
+      <div class="summary-card"><div class="summary-label">Заказы</div><div class="summary-value" id="anOrders">—</div></div>
+      <div class="summary-card"><div class="summary-label">Просмотры</div><div class="summary-value" id="anViews">—</div></div>
+      <div class="summary-card"><div class="summary-label">Конверсия в корзину</div><div class="summary-value" style="color:#4ade80;" id="anConversion">—</div></div>
+      <div class="summary-card"><div class="summary-label">Возвраты</div><div class="summary-value" style="color:#ef4444;" id="anReturns">—</div></div>
+    </div>
+    <div class="card" style="overflow:hidden;">
+      <div id="anLoading" class="empty-state"><div class="loader" style="margin:0 auto 16px;"></div>Загрузка аналитики...</div>
+      <div id="anTableWrap" class="scroll-table" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortAnalyticsTable('sku')">Артикул (SKU) <span class="sort-arrow" id="an-sort-sku"></span></th>
+              <th onclick="sortAnalyticsTable('revenue')" style="text-align:right;">Выручка <span class="sort-arrow" id="an-sort-revenue"></span></th>
+              <th onclick="sortAnalyticsTable('ordered_units')" style="text-align:right;">Заказы <span class="sort-arrow" id="an-sort-ordered_units"></span></th>
+              <th onclick="sortAnalyticsTable('hits_view')" style="text-align:right;">Просмотры <span class="sort-arrow" id="an-sort-hits_view"></span></th>
+              <th onclick="sortAnalyticsTable('hits_tocart')" style="text-align:right;">В корзину <span class="sort-arrow" id="an-sort-hits_tocart"></span></th>
+              <th onclick="sortAnalyticsTable('conv_tocart')" style="text-align:right;">Конверсия <span class="sort-arrow" id="an-sort-conv_tocart"></span></th>
+              <th onclick="sortAnalyticsTable('returns')" style="text-align:right;">Возвраты <span class="sort-arrow" id="an-sort-returns"></span></th>
+            </tr>
+          </thead>
+          <tbody id="anBody"></tbody>
+        </table>
+      </div>
+      <div id="anEmpty" class="empty-state" style="display:none;">Нет данных за выбранный период</div>
+    </div>
+  </div>
+
+  <!-- TAB CONTENT: ORDERS FBS -->
+  <div id="tab-orders" class="tab-content" style="display:none;">
+    <div class="date-range" style="margin-bottom:16px;">
+      <span style="color:#6b7280; font-size:12px;">Период:</span>
+      <button class="active" data-days="7" onclick="setOrdersRange(7, this)">7 дней</button>
+      <button data-days="30" onclick="setOrdersRange(30, this)">30 дней</button>
+      <button data-days="90" onclick="setOrdersRange(90, this)">90 дней</button>
+      <input type="date" id="ordersFrom" style="width:140px;">
+      <span style="color:#6b7280;">—</span>
+      <input type="date" id="ordersTo" style="width:140px;">
+      <button class="btn-ghost btn-sm" onclick="loadOrders()">Загрузить</button>
+      <button class="btn-ghost btn-sm" onclick="exportOrdersCSV()" style="margin-left:auto;">↓ CSV</button>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px;">
+      <div class="summary-card"><div class="summary-label">Всего заказов</div><div class="summary-value" id="orTotalOrders">—</div></div>
+      <div class="summary-card"><div class="summary-label">Общая сумма</div><div class="summary-value" style="color:var(--gold);" id="orTotalSum">—</div></div>
+      <div class="summary-card"><div class="summary-label">Средний чек</div><div class="summary-value" id="orAvgOrder">—</div></div>
+    </div>
+    <div class="card" style="overflow:hidden;">
+      <div id="orLoading" class="empty-state"><div class="loader" style="margin:0 auto 16px;"></div>Загрузка заказов...</div>
+      <div id="orTableWrap" class="scroll-table" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:30px;"></th>
+              <th onclick="sortOrdersTable('posting_number')">Номер <span class="sort-arrow" id="or-sort-posting_number"></span></th>
+              <th onclick="sortOrdersTable('order_date')">Дата <span class="sort-arrow" id="or-sort-order_date"></span></th>
+              <th onclick="sortOrdersTable('products_count')" style="text-align:center;">Товаров <span class="sort-arrow" id="or-sort-products_count"></span></th>
+              <th onclick="sortOrdersTable('total_price')" style="text-align:right;">Сумма <span class="sort-arrow" id="or-sort-total_price"></span></th>
+              <th onclick="sortOrdersTable('status')">Статус <span class="sort-arrow" id="or-sort-status"></span></th>
+              <th onclick="sortOrdersTable('city')">Город <span class="sort-arrow" id="or-sort-city"></span></th>
+            </tr>
+          </thead>
+          <tbody id="orBody"></tbody>
+        </table>
+      </div>
+      <div id="orEmpty" class="empty-state" style="display:none;">Нет заказов за выбранный период</div>
+    </div>
+  </div>
+
+  <!-- TAB CONTENT: FINANCE -->
+  <div id="tab-finance" class="tab-content" style="display:none;">
+    <div class="date-range" style="margin-bottom:16px;">
+      <span style="color:#6b7280; font-size:12px;">Период:</span>
+      <button class="active" data-days="7" onclick="setFinanceRange(7, this)">7 дней</button>
+      <button data-days="30" onclick="setFinanceRange(30, this)">30 дней</button>
+      <button data-days="90" onclick="setFinanceRange(90, this)">90 дней</button>
+      <input type="date" id="financeFrom" style="width:140px;">
+      <span style="color:#6b7280;">—</span>
+      <input type="date" id="financeTo" style="width:140px;">
+      <button class="btn-ghost btn-sm" onclick="loadFinance()">Загрузить</button>
+      <button class="btn-ghost btn-sm" onclick="exportFinanceCSV()" style="margin-left:auto;">↓ CSV</button>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px;">
+      <div class="summary-card"><div class="summary-label">Операций</div><div class="summary-value" id="fnTotalOps">—</div></div>
+      <div class="summary-card"><div class="summary-label">Общая сумма</div><div class="summary-value" style="color:var(--gold);" id="fnTotalAmount">—</div></div>
+      <div class="summary-card"><div class="summary-label">Поступления</div><div class="summary-value" style="color:#4ade80;" id="fnIncome">—</div></div>
+      <div class="summary-card"><div class="summary-label">Списания</div><div class="summary-value" style="color:#ef4444;" id="fnExpenses">—</div></div>
+    </div>
+    <div class="card" style="overflow:hidden;">
+      <div id="fnLoading" class="empty-state"><div class="loader" style="margin:0 auto 16px;"></div>Загрузка финансов...</div>
+      <div id="fnTableWrap" class="scroll-table" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortFinanceTable('operation_type')">Тип <span class="sort-arrow" id="fn-sort-operation_type"></span></th>
+              <th onclick="sortFinanceTable('posting_number')">Номер <span class="sort-arrow" id="fn-sort-posting_number"></span></th>
+              <th onclick="sortFinanceTable('amount')" style="text-align:right;">Сумма <span class="sort-arrow" id="fn-sort-amount"></span></th>
+              <th onclick="sortFinanceTable('operation_date')">Дата <span class="sort-arrow" id="fn-sort-operation_date"></span></th>
+              <th onclick="sortFinanceTable('items_count')" style="text-align:center;">Товаров <span class="sort-arrow" id="fn-sort-items_count"></span></th>
+            </tr>
+          </thead>
+          <tbody id="fnBody"></tbody>
+        </table>
+      </div>
+      <div id="fnEmpty" class="empty-state" style="display:none;">Нет финансовых данных за выбранный период</div>
+    </div>
+  </div>
+
+  <!-- TAB CONTENT: RETURNS -->
+  <div id="tab-returns" class="tab-content" style="display:none;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px;">
+      <div class="summary-card"><div class="summary-label">Всего возвратов</div><div class="summary-value" style="color:#ef4444;" id="rtTotal">—</div></div>
+      <div class="summary-card"><div class="summary-label">По причинам</div><div id="rtReasons" style="font-size:12px; color:#9ca3af; margin-top:4px;">—</div></div>
+    </div>
+    <div class="card" style="overflow:hidden;">
+      <div id="rtLoading" class="empty-state"><div class="loader" style="margin:0 auto 16px;"></div>Загрузка возвратов...</div>
+      <div id="rtTableWrap" class="scroll-table" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortReturnsTable('return_id')">ID возврата <span class="sort-arrow" id="rt-sort-return_id"></span></th>
+              <th onclick="sortReturnsTable('posting_number')">Номер заказа <span class="sort-arrow" id="rt-sort-posting_number"></span></th>
+              <th onclick="sortReturnsTable('product_name')">Товар <span class="sort-arrow" id="rt-sort-product_name"></span></th>
+              <th onclick="sortReturnsTable('reason')">Причина <span class="sort-arrow" id="rt-sort-reason"></span></th>
+              <th onclick="sortReturnsTable('create_date')">Дата <span class="sort-arrow" id="rt-sort-create_date"></span></th>
+              <th onclick="sortReturnsTable('status')">Статус <span class="sort-arrow" id="rt-sort-status"></span></th>
+            </tr>
+          </thead>
+          <tbody id="rtBody"></tbody>
+        </table>
+      </div>
+      <div id="rtEmpty" class="empty-state" style="display:none;">Нет возвратов</div>
+    </div>
+  </div>
+
+  <!-- TAB CONTENT: COMPETITORS -->
+  <div id="tab-competitors" class="tab-content" style="display:none;">
+    <div class="card" style="padding:20px; margin-bottom:20px;">
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <div>
+          <label style="font-size:10px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:4px;">Артикул / OEM</label>
+          <input type="text" id="compArticle" placeholder="Например: 95268836" style="width:240px;">
+        </div>
+        <button class="btn-primary" onclick="searchCompetitorsAll()" id="compSearchBtn" style="margin-top:18px;">🔍 Поиск на всех площадках</button>
+      </div>
+    </div>
+    <div id="compLoading" class="empty-state" style="display:none;"><div class="loader" style="margin:0 auto 16px;"></div>Поиск конкурентов...</div>
+    <div id="compResults"></div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin;
+let currentAccount = null;
+let accounts = [];
+
+// ===================== STATE =====================
+let pmData = { allProducts: [], filteredProducts: [], sort: { field: 'diff', dir: 'desc' }, expanded: {}, competitorCache: {} };
+let anData = { items: [], sort: { field: 'revenue', dir: 'desc' }, days: 7 };
+let orData = { items: [], sort: { field: 'order_date', dir: 'desc' }, days: 7, expanded: {} };
+let fnData = { items: [], sort: { field: 'operation_date', dir: 'desc' }, days: 7 };
+let rtData = { items: [], sort: { field: 'create_date', dir: 'desc' } };
+let currentTab = 'prices';
+let tabLoaded = {};
+
+// ===================== UTILS =====================
+function fmtPrice(v) {
+  const n = parseFloat(v);
+  if (!n || isNaN(n)) return '—';
+  return new Intl.NumberFormat('ru-RU').format(n) + ' ₽';
+}
+function fmtNum(v) {
+  return new Intl.NumberFormat('ru-RU').format(v);
+}
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+function fmtDateTime(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function daysAgo(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+function today() { return new Date().toISOString().slice(0, 10); }
+
+function showToast(msg, color) {
+  color = color || '#4ade80';
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color === '#4ade80' ? '#052e16' : '#2d0a0a';
+  t.style.color = color;
+  t.style.border = '1px solid ' + color + '33';
+  t.style.display = 'block';
+  setTimeout(function() { t.style.display = 'none'; }, 3500);
+}
+
+function setStatus(ok) {
+  document.getElementById('statusDot').style.background = ok ? '#4ade80' : '#ef4444';
+  document.getElementById('statusText').textContent = ok ? 'Online' : 'Offline';
+}
+
+function showLoader(id) {
+  document.getElementById(id).style.display = 'block';
+}
+function hideLoader(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+// ===================== INIT =====================
+async function init() {
+  try {
+    const res = await fetch(API + '/api/ozon/accounts');
+    if (!res.ok) throw new Error('Сервер недоступен');
+    const data = await res.json();
+    accounts = data.accounts || [];
+    renderAccountTabs(accounts);
+    if (accounts.length > 0) selectAccount(accounts[0].key);
+    setStatus(true);
+  } catch(e) {
+    setStatus(false);
+    document.getElementById('accountTabs').innerHTML = '<div style="color:#ef4444; font-size:13px;">⚠ Сервер недоступен</div>';
+  }
+}
+
+function renderAccountTabs(accs) {
+  document.getElementById('accountTabs').innerHTML = accs.map(function(a) {
+    return '<div class="acc-tab" id="tab-' + a.key + '" onclick="selectAccount(\'' + a.key + '\')" style="display:flex; align-items:center; gap:8px;">' +
+      '<span style="width:10px; height:10px; border-radius:50%; background:' + a.color + '; flex-shrink:0;"></span>' +
+      '<span>' + a.name + '</span>' +
+      '<span style="font-size:10px; color:#6b7280; font-family:monospace;">' + a.clientId + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function selectAccount(key) {
+  currentAccount = key;
+  document.querySelectorAll('.acc-tab').forEach(function(t) { t.classList.remove('active'); });
+  var tab = document.getElementById('tab-' + key);
+  if (tab) tab.classList.add('active');
+  tabLoaded = {};
+  loadCurrentTab();
+}
+
+// ===================== TABS =====================
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelector('.nav-tab[data-tab="' + tab + '"]').classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(function(c) { c.style.display = 'none'; });
+  document.getElementById('tab-' + tab).style.display = 'block';
+  loadCurrentTab();
+}
+
+function refreshCurrentTab() {
+  tabLoaded[currentTab] = false;
+  loadCurrentTab();
+}
+
+function loadCurrentTab() {
+  if (!currentAccount) return;
+  if (currentTab === 'prices' && !tabLoaded.prices) { loadPriceMonitor(); }
+  else if (currentTab === 'analytics' && !tabLoaded.analytics) { loadAnalytics(); }
+  else if (currentTab === 'orders' && !tabLoaded.orders) { loadOrders(); }
+  else if (currentTab === 'finance' && !tabLoaded.finance) { loadFinance(); }
+  else if (currentTab === 'returns' && !tabLoaded.returns) { loadReturns(); }
+}
+
+// ===================== TAB 1: PRICES =====================
+async function loadPriceMonitor() {
+  showLoader('pmLoading');
+  hideLoader('pmTableWrap');
+  hideLoader('pmEmpty');
+  try {
+    const res = await fetch(API + '/api/price-monitor/' + currentAccount);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    pmData.allProducts = data.products || [];
+    renderPriceStats(data.stats || {});
+    filterPriceTable();
+    tabLoaded.prices = true;
+  } catch(e) {
+    hideLoader('pmLoading');
+    document.getElementById('pmLoading').innerHTML = '<div style="color:#ef4444;">Ошибка: ' + e.message + '</div>';
+  }
+}
+
+function renderPriceStats(stats) {
+  document.getElementById('pmStatTotal').textContent = stats.total || 0;
+  document.getElementById('pmStatMatched').textContent = stats.matched || 0;
+  document.getElementById('pmStatOzonOnly').textContent = stats.ozonOnly || 0;
+  document.getElementById('pmStatOurOnly').textContent = stats.ourOnly || 0;
+  document.getElementById('pmStatHigher').textContent = stats.priceHigherOnOzon || 0;
+  document.getElementById('pmStatLower').textContent = stats.priceLowerOnOzon || 0;
+  var avg = stats.avgDiff || 0;
+  var el = document.getElementById('pmStatAvgDiff');
+  el.textContent = (avg >= 0 ? '+' : '') + fmtNum(avg) + ' ₽';
+  el.style.color = avg > 0 ? '#ef4444' : avg < 0 ? '#22c55e' : '#6b7280';
+  document.getElementById('pmBarMatched').style.width = (stats.total > 0 ? Math.round(stats.matched / stats.total * 100) : 0) + '%';
+}
+
+function filterPriceTable() {
+  var q = document.getElementById('pmSearch').value.toLowerCase();
+  var src = document.getElementById('pmSourceFilter').value;
+  var diff = document.getElementById('pmDiffFilter').value;
+  pmData.filteredProducts = pmData.allProducts.filter(function(p) {
+    var matchQ = !q || (p.article||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q);
+    var matchSrc = !src || p.source === src;
+    var matchDiff = true;
+    if (diff === 'higher') matchDiff = p.source === 'both' && p.diff > 0;
+    else if (diff === 'lower') matchDiff = p.source === 'both' && p.diff < 0;
+    else if (diff === 'same') matchDiff = p.source === 'both' && p.diff === 0;
+    else if (diff === 'big') matchDiff = p.source === 'both' && Math.abs(p.diffPercent) > 20;
+    return matchQ && matchSrc && matchDiff;
+  });
+  sortPriceAndRender();
+}
+
+function sortPriceTable(field) {
+  if (pmData.sort.field === field) pmData.sort.dir = pmData.sort.dir === 'asc' ? 'desc' : 'asc';
+  else { pmData.sort.field = field; pmData.sort.dir = field === 'name' || field === 'article' ? 'asc' : 'desc'; }
+  document.querySelectorAll('#pmTable .sort-arrow').forEach(function(s) { s.textContent = ''; });
+  var arrow = document.getElementById('pm-sort-' + field);
+  if (arrow) arrow.textContent = pmData.sort.dir === 'asc' ? '▲' : '▼';
+  sortPriceAndRender();
+}
+
+function sortPriceAndRender() {
+  var f = pmData.sort.field, d = pmData.sort.dir;
+  pmData.filteredProducts.sort(function(a, b) {
+    var va = a[f], vb = b[f];
+    if (typeof va === 'string') { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
+    if (va < vb) return d === 'asc' ? -1 : 1;
+    if (va > vb) return d === 'asc' ? 1 : -1;
+    return 0;
+  });
+  renderPriceTable(pmData.filteredProducts);
+}
+
+function renderPriceTable(products) {
+  hideLoader('pmLoading');
+  var body = document.getElementById('pmBody');
+  if (products.length === 0) {
+    hideLoader('pmTableWrap');
+    showLoader('pmEmpty');
+    document.getElementById('pmEmpty').style.display = 'block';
+    document.getElementById('pmEmpty').textContent = 'Нет товаров';
+    return;
+  }
+  hideLoader('pmEmpty');
+  showLoader('pmTableWrap');
+
+  var html = '';
+  products.slice(0, 500).forEach(function(p) {
+    var isExpanded = pmData.expanded[p.article];
+    var srcBadge = p.source === 'both' ? '<span class="badge badge-both">OK</span>'
+      : p.source === 'ozon_only' ? '<span class="badge badge-ozon">Ozon</span>'
+      : '<span class="badge badge-our">Наш</span>';
+
+    var diffClass = p.source === 'both' ? (p.diff > 0 ? 'diff-positive' : p.diff < 0 ? 'diff-negative' : 'diff-zero') : '';
+    var diffText = p.source === 'both' ? (p.diff > 0 ? '+' + fmtNum(p.diff) : p.diff === 0 ? '0' : fmtNum(p.diff)) : '—';
+    var pctText = p.source === 'both' ? (p.diffPercent > 0 ? '+' + p.diffPercent + '%' : p.diffPercent === 0 ? '0%' : p.diffPercent + '%') : '—';
+
+    var ozonLkPrice = p.ozonPrice || 0;
+    var ozonMktg = p.ozonMarketingPrice || 0;
+    var ozonOld = p.ozonOldPrice || 0;
+    var storefront = p.ozonStorefrontPrice || 0;
+    var wbData = pmData.competitorCache[p.article];
+
+    html += '<tr class="expand-row" onclick="togglePriceExpand(\'' + (p.article||'').replace(/'/g, "\\'") + '\')">' +
+      '<td style="font-size:10px; color:#6b7280; text-align:center;">' + (isExpanded ? '▼' : '▶') + '</td>' +
+      '<td style="font-family:monospace; font-size:11px; color:#9ca3af; white-space:nowrap;">' + (p.article || '—') + '</td>' +
+      '<td style="max-width:200px;"><div style="font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="' + (p.name||'') + '">' + (p.name || '—') + '</div></td>' +
+      '<td>' + srcBadge + '</td>' +
+      '<td class="price-cell" style="text-align:right;">' + (p.ourPrice > 0 ? '<span class="price-our">' + fmtPrice(p.ourPrice) + '</span>' : '<span style="color:#4b5563;">—</span>') + '</td>' +
+      '<td class="price-cell" style="text-align:right;">' + (p.purchasePrice > 0 ? '<span style="color:#6b7280;">' + fmtPrice(p.purchasePrice) + '</span>' : '<span style="color:#4b5563;">—</span>') + '</td>' +
+      '<td class="price-cell" style="text-align:center; background:rgba(96,165,250,.03);">' +
+        (ozonLkPrice > 0 ?
+          '<div class="price-current">' + fmtPrice(ozonLkPrice) + '</div>' +
+          (ozonMktg > 0 && ozonMktg < ozonLkPrice ? '<div class="price-sale">Акция: ' + fmtPrice(ozonMktg) + '</div>' : '') +
+          (ozonOld > 0 ? '<div class="price-old">' + fmtPrice(ozonOld) + '</div>' : '')
+        : '<span style="color:#4b5563;">—</span>') + '</td>' +
+      '<td class="price-cell" style="text-align:center; background:rgba(239,68,68,.03);">' +
+        (storefront > 0 ?
+          '<div class="price-current" style="color:' + (storefront > (p.ourPrice || 0) ? '#ef4444' : '#22c55e') + '; font-weight:700;">' + fmtPrice(storefront) + '</div>' +
+          (storefront !== ozonLkPrice && ozonLkPrice > 0 ? '<div style="font-size:9px; color:#6b7280;">Δ ' + fmtNum(storefront - ozonLkPrice) + ' ₽</div>' : '')
+        : '<span style="color:#4b5563;">—</span>') + '</td>' +
+      '<td style="text-align:right;"><span class="' + diffClass + '">' + diffText + '</span></td>' +
+      '<td style="text-align:right;"><span class="' + diffClass + '">' + pctText + '</span></td>' +
+      '<td class="price-cell" style="text-align:right; ' + (p.stock > 0 ? 'color:#e5e7eb;' : 'color:#4b5563;') + '">' + (p.stock > 0 ? fmtNum(p.stock) : '—') + '</td>' +
+      '<td style="text-align:center;">' + (wbData && wbData.length > 0 ? '<span class="badge badge-wb">' + wbData.length + '</span>' : '<span style="color:#4b5563; font-size:10px;">—</span>') + '</td>' +
+    '</tr>';
+
+    if (isExpanded) {
+      html += '<tr class="competitor-row"><td colspan="12" style="padding:10px 20px;">' +
+        '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">' +
+          '<div><div class="section-label">Наш каталог</div><div style="font-size:12px; margin-top:4px;">' +
+            '<div>Розница: <b style="color:var(--gold);">' + (p.ourPrice > 0 ? fmtPrice(p.ourPrice) : '—') + '</b></div>' +
+            '<div>Закупка: ' + (p.purchasePrice > 0 ? fmtPrice(p.purchasePrice) : '—') + '</div>' +
+            '<div>Наценка: ' + (p.purchasePrice > 0 && p.ourPrice > 0 ? Math.round((p.ourPrice / p.purchasePrice - 1) * 100) + '%' : '—') + '</div>' +
+            '<div>Остаток: ' + (p.stock || 0) + ' шт.</div>' +
+          '</div></div>' +
+          '<div><div class="section-label">Ozon</div><div style="font-size:12px; margin-top:4px;">' +
+            '<div>Цена в ЛК: <b>' + (ozonLkPrice > 0 ? fmtPrice(ozonLkPrice) : '—') + '</b></div>' +
+            (ozonMktg > 0 && ozonMktg < ozonLkPrice ? '<div style="color:#ef4444;">Акция: <b>' + fmtPrice(ozonMktg) + '</b></div>' : '') +
+            '<div>Витрина: <b style="color:' + (storefront > (p.ourPrice || 0) ? '#ef4444' : '#22c55e') + ';">' + (storefront > 0 ? fmtPrice(storefront) : '—') + '</b></div>' +
+            '<div>Старая цена: ' + (ozonOld > 0 ? fmtPrice(ozonOld) : '—') + '</div>' +
+            '<div>Статус: ' + (p.visible ? 'Активен' : 'Скрыт') + '</div>' +
+            (p.productId ? '<div><a href="https://seller.ozon.ru/app/products/list?offer_id=' + p.article + '" target="_blank" style="color:var(--gold); font-size:11px;">↗ Ozon Seller</a></div>' : '') +
+          '</div></div>' +
+          '<div><div class="section-label">Wildberries</div><div style="font-size:12px; margin-top:4px;">' +
+            (wbData && wbData.length > 0 ? wbData.map(function(w) {
+              return '<div style="margin-bottom:4px; padding:4px; background:rgba(168,85,247,.05); border-radius:4px;">' +
+                '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:250px;" title="' + (w.name||'') + '">' + (w.brand ? w.brand + ' ' : '') + (w.name||'') + '</div>' +
+                '<div><b style="color:#a855f7;">' + (w.price > 0 ? fmtPrice(w.price) : '—') + '</b>' +
+                (w.oldPrice > 0 && w.oldPrice !== w.price ? ' <span style="text-decoration:line-through; color:#6b7280; font-size:10px;">' + fmtPrice(w.oldPrice) + '</span>' : '') + '</div>' +
+                (w.url ? '<a href="' + w.url + '" target="_blank" style="color:#a855f7; font-size:10px;">↗ Посмотреть</a>' : '') +
+              '</div>';
+            }).join('') : '<div style="color:#6b7280;">Нажмите "Поиск конкурентов"</div>') +
+          '</div></div>' +
+        '</div></td></tr>';
+    }
+  });
+
+  body.innerHTML = html;
+}
+
+function togglePriceExpand(article) {
+  pmData.expanded[article] = !pmData.expanded[article];
+  renderPriceTable(pmData.filteredProducts);
+}
+
+async function searchAllCompetitors() {
+  var btn = document.getElementById('pmCompetitorBtn');
+  btn.textContent = '⏳ Поиск...';
+  btn.disabled = true;
+  var toSearch = pmData.filteredProducts.filter(function(p) { return p.article && !pmData.competitorCache[p.article]; }).slice(0, 20);
+  if (toSearch.length === 0) {
+    btn.textContent = '🔍 Поиск конкурентов';
+    btn.disabled = false;
+    showToast('Все артикулы уже проверены');
+    return;
+  }
+  try {
+    var res = await fetch(API + '/api/competitors/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ articles: toSearch.map(function(p) { return { article: p.article, name: p.name }; }) })
+    });
+    var data = await res.json();
+    (data.results || []).forEach(function(r) { pmData.competitorCache[r.article] = r.competitors || []; });
+    renderPriceTable(pmData.filteredProducts);
+    showToast('Найдено конкурентов для ' + toSearch.length + ' товаров');
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, '#ef4444');
+  }
+  btn.textContent = '🔍 Поиск конкурентов';
+  btn.disabled = false;
+}
+
+function exportPricesCSV() {
+  var rows = [['Артикул','Название','Источник','Наша цена','Закупка','Цена Ozon','Акция','Витрина','Старая цена','Δ ₽','Δ %','Остаток']];
+  pmData.filteredProducts.forEach(function(p) {
+    rows.push([
+      p.article, p.name, p.source,
+      p.ourPrice, p.purchasePrice,
+      p.ozonPrice, p.ozonMarketingPrice || '', p.ozonStorefrontPrice || '',
+      p.ozonOldPrice,
+      p.source === 'both' ? p.diff : '',
+      p.source === 'both' ? p.diffPercent : '',
+      p.stock
+    ]);
+  });
+  downloadCSV(rows, 'price-monitor-' + currentAccount + '-' + Date.now() + '.csv');
+}
+
+// ===================== TAB 2: ANALYTICS =====================
+function setAnalyticsRange(days, btn) {
+  anData.days = days;
+  document.querySelectorAll('#tab-analytics .date-range button[data-days]').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('analyticsFrom').value = daysAgo(days);
+  document.getElementById('analyticsTo').value = today();
+}
+
+async function loadAnalytics() {
+  showLoader('anLoading');
+  hideLoader('anTableWrap');
+  hideLoader('anEmpty');
+  var from = document.getElementById('analyticsFrom').value || daysAgo(anData.days);
+  var to = document.getElementById('analyticsTo').value || today();
+  try {
+    var res = await fetch(API + '/api/ozon/' + currentAccount + '/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date_from: from, date_to: to })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    anData.items = data.analytics || data.items || [];
+    renderAnalyticsSummary(data.summary || {});
+    renderAnalyticsTable();
+    tabLoaded.analytics = true;
+  } catch(e) {
+    hideLoader('anLoading');
+    document.getElementById('anLoading').innerHTML = '<div style="color:#ef4444;">Ошибка: ' + e.message + '</div>';
+  }
+}
+
+function renderAnalyticsSummary(s) {
+  document.getElementById('anRevenue').textContent = s.revenue ? fmtPrice(s.revenue) : '—';
+  document.getElementById('anOrders').textContent = s.orders || s.ordered_units || '—';
+  document.getElementById('anViews').textContent = s.views || s.hits_view ? fmtNum(s.views || s.hits_view) : '—';
+  var conv = s.conversion || s.conv_tocart;
+  document.getElementById('anConversion').textContent = conv ? (typeof conv === 'number' ? conv.toFixed(1) + '%' : conv) : '—';
+  document.getElementById('anReturns').textContent = s.returns || 0;
+}
+
+function sortAnalyticsTable(field) {
+  if (anData.sort.field === field) anData.sort.dir = anData.sort.dir === 'asc' ? 'desc' : 'asc';
+  else { anData.sort.field = field; anData.sort.dir = 'desc'; }
+  document.querySelectorAll('#tab-analytics .sort-arrow').forEach(function(s) { s.textContent = ''; });
+  var arrow = document.getElementById('an-sort-' + field);
+  if (arrow) arrow.textContent = anData.sort.dir === 'asc' ? '▲' : '▼';
+  renderAnalyticsTable();
+}
+
+function renderAnalyticsTable() {
+  hideLoader('anLoading');
+  var items = anData.items.slice();
+  var f = anData.sort.field, d = anData.sort.dir;
+  items.sort(function(a, b) {
+    var va = a[f], vb = b[f];
+    if (typeof va === 'string') { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
+    if (va < vb) return d === 'asc' ? -1 : 1;
+    if (va > vb) return d === 'asc' ? 1 : -1;
+    return 0;
+  });
+  var body = document.getElementById('anBody');
+  if (items.length === 0) {
+    hideLoader('anTableWrap');
+    document.getElementById('anEmpty').style.display = 'block';
+    return;
+  }
+  document.getElementById('anEmpty').style.display = 'none';
+  showLoader('anTableWrap');
+  body.innerHTML = items.map(function(r) {
+    var sku = r.sku || r.article || r.offer_id || '—';
+    var rev = r.revenue || r.turnover || 0;
+    var ordered = r.ordered_units || r.orders || 0;
+    var views = r.hits_view || r.views || 0;
+    var toc = r.hits_tocart || 0;
+    var conv = r.conv_tocart || (views > 0 ? (toc / views * 100).toFixed(1) : 0);
+    var ret = r.returns || 0;
+    return '<tr>' +
+      '<td style="font-family:monospace; font-size:11px; color:#9ca3af;">' + sku + '</td>' +
+      '<td style="text-align:right; font-family:monospace; font-weight:600; color:var(--gold);">' + fmtPrice(rev) + '</td>' +
+      '<td style="text-align:right;">' + fmtNum(ordered) + '</td>' +
+      '<td style="text-align:right;">' + fmtNum(views) + '</td>' +
+      '<td style="text-align:right;">' + fmtNum(toc) + '</td>' +
+      '<td style="text-align:right;">' + (typeof conv === 'number' ? conv.toFixed(1) + '%' : conv) + '</td>' +
+      '<td style="text-align:right; ' + (ret > 0 ? 'color:#ef4444;' : '') + '">' + fmtNum(ret) + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function exportAnalyticsCSV() {
+  var rows = [['SKU','Выручка','Заказы','Просмотры','В корзину','Конверсия','Возвраты']];
+  anData.items.forEach(function(r) {
+    var views = r.hits_view || r.views || 0;
+    var toc = r.hits_tocart || 0;
+    rows.push([
+      r.sku || r.article || r.offer_id || '',
+      r.revenue || r.turnover || 0,
+      r.ordered_units || r.orders || 0,
+      views, toc,
+      r.conv_tocart || (views > 0 ? (toc/views*100).toFixed(1)+'%' : ''),
+      r.returns || 0
+    ]);
+  });
+  downloadCSV(rows, 'analytics-' + currentAccount + '-' + Date.now() + '.csv');
+}
+
+// ===================== TAB 3: ORDERS FBS =====================
+function setOrdersRange(days, btn) {
+  orData.days = days;
+  document.querySelectorAll('#tab-orders .date-range button[data-days]').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('ordersFrom').value = daysAgo(days);
+  document.getElementById('ordersTo').value = today();
+}
+
+async function loadOrders() {
+  showLoader('orLoading');
+  hideLoader('orTableWrap');
+  hideLoader('orEmpty');
+  var from = document.getElementById('ordersFrom').value || daysAgo(orData.days);
+  var to = document.getElementById('ordersTo').value || today();
+  try {
+    var res = await fetch(API + '/api/ozon/' + currentAccount + '/orders/fbs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date_from: from, date_to: to })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    orData.items = data.postings || data.orders || data.items || [];
+    renderOrdersSummary();
+    renderOrdersTable();
+    tabLoaded.orders = true;
+  } catch(e) {
+    hideLoader('orLoading');
+    document.getElementById('orLoading').innerHTML = '<div style="color:#ef4444;">Ошибка: ' + e.message + '</div>';
+  }
+}
+
+function renderOrdersSummary() {
+  var items = orData.items;
+  var totalOrders = items.length;
+  var totalSum = 0;
+  items.forEach(function(o) {
+    var price = parseFloat(o.total_price || o.financial_data?.products_sum || 0);
+    if (!price) {
+      var prods = o.products || [];
+      prods.forEach(function(p) { price += parseFloat(p.price || 0) * parseInt(p.quantity || 1); });
+    }
+    totalSum += price;
+  });
+  document.getElementById('orTotalOrders').textContent = fmtNum(totalOrders);
+  document.getElementById('orTotalSum').textContent = fmtPrice(totalSum);
+  document.getElementById('orAvgOrder').textContent = totalOrders > 0 ? fmtPrice(totalSum / totalOrders) : '—';
+}
+
+function sortOrdersTable(field) {
+  if (orData.sort.field === field) orData.sort.dir = orData.sort.dir === 'asc' ? 'desc' : 'asc';
+  else { orData.sort.field = field; orData.sort.dir = field === 'posting_number' || field === 'city' || field === 'status' ? 'asc' : 'desc'; }
+  document.querySelectorAll('#tab-orders .sort-arrow').forEach(function(s) { s.textContent = ''; });
+  var arrow = document.getElementById('or-sort-' + field);
+  if (arrow) arrow.textContent = orData.sort.dir === 'asc' ? '▲' : '▼';
+  renderOrdersTable();
+}
+
+function renderOrdersTable() {
+  hideLoader('orLoading');
+  var items = orData.items.slice();
+  var f = orData.sort.field, d = orData.sort.dir;
+  items.sort(function(a, b) {
+    var va = a[f], vb = b[f];
+    if (typeof va === 'string') { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
+    if (va < vb) return d === 'asc' ? -1 : 1;
+    if (va > vb) return d === 'asc' ? 1 : -1;
+    return 0;
+  });
+  var body = document.getElementById('orBody');
+  if (items.length === 0) {
+    hideLoader('orTableWrap');
+    document.getElementById('orEmpty').style.display = 'block';
+    return;
+  }
+  document.getElementById('orEmpty').style.display = 'none';
+  showLoader('orTableWrap');
+
+  body.innerHTML = items.map(function(o, idx) {
+    var pn = o.posting_number || '—';
+    var date = o.order_date || o.in_process_at || o.created_at || '';
+    var products = o.products || [];
+    var prodsCount = products.length;
+    var totalPrice = o.total_price || 0;
+    if (!totalPrice) {
+      products.forEach(function(p) { totalPrice += parseFloat(p.price || 0) * parseInt(p.quantity || 1); });
+    }
+    var status = o.status || '—';
+    var city = o.delivery_address?.city || o.delivery_address?.region || o.city || '—';
+    var isExpanded = orData.expanded[pn];
+
+    var statusColor = '#6b7280';
+    if (status === 'delivering' || status === 'delivered' || status === 'awaiting_deliver') statusColor = '#4ade80';
+    else if (status === 'cancelled' || status === 'return') statusColor = '#ef4444';
+    else if (status === 'awaiting_packaging' || status === 'awaiting_approve') statusColor = '#FDB913';
+
+    return '<tr class="expand-row" onclick="toggleOrderExpand(\'' + pn.replace(/'/g, "\\'") + '\')">' +
+      '<td style="font-size:10px; color:#6b7280; text-align:center;">' + (isExpanded ? '▼' : '▶') + '</td>' +
+      '<td style="font-family:monospace; font-size:11px; color:#9ca3af; white-space:nowrap;">' + pn + '</td>' +
+      '<td style="font-size:11px; white-space:nowrap;">' + fmtDateTime(date) + '</td>' +
+      '<td style="text-align:center;">' + prodsCount + '</td>' +
+      '<td style="text-align:right; font-family:monospace; font-weight:600; color:var(--gold);">' + fmtPrice(totalPrice) + '</td>' +
+      '<td><span class="badge" style="color:' + statusColor + '; border:1px solid ' + statusColor + '33; background:' + statusColor + '15;">' + status + '</span></td>' +
+      '<td style="font-size:11px;">' + city + '</td>' +
+    '</tr>' +
+    (isExpanded ? '<tr class="competitor-row"><td colspan="7" style="padding:10px 20px;">' +
+      '<div class="section-label">Товары в заказе</div>' +
+      products.map(function(p) {
+        return '<div style="display:flex; align-items:center; gap:12px; padding:6px 0; border-bottom:1px solid rgba(30,34,48,.4);">' +
+          '<span style="font-family:monospace; font-size:11px; color:#9ca3af; min-width:100px;">' + (p.sku || p.offer_id || '—') + '</span>' +
+          '<span style="font-size:12px; flex:1;">' + (p.name || '—') + '</span>' +
+          '<span style="font-size:11px; color:#6b7280;">x' + (p.quantity || 1) + '</span>' +
+          '<span style="font-family:monospace; font-size:11px; font-weight:600; color:var(--gold); min-width:80px; text-align:right;">' + fmtPrice(p.price) + '</span>' +
+        '</div>';
+      }).join('') +
+    '</td></tr>' : '');
+  }).join('');
+}
+
+function toggleOrderExpand(pn) {
+  orData.expanded[pn] = !orData.expanded[pn];
+  renderOrdersTable();
+}
+
+function exportOrdersCSV() {
+  var rows = [['Номер','Дата','Товаров','Сумма','Статус','Город']];
+  orData.items.forEach(function(o) {
+    var products = o.products || [];
+    var totalPrice = o.total_price || 0;
+    if (!totalPrice) products.forEach(function(p) { totalPrice += parseFloat(p.price||0)*parseInt(p.quantity||1); });
+    rows.push([
+      o.posting_number,
+      o.order_date || o.in_process_at || '',
+      products.length,
+      totalPrice,
+      o.status,
+      (o.delivery_address && o.delivery_address.city) || o.city || ''
+    ]);
+  });
+  downloadCSV(rows, 'orders-fbs-' + currentAccount + '-' + Date.now() + '.csv');
+}
+
+// ===================== TAB 4: FINANCE =====================
+function setFinanceRange(days, btn) {
+  fnData.days = days;
+  document.querySelectorAll('#tab-finance .date-range button[data-days]').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('financeFrom').value = daysAgo(days);
+  document.getElementById('financeTo').value = today();
+}
+
+async function loadFinance() {
+  showLoader('fnLoading');
+  hideLoader('fnTableWrap');
+  hideLoader('fnEmpty');
+  var from = document.getElementById('financeFrom').value || daysAgo(fnData.days);
+  var to = document.getElementById('financeTo').value || today();
+  try {
+    var res = await fetch(API + '/api/ozon/' + currentAccount + '/finance/transactions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date_from: from, date_to: to })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    fnData.items = data.operations || data.transactions || data.items || [];
+    renderFinanceSummary();
+    renderFinanceTable();
+    tabLoaded.finance = true;
+  } catch(e) {
+    hideLoader('fnLoading');
+    document.getElementById('fnLoading').innerHTML = '<div style="color:#ef4444;">Ошибка: ' + e.message + '</div>';
+  }
+}
+
+function renderFinanceSummary() {
+  var items = fnData.items;
+  var totalOps = items.length;
+  var totalAmount = 0;
+  var income = 0;
+  var expenses = 0;
+  items.forEach(function(op) {
+    var amt = parseFloat(op.amount || op.total_price || 0);
+    totalAmount += amt;
+    var tp = (op.operation_type || '').toLowerCase();
+    if (amt > 0 || tp.includes('sale') || tp.includes('поступление') || tp.includes('income')) {
+      income += amt;
+    } else {
+      expenses += amt;
+    }
+  });
+  document.getElementById('fnTotalOps').textContent = fmtNum(totalOps);
+  document.getElementById('fnTotalAmount').textContent = fmtPrice(totalAmount);
+  document.getElementById('fnIncome').textContent = fmtPrice(income);
+  document.getElementById('fnExpenses').textContent = fmtPrice(expenses);
+}
+
+function sortFinanceTable(field) {
+  if (fnData.sort.field === field) fnData.sort.dir = fnData.sort.dir === 'asc' ? 'desc' : 'asc';
+  else { fnData.sort.field = field; fnData.sort.dir = field === 'operation_type' || field === 'posting_number' ? 'asc' : 'desc'; }
+  document.querySelectorAll('#tab-finance .sort-arrow').forEach(function(s) { s.textContent = ''; });
+  var arrow = document.getElementById('fn-sort-' + field);
+  if (arrow) arrow.textContent = fnData.sort.dir === 'asc' ? '▲' : '▼';
+  renderFinanceTable();
+}
+
+function renderFinanceTable() {
+  hideLoader('fnLoading');
+  var items = fnData.items.slice();
+  var f = fnData.sort.field, d = fnData.sort.dir;
+  items.sort(function(a, b) {
+    var va = a[f], vb = b[f];
+    if (typeof va === 'string') { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
+    if (va < vb) return d === 'asc' ? -1 : 1;
+    if (va > vb) return d === 'asc' ? 1 : -1;
+    return 0;
+  });
+  var body = document.getElementById('fnBody');
+  if (items.length === 0) {
+    hideLoader('fnTableWrap');
+    document.getElementById('fnEmpty').style.display = 'block';
+    return;
+  }
+  document.getElementById('fnEmpty').style.display = 'none';
+  showLoader('fnTableWrap');
+
+  body.innerHTML = items.map(function(op) {
+    var type = op.operation_type || op.type || '—';
+    var pn = op.posting_number || op.order_id || '—';
+    var amt = parseFloat(op.amount || op.total_price || 0);
+    var date = op.operation_date || op.created_at || op.date || '';
+    var itemsCount = (op.products || op.items || []).length;
+    var amtColor = amt >= 0 ? '#4ade80' : '#ef4444';
+
+    var typeBadge = '<span class="badge" style="color:#9ca3af; border:1px solid var(--border); background:var(--surface2);">' + type + '</span>';
+    var tp = type.toLowerCase();
+    if (tp.includes('sale') || tp.includes('поступление') || tp.includes('income') || tp.includes('orders')) {
+      typeBadge = '<span class="badge badge-green">' + type + '</span>';
+    } else if (tp.includes('return') || tp.includes('возврат') || tp.includes('penalty') || tp.includes('штраф')) {
+      typeBadge = '<span class="badge badge-red">' + type + '</span>';
+    } else if (tp.includes('delivery') || tp.includes('доставк') || tp.includes('logistic')) {
+      typeBadge = '<span class="badge badge-blue">' + type + '</span>';
+    } else if (tp.includes('commission') || tp.includes('комисс')) {
+      typeBadge = '<span class="badge badge-yellow">' + type + '</span>';
+    }
+
+    return '<tr>' +
+      '<td>' + typeBadge + '</td>' +
+      '<td style="font-family:monospace; font-size:11px; color:#9ca3af;">' + pn + '</td>' +
+      '<td style="text-align:right; font-family:monospace; font-weight:600; color:' + amtColor + ';">' + fmtPrice(amt) + '</td>' +
+      '<td style="font-size:11px; white-space:nowrap;">' + fmtDateTime(date) + '</td>' +
+      '<td style="text-align:center;">' + (itemsCount > 0 ? itemsCount : '—') + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function exportFinanceCSV() {
+  var rows = [['Тип','Номер','Сумма','Дата','Товаров']];
+  fnData.items.forEach(function(op) {
+    var itemsCount = (op.products || op.items || []).length;
+    rows.push([
+      op.operation_type || op.type || '',
+      op.posting_number || op.order_id || '',
+      op.amount || op.total_price || 0,
+      op.operation_date || op.created_at || op.date || '',
+      itemsCount || ''
+    ]);
+  });
+  downloadCSV(rows, 'finance-' + currentAccount + '-' + Date.now() + '.csv');
+}
+
+// ===================== TAB 5: RETURNS =====================
+async function loadReturns() {
+  showLoader('rtLoading');
+  hideLoader('rtTableWrap');
+  hideLoader('rtEmpty');
+  try {
+    var res = await fetch(API + '/api/ozon/' + currentAccount + '/returns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    rtData.items = data.returns || data.items || [];
+    renderReturnsSummary();
+    renderReturnsTable();
+    tabLoaded.returns = true;
+  } catch(e) {
+    hideLoader('rtLoading');
+    document.getElementById('rtLoading').innerHTML = '<div style="color:#ef4444;">Ошибка: ' + e.message + '</div>';
+  }
+}
+
+function renderReturnsSummary() {
+  var items = rtData.items;
+  document.getElementById('rtTotal').textContent = fmtNum(items.length);
+  var reasons = {};
+  items.forEach(function(r) {
+    var reason = r.reason || r.return_reason || 'Не указана';
+    reasons[reason] = (reasons[reason] || 0) + 1;
+  });
+  var html = '';
+  Object.keys(reasons).sort(function(a,b) { return reasons[b] - reasons[a]; }).forEach(function(reason) {
+    html += '<div style="display:flex; justify-content:space-between; padding:2px 0;">' +
+      '<span style="color:#e5e7eb;">' + reason + '</span>' +
+      '<span style="font-family:monospace; color:var(--gold);">' + reasons[reason] + '</span>' +
+    '</div>';
+  });
+  document.getElementById('rtReasons').innerHTML = html || '—';
+}
+
+function sortReturnsTable(field) {
+  if (rtData.sort.field === field) rtData.sort.dir = rtData.sort.dir === 'asc' ? 'desc' : 'asc';
+  else { rtData.sort.field = field; rtData.sort.dir = field === 'return_id' || field === 'posting_number' || field === 'product_name' || field === 'reason' || field === 'status' ? 'asc' : 'desc'; }
+  document.querySelectorAll('#tab-returns .sort-arrow').forEach(function(s) { s.textContent = ''; });
+  var arrow = document.getElementById('rt-sort-' + field);
+  if (arrow) arrow.textContent = rtData.sort.dir === 'asc' ? '▲' : '▼';
+  renderReturnsTable();
+}
+
+function renderReturnsTable() {
+  hideLoader('rtLoading');
+  var items = rtData.items.slice();
+  var f = rtData.sort.field, d = rtData.sort.dir;
+  items.sort(function(a, b) {
+    var va = a[f], vb = b[f];
+    if (typeof va === 'string') { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
+    if (va < vb) return d === 'asc' ? -1 : 1;
+    if (va > vb) return d === 'asc' ? 1 : -1;
+    return 0;
+  });
+  var body = document.getElementById('rtBody');
+  if (items.length === 0) {
+    hideLoader('rtTableWrap');
+    document.getElementById('rtEmpty').style.display = 'block';
+    return;
+  }
+  document.getElementById('rtEmpty').style.display = 'none';
+  showLoader('rtTableWrap');
+
+  body.innerHTML = items.map(function(r) {
+    var retId = r.return_id || r.id || '—';
+    var pn = r.posting_number || r.order_number || '—';
+    var prod = r.product_name || r.name || r.sku || '—';
+    var reason = r.reason || r.return_reason || '—';
+    var date = r.create_date || r.created_at || r.date || '';
+    var status = r.status || '—';
+
+    var statusColor = '#6b7280';
+    var st = status.toLowerCase();
+    if (st.includes('completed') || st.includes('завершен') || st.includes('processed')) statusColor = '#4ade80';
+    else if (st.includes('pending') || st.includes('ожидан') || st.includes('processing')) statusColor = '#FDB913';
+    else if (st.includes('cancel') || st.includes('отмен')) statusColor = '#ef4444';
+
+    return '<tr>' +
+      '<td style="font-family:monospace; font-size:11px; color:#9ca3af;">' + retId + '</td>' +
+      '<td style="font-family:monospace; font-size:11px; color:#9ca3af;">' + pn + '</td>' +
+      '<td style="font-size:12px; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="' + prod + '">' + prod + '</td>' +
+      '<td style="font-size:11px;">' + reason + '</td>' +
+      '<td style="font-size:11px; white-space:nowrap;">' + fmtDateTime(date) + '</td>' +
+      '<td><span class="badge" style="color:' + statusColor + '; border:1px solid ' + statusColor + '33; background:' + statusColor + '15;">' + status + '</span></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function exportReturnsCSV() {
+  var rows = [['ID возврата','Номер заказа','Товар','Причина','Дата','Статус']];
+  rtData.items.forEach(function(r) {
+    rows.push([
+      r.return_id || r.id || '',
+      r.posting_number || r.order_number || '',
+      r.product_name || r.name || r.sku || '',
+      r.reason || r.return_reason || '',
+      r.create_date || r.created_at || r.date || '',
+      r.status || ''
+    ]);
+  });
+  downloadCSV(rows, 'returns-' + currentAccount + '-' + Date.now() + '.csv');
+}
+
+// ===================== TAB 6: COMPETITORS =====================
+async function searchCompetitorsAll() {
+  var article = document.getElementById('compArticle').value.trim();
+  if (!article) { showToast('Введите артикул', '#ef4444'); return; }
+  var btn = document.getElementById('compSearchBtn');
+  btn.textContent = '⏳ Поиск...';
+  btn.disabled = true;
+  showLoader('compLoading');
+  document.getElementById('compResults').innerHTML = '';
+
+  try {
+    var res = await fetch(API + '/api/competitors/all?article=' + encodeURIComponent(article));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    hideLoader('compLoading');
+    renderCompetitorResults(data.results || data);
+    tabLoaded.competitors = true;
+  } catch(e) {
+    hideLoader('compLoading');
+    document.getElementById('compResults').innerHTML = '<div class="empty-state" style="color:#ef4444;">Ошибка: ' + e.message + '</div>';
+  }
+  btn.textContent = '🔍 Поиск на всех площадках';
+  btn.disabled = false;
+}
+
+function renderCompetitorResults(results) {
+  var container = document.getElementById('compResults');
+  if (!results || (Array.isArray(results) && results.length === 0) || (typeof results === 'object' && Object.keys(results).length === 0)) {
+    container.innerHTML = '<div class="empty-state">Ничего не найдено</div>';
+    return;
+  }
+
+  var sources;
+  if (Array.isArray(results)) {
+    sources = {};
+    results.forEach(function(r) {
+      var src = r.source || r.platform || 'Другое';
+      if (!sources[src]) sources[src] = [];
+      sources[src].push(r);
+    });
+  } else {
+    sources = results;
+  }
+
+  var sourceColors = {
+    'Wildberries': { color: '#a855f7', bg: 'rgba(168,85,247,.05)', border: 'rgba(168,85,247,.2)' },
+    'Emex': { color: '#60a5fa', bg: 'rgba(96,165,250,.05)', border: 'rgba(96,165,250,.2)' },
+    'Autodoc': { color: '#4ade80', bg: 'rgba(74,222,128,.05)', border: 'rgba(74,222,128,.2)' }
+  };
+  var defaultColor = { color: '#9ca3af', bg: 'rgba(156,163,175,.05)', border: 'rgba(156,163,175,.2)' };
+
+  var html = '';
+  Object.keys(sources).forEach(function(src) {
+    var items = sources[src];
+    var sc = sourceColors[src] || defaultColor;
+    html += '<div class="card" style="padding:16px; margin-bottom:16px; border-color:' + sc.border + ';">' +
+      '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">' +
+        '<div style="width:8px; height:8px; border-radius:50%; background:' + sc.color + ';"></div>' +
+        '<span style="font-weight:600; font-size:14px; color:' + sc.color + ';">' + src + '</span>' +
+        '<span class="badge" style="color:' + sc.color + '; border:1px solid ' + sc.border + '; background:' + sc.bg + ';">' + items.length + ' результатов</span>' +
+      '</div>' +
+      '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">';
+
+    items.forEach(function(item) {
+      var brand = item.brand || '';
+      var art = item.article || item.sku || '—';
+      var price = item.price || 0;
+      var delivery = item.delivery || item.delivery_time || '—';
+      var link = item.url || item.link || '';
+      var name = item.name || item.title || '';
+
+      html += '<div style="background:' + sc.bg + '; border:1px solid ' + sc.border + '; border-radius:8px; padding:12px;">' +
+        (brand ? '<div style="font-size:10px; color:' + sc.color + '; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px;">' + brand + '</div>' : '') +
+        '<div style="font-family:monospace; font-size:12px; color:#e5e7eb; margin-bottom:4px;">' + art + '</div>' +
+        (name ? '<div style="font-size:11px; color:#9ca3af; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="' + name + '">' + name + '</div>' : '') +
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<span style="font-family:monospace; font-size:14px; font-weight:600; color:var(--gold);">' + (price > 0 ? fmtPrice(price) : '—') + '</span>' +
+          '<span style="font-size:10px; color:#6b7280;">' + delivery + '</span>' +
+        '</div>' +
+        (link ? '<a href="' + link + '" target="_blank" style="display:inline-block; margin-top:6px; font-size:10px; color:' + sc.color + '; text-decoration:underline;">↗ Перейти к товару</a>' : '') +
+      '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  container.innerHTML = html;
+}
+
+// ===================== CSV EXPORT =====================
+function downloadCSV(rows, filename) {
+  var csv = rows.map(function(r) {
+    return r.map(function(v) {
+      return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    }).join(',');
+  }).join('\n');
+  var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===================== INIT =====================
+init();
+</script>
+</body>
+</html>

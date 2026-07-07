@@ -1,0 +1,728 @@
+/* ============================================================
+   WESTAR — Premium Apex Design System
+   Единая тёмная тема: Gold Accent, тёмный фон, glassmorphism
+   ============================================================ */
+
+/* Базовые переменные */
+:root {
+    --apex-bg:         #0a0f18; /* Тёмно-синий фон */
+    --apex-surface:    #111827;
+    --apex-container:  #1f2937;
+    --apex-border:     #374151;
+    --apex-border-hi:  #4b5563;
+    --apex-text:       #f9fafb;
+    --apex-muted:      #9ca3af;
+    --apex-gold:       #FDB913; /* Westar Yellow */
+    --apex-blue:       #0033A0; /* Westar Blue */
+    --apex-gold-dim:   rgba(253, 185, 19, 0.15);
+    --apex-silver:     #d1d5db;
+}
+
+/* Сбрасываем конфликт Tailwind vs. CSS */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--apex-bg);
+    color: var(--apex-text);
+    position: relative;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   ФОНОВЫЕ ДЕКОРАЦИИ
+   ============================================================ */
+.apex-bg-grid {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        linear-gradient(rgba(0, 51, 160, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 51, 160, 0.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+    pointer-events: none;
+}
+.apex-bg-radial {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0, 51, 160, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* ============================================================
+   GLASSMORPHISM ПАНЕЛИ
+   ============================================================ */
+.glass-panel {
+    background: rgba(15, 15, 15, 0.75);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ============================================================
+   ХЕДЕР
+   ============================================================ */
+header.site-header {
+    background: rgba(5, 5, 5, 0.9);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--apex-border);
+}
+
+/* ============================================================
+   БРЕНД-ГРИД
+   ============================================================ */
+.brand-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 0.5rem;
+    cursor: pointer;
+    background: var(--apex-surface);
+    border: 1px solid var(--apex-border);
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
+    min-height: 80px;
+}
+.brand-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, var(--apex-gold-dim), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.brand-item:hover {
+    border-color: var(--apex-gold);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+    transform: translateY(-2px);
+}
+.brand-item:hover::before {
+    opacity: 1;
+}
+.brand-item.active {
+    border-color: var(--apex-gold);
+    background: rgba(212, 175, 55, 0.07);
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.25), inset 0 0 10px rgba(212, 175, 55, 0.05);
+}
+.brand-item img {
+    max-height: 48px;
+    width: auto;
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 16px;
+    border-radius: 6px;
+    filter: grayscale(0%) brightness(1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.brand-item:hover img,
+.brand-item.active img {
+    background: #ffffff;
+    box-shadow: 0 6px 20px rgba(253, 185, 19, 0.4);
+    transform: translateY(-3px) scale(1.08);
+}
+.brand-item .brand-label {
+    margin-top: 6px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--apex-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: color 0.3s;
+    text-align: center;
+    line-height: 1.2;
+}
+.brand-item:hover .brand-label,
+.brand-item.active .brand-label {
+    color: var(--apex-gold);
+}
+/* Угловые декораторы активного состояния */
+.brand-item.active .corner-tl {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 8px; height: 8px;
+    border-top: 1px solid var(--apex-gold);
+    border-left: 1px solid var(--apex-gold);
+}
+.brand-item.active .corner-br {
+    position: absolute;
+    bottom: 3px; right: 3px;
+    width: 8px; height: 8px;
+    border-bottom: 1px solid var(--apex-gold);
+    border-right: 1px solid var(--apex-gold);
+}
+
+/* ============================================================
+   КАРТОЧКИ ТОВАРОВ
+   ============================================================ */
+.apex-product-card {
+    background: var(--apex-surface);
+    border: 1px solid var(--apex-border);
+    border-radius: 4px;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    cursor: pointer;
+}
+.apex-product-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(212,175,55,0.04) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+}
+.apex-product-card:hover {
+    border-color: var(--apex-gold);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(212,175,55,0.15);
+    transform: translateY(-4px);
+}
+.apex-product-card:hover::after {
+    opacity: 1;
+}
+
+/* Зона изображения */
+.apex-product-img-zone {
+    position: relative;
+    height: 200px;
+    background: #080808;
+    border-bottom: 1px solid var(--apex-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+/* Тонкая линейка-сетка фона изображения */
+.apex-product-img-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(rgba(212,175,55,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212,175,55,0.02) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+/* Crosshair центр */
+.apex-crosshair-h {
+    position: absolute;
+    inset-x: 0; top: 50%;
+    height: 1px;
+    background: var(--apex-border);
+    transition: background 0.4s;
+}
+.apex-crosshair-v {
+    position: absolute;
+    inset-y: 0; left: 50%;
+    width: 1px;
+    background: var(--apex-border);
+    transition: background 0.4s;
+}
+.apex-product-card:hover .apex-crosshair-h,
+.apex-product-card:hover .apex-crosshair-v {
+    background: rgba(212,175,55,0.2);
+}
+
+/* Угловые пинчи карточки */
+.apex-corner {
+    position: absolute;
+    width: 10px; height: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.apex-corner-tl { top: 4px; left: 4px; border-top: 1px solid var(--apex-gold); border-left: 1px solid var(--apex-gold); }
+.apex-corner-tr { top: 4px; right: 4px; border-top: 1px solid var(--apex-gold); border-right: 1px solid var(--apex-gold); }
+.apex-corner-bl { bottom: 4px; left: 4px; border-bottom: 1px solid var(--apex-gold); border-left: 1px solid var(--apex-gold); }
+.apex-corner-br { bottom: 4px; right: 4px; border-bottom: 1px solid var(--apex-gold); border-right: 1px solid var(--apex-gold); }
+.apex-product-card:hover .apex-corner { opacity: 1; }
+
+/* ============================================================
+   СОВМЕСТИМОСТЬ — иконки авто
+   ============================================================ */
+.compat-car-thumb {
+    width: 48px; height: 30px;
+    background: #080808;
+    border: 1px solid var(--apex-border);
+    border-radius: 3px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: crosshair;
+    transition: border-color 0.2s;
+}
+.compat-car-thumb:hover {
+    border-color: var(--apex-gold);
+}
+.compat-car-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.4) translateY(3px);
+    opacity: 0.65;
+    mix-blend-mode: screen;
+    transition: opacity 0.2s, transform 0.2s;
+}
+.compat-car-thumb:hover img {
+    opacity: 0.95;
+    transform: scale(1.55) translateY(3px);
+}
+
+/* ============================================================
+   КОРЗИНА (CART DRAWER)
+   ============================================================ */
+#cartDrawer {
+    background: var(--apex-surface);
+    border-left: 1px solid var(--apex-border);
+}
+.cart-item {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: var(--apex-container);
+    border: 1px solid var(--apex-border);
+    border-radius: 4px;
+    transition: border-color 0.2s;
+}
+.cart-item:hover {
+    border-color: var(--apex-gold);
+}
+.cart-item-img {
+    width: 64px; height: 64px;
+    background: #080808;
+    border: 1px solid var(--apex-border);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    padding: 4px;
+}
+.cart-item-img img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.cart-qty-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #080808;
+    border: 1px solid var(--apex-border);
+    border-radius: 3px;
+    padding: 4px 10px;
+}
+.cart-qty-btn {
+    color: var(--apex-muted);
+    font-weight: bold;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 2px 4px;
+    cursor: pointer;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+}
+.cart-qty-btn:hover {
+    color: var(--apex-gold);
+}
+
+/* ============================================================
+   ФИЛЬТРЫ (чекбоксы в боковой панели)
+   ============================================================ */
+.filter-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+.filter-checkbox-label:hover {
+    background: rgba(212, 175, 55, 0.05);
+    border-color: var(--apex-border);
+}
+.filter-checkbox-label input[type="checkbox"] {
+    appearance: none;
+    width: 14px; height: 14px;
+    border: 1px solid var(--apex-border);
+    border-radius: 2px;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    position: relative;
+}
+.filter-checkbox-label input[type="checkbox"]:checked {
+    background: var(--apex-gold);
+    border-color: var(--apex-gold);
+}
+.filter-checkbox-label input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 1px; left: 3px;
+    width: 5px; height: 8px;
+    border: 2px solid #050505;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+}
+.filter-checkbox-label span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--apex-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+}
+.filter-checkbox-label:hover span,
+.filter-checkbox-label:has(input:checked) span {
+    color: var(--apex-text);
+}
+
+/* ============================================================
+   СКРОЛЛБАР
+   ============================================================ */
+.custom-scrollbar::-webkit-scrollbar { width: 3px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--apex-border); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--apex-gold); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--apex-bg); }
+::-webkit-scrollbar-thumb { background: var(--apex-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--apex-gold); }
+
+/* ============================================================
+   АНИМАЦИИ
+   ============================================================ */
+@keyframes ping-gold {
+    75%, 100% { transform: scale(2); opacity: 0; }
+}
+.animate-ping-gold {
+    animation: ping-gold 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg, var(--apex-container) 25%, var(--apex-border) 50%, var(--apex-container) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* ============================================================
+   КАРТОЧКИ КОРЗИНЫ
+   ============================================================ */
+.cart-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    background: var(--apex-surface);
+    border: 1px solid var(--apex-border);
+    border-radius: 4px;
+    transition: border-color 0.25s;
+}
+.cart-item:hover { border-color: rgba(212,175,55,0.35); }
+
+.cart-item-img {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    background: #080808;
+    border: 1px solid var(--apex-border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.cart-item-img img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    padding: 4px;
+}
+
+.cart-qty-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--apex-border);
+    padding: 4px 10px;
+    border-radius: 3px;
+    background: #080808;
+}
+.cart-qty-btn {
+    color: var(--apex-muted);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    transition: color 0.2s;
+    user-select: none;
+}
+.cart-qty-btn:hover { color: var(--apex-gold); }
+
+/* ============================================================
+   СОВМЕСТИМОСТЬ — МИНИАТЮРЫ АВТО
+   ============================================================ */
+.compat-car-thumb {
+    width: 48px;
+    height: 30px;
+    background: #080808;
+    border: 1px solid var(--apex-border);
+    border-radius: 3px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    transition: border-color 0.2s;
+}
+.compat-car-thumb:hover { border-color: rgba(212,175,55,0.5); }
+.compat-car-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.3) translateY(3px);
+    mix-blend-mode: screen;
+    opacity: 0.75;
+    transition: opacity 0.2s;
+}
+.compat-car-thumb:hover img { opacity: 1; }
+
+/* Угловые декораторы для карточки */
+.apex-corner {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    z-index: 20;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+.apex-product-card:hover .apex-corner { opacity: 1; }
+.apex-corner-tl { top: 4px; left: 4px;  border-top: 1px solid var(--apex-gold); border-left: 1px solid var(--apex-gold); }
+.apex-corner-tr { top: 4px; right: 4px; border-top: 1px solid var(--apex-gold); border-right: 1px solid var(--apex-gold); }
+.apex-corner-bl { bottom: 4px; left: 4px;  border-bottom: 1px solid var(--apex-gold); border-left: 1px solid var(--apex-gold); }
+.apex-corner-br { bottom: 4px; right: 4px; border-bottom: 1px solid var(--apex-gold); border-right: 1px solid var(--apex-gold); }
+
+/* ============================================================
+   МОДАЛЬНОЕ ОКНО — APEX GOLD СТИЛЬ
+   ============================================================ */
+
+/* Обёртка контента */
+#modalContent {
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    height: 100%;
+}
+
+/* Левая колонка — изображение */
+.modal-left {
+    width: 42%;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    background: #080808;
+    border-right: 1px solid var(--apex-border);
+    flex-shrink: 0;
+}
+
+/* Контейнер главного изображения */
+.modal-img-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    position: relative;
+    background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
+    min-height: 300px;
+}
+.modal-img-container::before {
+    content: '';
+    position: absolute;
+    inset: 16px;
+    border: 1px dashed rgba(212,175,55,0.12);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+/* Правая колонка — детали */
+.modal-right {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+    background: #090909;
+}
+
+/* Параметрические боксы */
+.modal-param-box {
+    background: var(--apex-surface);
+    border: 1px solid var(--apex-border);
+    border-radius: 4px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.modal-param-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--apex-muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin: 0;
+}
+.modal-param-value {
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: #fff;
+    margin: 0;
+}
+
+/* Кнопка "в корзину" в модале */
+.modal-add-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px 0;
+    background: rgba(212,175,55,0.1);
+    border: 1px solid rgba(212,175,55,0.4);
+    color: var(--apex-gold);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.modal-add-btn:hover {
+    background: rgba(212,175,55,0.22);
+    box-shadow: 0 0 14px rgba(212,175,55,0.25);
+}
+
+/* Бейдж категории */
+.modal-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    background: rgba(212,175,55,0.1);
+    border: 1px solid rgba(212,175,55,0.3);
+    color: var(--apex-gold);
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* OEM бейдж */
+.oem-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 10px;
+    background: rgba(212,175,55,0.15);
+    border: 1px solid rgba(212,175,55,0.5);
+    color: var(--apex-gold);
+    border-radius: 2px;
+}
+
+/* Секция внутри модала */
+.modal-section {
+    border-top: 1px solid var(--apex-border);
+    padding-top: 20px;
+    margin-bottom: 20px;
+}
+.modal-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--apex-silver);
+    margin-bottom: 14px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Карточка совместимости */
+.modal-compat-card {
+    background: var(--apex-surface);
+    border: 1px solid var(--apex-border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.25s;
+}
+.modal-compat-card:hover { border-color: rgba(212,175,55,0.4); }
+
+.modal-compat-img {
+    height: 90px;
+    background: #080808;
+    border-bottom: 1px solid var(--apex-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+.modal-compat-img img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s;
+    opacity: 0.85;
+}
+.modal-compat-card:hover .modal-compat-img img { transform: scale(1.08); opacity: 1; }
+
+/* Бейдж года */
+.year-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--apex-border);
+    color: var(--apex-muted);
+    border-radius: 2px;
+}
+
+/* Thumbnail кнопки галереи */
+.modal-thumb-btn {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    border: 1px solid var(--apex-border);
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    flex-shrink: 0;
+}
+.modal-thumb-btn:hover,
+.modal-thumb-btn.active { border-color: var(--apex-gold); }
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    #modalContent { flex-direction: column; }
+    .modal-left { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--apex-border); }
+    .modal-img-container { min-height: 200px; }
+    .modal-right { padding: 20px; }
+}
