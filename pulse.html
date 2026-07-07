@@ -392,8 +392,12 @@ async function loadSourceProducts(clientId, apiKey) {
     const data = await res.json();
     if (data.products && data.products.length > 0) {
       catalogProducts = data.products.map(p => {
-        const primaryImg = typeof p.primary_image === 'string' ? p.primary_image : (p.primary_image?.img_url || '');
-        const imgUrls = [primaryImg];
+        let primaryImg = '';
+        if (typeof p.primary_image === 'string') primaryImg = p.primary_image;
+        else if (Array.isArray(p.primary_image) && p.primary_image.length) primaryImg = typeof p.primary_image[0] === 'string' ? p.primary_image[0] : (p.primary_image[0]?.img_url || '');
+        else if (p.primary_image?.img_url) primaryImg = p.primary_image.img_url;
+        const imgUrls = [];
+        if (primaryImg) imgUrls.push(primaryImg);
         if (Array.isArray(p.images)) for (const img of p.images) { const url = typeof img === 'string' ? img : (img?.img_url || img?.url || ''); if (url && !imgUrls.includes(url)) imgUrls.push(url); }
         return { id: p.product_id, article: p.offer_id || '', name: p.name || '', price: parseFloat(p.price) || 0, stock: p.stocks?.stocks?.[0]?.present || 0, imageUrl: primaryImg, imageUrls: imgUrls, brand: 'Westar', weight: p.weight || 1000, length: p.depth || 100, width: p.width || 100, height: p.height || 100 };
       });
