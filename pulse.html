@@ -833,19 +833,33 @@ async function previewSync() {
   content.innerHTML = '<div class="spinner mx-auto mb-2"></div><div style="color:var(--text-muted);">Загрузка товаров источника...</div>';
 
   try {
-    const res = await fetch(`${API}/api/pulse/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: source.clientId, apiKey: source.apiKey }) });
-    const data = await res.json();
-    if (!data.products?.length) { content.innerHTML = '<div style="color:var(--error);">Нет товаров в источнике</div>'; return; }
+    // 1. Загружаем товары источника
+    const srcRes = await fetch(`${API}/api/pulse/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: source.clientId, apiKey: source.apiKey }) });
+    const srcData = await srcRes.json();
+    if (!srcData.products?.length) { content.innerHTML = '<div style="color:var(--error);">Нет товаров в источнике</div>'; return; }
+
+    // Маппинг source: offer_id → данные
+    const srcMap = {};
+    for (const p of srcData.products) {
+      srcMap[p.offer_id] = {
+        offer_id: p.offer_id,
+        name: p.name,
+        price: parseFloat(p.price) || 0,
+        old_price: parseFloat(p.old_price) || 0,
+        stock: p.stocks?.stocks?.[0]?.present || 0,
+        primary_image: p.primary_image
+      };
+    }
 
     let html = '';
 
     // Источник
     html += `<div class="mb-4 pb-3" style="border-bottom:1px solid var(--border);">`;
     html += `<div class="text-xs font-semibold mb-2" style="color:var(--success);">📦 Источник: ${source.name} (${source.clientId})</div>`;
-    html += `<div class="text-[11px]" style="color:var(--text-muted);">Товаров: ${data.products.length}</div>`;
+    html += `<div class="text-[11px]" style="color:var(--text-muted);">Товаров: ${srcData.products.length}</div>`;
     html += `</div>`;
 
-    // По каждому целевому аккаунту
+    // 2. По каждому целевому аккаунту — загружаем его товары
     for (const acc of targets) {
       const m = acc.markup || { type: 'percent', value: 0 };
       const sm = acc.stockMode || 'sync';
@@ -861,67 +875,104 @@ async function previewSync() {
       html += `<div><span style="color:var(--text-muted);">Остатки:</span> <span class="font-mono" style="color:var(--text);">${sm === 'sync' ? 'точные' : sm === 'plus' ? '+' + sv + '%' : sm === 'minus' ? '-' + sv + '%' : '=' + sv}</span></div>`;
       html += `</div>`;
 
-      // Матчинг товаров
-      let matched = 0;
+      // Загружаем товары целевого аккаунта
+      content.innerHTML = html + '<div class="spinner mx-auto mb-2"></div><div style="color:var(--text-muted);">Загрузка товаров ' + acc.name + '...</div>';
+      let tgtProducts = [];
+      try {
+        const tgtRes = await fetch(`${API}/api/pulse/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: acc.clientId, apiKey: acc.apiKey }) });
+        const tgtData = await tgtRes.json();
+        tgtProducts = tgtData.products || [];
+      } catch (e) {}
+
+      html += `<div class="text-[11px] mb-2" style="color:var(--text-muted);">Товаров в аккаунте: ${tgtProducts.length}</div>`;
+
+      // Матчинг: для каждого товара source ищем соответствующий в target
+      let matched = 0, unmatched = 0;
       const examples = [];
-      for (const src of data.products) {
-        const srcOffer = (src.offer_id || '').toLowerCase();
-        let found = false;
+      const unmatchedList = [];
 
-        // Точное совпадение
-        for (const tgt of data.products) {
-          if (tgt.offer_id && tgt.offer_id.toLowerCase() === srcOffer) { found = true; break; }
+      for (const [srcOid, srcItem] of Object.entries(srcMap)) {
+        let tgtItem = null;
+        let matchType = '';
+
+        // 1. Точное совпадение: source offer_id == target offer_id
+        for (const t of tgtProducts) {
+          if (t.offer_id === srcOid) { tgtItem = t; matchType = 'точное'; break; }
         }
 
-        // По префиксу — целевой товар = префикс + source offer_id
-        if (!found && prefixes.length) {
+        // 2. По префиксу: target offer_id = prefix + source offer_id
+        if (!tgtItem && prefixes.length) {
           for (const pfx of prefixes) {
-            const targetOffer = pfx + src.offer_id;
-            for (const tgt of data.products) {
-              if (tgt.offer_id && tgt.offer_id === targetOffer) { found = true; break; }
+            const targetOffer = pfx + srcOid;
+            for (const t of tgtProducts) {
+              if (t.offer_id === targetOffer) { tgtItem = t; matchType = 'префикс+' + pfx; break; }
             }
-            if (found) break;
+            if (tgtItem) break;
           }
         }
 
-        if (!found && prefixes.length) {
-          // Обратный поиск: убираем префикс из целевого
-          for (const pfx of prefixes) {
-            const escaped = pfx.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            const stripped = srcOffer.replace(new RegExp('^' + escaped), '');
-            if (stripped !== srcOffer) { found = true; break; }
+        // 3. Обратный: убираем префикс из target → получаем source
+        if (!tgtItem && prefixes.length) {
+          for (const t of tgtProducts) {
+            for (const pfx of prefixes) {
+              const escaped = pfx.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+              const stripped = t.offer_id.replace(new RegExp('^' + escaped), '');
+              if (stripped === srcOid) { tgtItem = t; matchType = 'обратный-' + pfx; break; }
+            }
+            if (tgtItem) break;
           }
         }
 
-        if (found) {
+        if (tgtItem) {
           matched++;
-          if (examples.length < 5) {
-            let finalPrice = src.price;
-            if (m.value > 0) {
-              finalPrice = m.type === 'percent' ? Math.round(src.price * (1 + m.value / 100)) : Math.round(src.price + m.value);
-            }
-            let finalStock = src.stocks?.stocks?.[0]?.present || 0;
+          if (examples.length < 8) {
+            let finalPrice = srcItem.price;
+            if (m.value > 0) finalPrice = m.type === 'percent' ? Math.round(srcItem.price * (1 + m.value / 100)) : Math.round(srcItem.price + m.value);
+            let finalStock = srcItem.stock;
             if (sm === 'plus' && sv > 0) finalStock = Math.round(finalStock * (1 + sv / 100));
             else if (sm === 'minus' && sv > 0) finalStock = Math.max(0, Math.round(finalStock * (1 - sv / 100)));
             else if (sm === 'fixed') finalStock = Math.round(sv);
 
-            examples.push({ article: src.offer_id, price: src.price, finalPrice, stock: src.stocks?.stocks?.[0]?.present || 0, finalStock });
+            examples.push({
+              srcOffer: srcOid, tgtOffer: tgtItem.offer_id, matchType,
+              srcPrice: srcItem.price, finalPrice,
+              tgtPrice: parseFloat(tgtItem.price) || 0,
+              srcStock: srcItem.stock, finalStock,
+              tgtStock: tgtItem.stocks?.stocks?.[0]?.present || 0
+            });
           }
+        } else {
+          unmatched++;
+          if (unmatchedList.length < 5) unmatchedList.push(srcOid);
         }
       }
 
-      html += `<div class="text-[11px] mb-2" style="color:var(--text-muted);">Совпадений: <span style="color:var(--success);font-weight:600;">${matched}</span> из ${data.products.length}</div>`;
+      html += `<div class="text-[11px] mb-2">Совпадений: <span style="color:var(--success);font-weight:600;">${matched}</span> | Не найдено: <span style="color:var(--error);font-weight:600;">${unmatched}</span></div>`;
 
+      // Таблица совпадений
       if (examples.length > 0) {
-        html += `<div class="rounded-lg p-3" style="background:rgba(10,11,15,0.5);border:1px solid var(--border);">`;
-        html += `<div class="text-[10px] mb-2" style="color:var(--text-muted);">Примеры (артикул → цена → остаток):</div>`;
+        html += `<div class="rounded-lg p-3 mb-2" style="background:rgba(10,11,15,0.5);border:1px solid var(--border);">`;
+        html += `<div class="text-[10px] mb-2" style="color:var(--text-muted);">Данные для отправки (первые ${examples.length}):</div>`;
+        html += `<div class="overflow-x-auto"><table class="products-table text-[11px]"><thead><tr>`;
+        html += `<th>Источник</th><th>Цель</th><th>Матч</th><th>Цена (было→будет)</th><th>Остаток (было→будет)</th>`;
+        html += `</tr></thead><tbody>`;
+
         for (const ex of examples) {
-          html += `<div class="font-mono text-[11px] mb-1" style="color:var(--text);">`;
-          html += `${ex.article}: <span style="color:var(--warning);">${formatPrice(ex.price)}</span> → <span style="color:var(--gold);font-weight:600;">${formatPrice(ex.finalPrice)}</span>`;
-          html += ` | остаток: <span style="color:var(--info);">${ex.stock}</span> → <span style="color:var(--gold);font-weight:600;">${ex.finalStock}</span>`;
-          html += `</div>`;
+          html += `<tr>`;
+          html += `<td class="font-mono" style="color:var(--gold);">${ex.srcOffer}</td>`;
+          html += `<td class="font-mono" style="color:var(--info);">${ex.tgtOffer}</td>`;
+          html += `<td style="color:var(--text-muted);">${ex.matchType}</td>`;
+          html += `<td><span style="color:var(--warning);">${formatPrice(ex.srcPrice)}</span> → <span style="color:var(--gold);font-weight:600;">${formatPrice(ex.finalPrice)}</span></td>`;
+          html += `<td><span style="color:var(--info);">${ex.srcStock}</span> → <span style="color:var(--gold);font-weight:600;">${ex.finalStock}</span></td>`;
+          html += `</tr>`;
         }
+
+        html += `</tbody></table></div>`;
         html += `</div>`;
+      }
+
+      if (unmatchedList.length > 0) {
+        html += `<div class="text-[10px] mt-1" style="color:var(--text-muted);">Не найдены в целевом: ${unmatchedList.join(', ')}${unmatched > 5 ? '...' : ''}</div>`;
       }
 
       html += `</div>`;
