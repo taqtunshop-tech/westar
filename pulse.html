@@ -285,11 +285,25 @@ tailwind.config = {
   </div>
 
   <!-- Кнопка синхронизации -->
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between gap-3">
     <div id="syncSummary" class="text-sm" style="color:var(--text-muted);">Добавьте аккаунты для синхронизации</div>
-    <button id="btnSyncAll" class="btn-gold flex items-center gap-2 text-base px-6 py-3" onclick="startMultiSync()" disabled>
-      🔄 Синхронизировать все
-    </button>
+    <div class="flex items-center gap-3">
+      <button id="btnPreview" class="btn-ghost flex items-center gap-2 text-sm px-4 py-2" onclick="previewSync()">
+        👁 Просмотр данных
+      </button>
+      <button id="btnSyncAll" class="btn-gold flex items-center gap-2 text-base px-6 py-3" onclick="startMultiSync()" disabled>
+        🔄 Синхронизировать все
+      </button>
+    </div>
+  </div>
+
+  <!-- Просмотр данных -->
+  <div id="previewPanel" class="mt-4" style="display:none;">
+    <div class="flex items-center justify-between mb-2">
+      <div class="text-xs font-semibold" style="color:var(--gold);">👁 Что будет отправлено</div>
+      <button class="btn-sm btn-danger" onclick="document.getElementById('previewPanel').style.display='none'">✕ Закрыть</button>
+    </div>
+    <div id="previewContent" class="rounded-xl p-4 export-log" style="background:rgba(10,11,15,0.6);border:1px solid var(--border);max-height:500px;overflow-y:auto;"></div>
   </div>
 
   <!-- Прогресс синка -->
@@ -800,6 +814,122 @@ async function updateStockValue(id, value) {
     a.stockValue = parseFloat(value) || 0;
     localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts));
     saveAccountsToGitHub();
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// ПРОСМОТР ДАННЫХ ДО СИНХРОНИЗАЦИИ
+// ════════════════════════════════════════════════════════
+async function previewSync() {
+  if (multiAccounts.length < 2) return showToast('Нужно минимум 2 аккаунта', 'warning');
+  const source = multiAccounts.find(a => a.name && a.name.toLowerCase().includes('westar')) || multiAccounts[0];
+  const targets = multiAccounts.filter(a => a.clientId !== source.clientId);
+  if (!targets.length) return showToast('Нет целевых аккаунтов', 'warning');
+
+  showToast('👁 Загрузка данных...', 'processing');
+  const panel = document.getElementById('previewPanel');
+  const content = document.getElementById('previewContent');
+  panel.style.display = 'block';
+  content.innerHTML = '<div class="spinner mx-auto mb-2"></div><div style="color:var(--text-muted);">Загрузка товаров источника...</div>';
+
+  try {
+    const res = await fetch(`${API}/api/pulse/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: source.clientId, apiKey: source.apiKey }) });
+    const data = await res.json();
+    if (!data.products?.length) { content.innerHTML = '<div style="color:var(--error);">Нет товаров в источнике</div>'; return; }
+
+    let html = '';
+
+    // Источник
+    html += `<div class="mb-4 pb-3" style="border-bottom:1px solid var(--border);">`;
+    html += `<div class="text-xs font-semibold mb-2" style="color:var(--success);">📦 Источник: ${source.name} (${source.clientId})</div>`;
+    html += `<div class="text-[11px]" style="color:var(--text-muted);">Товаров: ${data.products.length}</div>`;
+    html += `</div>`;
+
+    // По каждому целевому аккаунту
+    for (const acc of targets) {
+      const m = acc.markup || { type: 'percent', value: 0 };
+      const sm = acc.stockMode || 'sync';
+      const sv = acc.stockValue || 0;
+      const prefixes = Array.isArray(acc.prefixes) ? acc.prefixes : (acc.prefix ? [acc.prefix] : []);
+
+      html += `<div class="mb-4 pb-3" style="border-bottom:1px solid var(--border);">`;
+      html += `<div class="text-xs font-semibold mb-2" style="color:var(--info);">🎯 ${acc.name} (${acc.clientId})</div>`;
+      html += `<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 text-[11px]" style="color:var(--text-muted);">`;
+      html += `<div><span style="color:var(--text-muted);">Префикс:</span> <span class="font-mono" style="color:var(--text);">${prefixes.length ? prefixes.join(', ') : 'нет'}</span></div>`;
+      html += `<div><span style="color:var(--text-muted);">Наценка:</span> <span class="font-mono" style="color:var(--text);">${m.value}${m.type === 'percent' ? '%' : '₽'}</span></div>`;
+      html += `<div><span style="color:var(--text-muted);">Склад:</span> <span class="font-mono" style="color:var(--text);">${acc.warehouseId || 'auto'}</span></div>`;
+      html += `<div><span style="color:var(--text-muted);">Остатки:</span> <span class="font-mono" style="color:var(--text);">${sm === 'sync' ? 'точные' : sm === 'plus' ? '+' + sv + '%' : sm === 'minus' ? '-' + sv + '%' : '=' + sv}</span></div>`;
+      html += `</div>`;
+
+      // Матчинг товаров
+      let matched = 0;
+      const examples = [];
+      for (const src of data.products) {
+        const srcOffer = (src.offer_id || '').toLowerCase();
+        let found = false;
+
+        // Точное совпадение
+        for (const tgt of data.products) {
+          if (tgt.offer_id && tgt.offer_id.toLowerCase() === srcOffer) { found = true; break; }
+        }
+
+        // По префиксу — целевой товар = префикс + source offer_id
+        if (!found && prefixes.length) {
+          for (const pfx of prefixes) {
+            const targetOffer = pfx + src.offer_id;
+            for (const tgt of data.products) {
+              if (tgt.offer_id && tgt.offer_id === targetOffer) { found = true; break; }
+            }
+            if (found) break;
+          }
+        }
+
+        if (!found && prefixes.length) {
+          // Обратный поиск: убираем префикс из целевого
+          for (const pfx of prefixes) {
+            const escaped = pfx.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const stripped = srcOffer.replace(new RegExp('^' + escaped), '');
+            if (stripped !== srcOffer) { found = true; break; }
+          }
+        }
+
+        if (found) {
+          matched++;
+          if (examples.length < 5) {
+            let finalPrice = src.price;
+            if (m.value > 0) {
+              finalPrice = m.type === 'percent' ? Math.round(src.price * (1 + m.value / 100)) : Math.round(src.price + m.value);
+            }
+            let finalStock = src.stocks?.stocks?.[0]?.present || 0;
+            if (sm === 'plus' && sv > 0) finalStock = Math.round(finalStock * (1 + sv / 100));
+            else if (sm === 'minus' && sv > 0) finalStock = Math.max(0, Math.round(finalStock * (1 - sv / 100)));
+            else if (sm === 'fixed') finalStock = Math.round(sv);
+
+            examples.push({ article: src.offer_id, price: src.price, finalPrice, stock: src.stocks?.stocks?.[0]?.present || 0, finalStock });
+          }
+        }
+      }
+
+      html += `<div class="text-[11px] mb-2" style="color:var(--text-muted);">Совпадений: <span style="color:var(--success);font-weight:600;">${matched}</span> из ${data.products.length}</div>`;
+
+      if (examples.length > 0) {
+        html += `<div class="rounded-lg p-3" style="background:rgba(10,11,15,0.5);border:1px solid var(--border);">`;
+        html += `<div class="text-[10px] mb-2" style="color:var(--text-muted);">Примеры (артикул → цена → остаток):</div>`;
+        for (const ex of examples) {
+          html += `<div class="font-mono text-[11px] mb-1" style="color:var(--text);">`;
+          html += `${ex.article}: <span style="color:var(--warning);">${formatPrice(ex.price)}</span> → <span style="color:var(--gold);font-weight:600;">${formatPrice(ex.finalPrice)}</span>`;
+          html += ` | остаток: <span style="color:var(--info);">${ex.stock}</span> → <span style="color:var(--gold);font-weight:600;">${ex.finalStock}</span>`;
+          html += `</div>`;
+        }
+        html += `</div>`;
+      }
+
+      html += `</div>`;
+    }
+
+    content.innerHTML = html;
+  } catch (e) {
+    content.innerHTML = `<div style="color:var(--error);">Ошибка: ${e.message}</div>`;
   }
 }
 
