@@ -257,6 +257,18 @@ tailwind.config = {
     <button onclick="saveGhToken()" class="btn-sm" style="background:rgba(253,185,19,0.15);color:var(--gold);border:1px solid rgba(253,185,19,0.3);">Сохранить</button>
   </div>
 
+  <!-- Подсказка -->
+  <div id="syncHint" class="rounded-xl p-4 mb-4" style="background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.15);">
+    <div class="text-xs font-medium mb-2" style="color:var(--info);">Как синхронизировать:</div>
+    <div class="text-[11px] leading-relaxed" style="color:var(--text-muted);">
+      1. В блоке «Товары» подключите источник (Westar) и подтвердите<br>
+      2. В блоке «Синхронизация» добавьте целевые аккаунты (Client ID + API Key + Префикс)<br>
+      3. Для каждого аккаунта: нажмите 🔍 чтобы загрузить склады, выберите нужный<br>
+      4. Настройте наценку и режим остатков<br>
+      5. Нажмите «Синхронизировать все»
+    </div>
+  </div>
+
   <!-- Карточки аккаунтов -->
   <div id="accountsContainer" class="flex flex-col gap-3 mb-4"></div>
 
@@ -561,9 +573,16 @@ async function loadAccountsFromGitHub() {
   try { return JSON.parse(decodeURIComponent(escape(atob(data.content)))); } catch { return null; }
 }
 async function loadMultiAccounts() {
-  try { const gh = await loadAccountsFromGitHub(); if (gh?.accounts?.length) { multiAccounts = gh.accounts; localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts)); renderMultiAccounts(); return; } } catch {}
-  try { const res = await fetch(`${API}/api/pulse/accounts`); if (res.ok) { const d = await res.json(); if (d.accounts?.length) { multiAccounts = d.accounts; localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts)); renderMultiAccounts(); return; } } } catch {}
-  try { const s = localStorage.getItem('pulse_accounts'); if (s) { multiAccounts = JSON.parse(s); renderMultiAccounts(); } } catch {}
+  try { const gh = await loadAccountsFromGitHub(); if (gh?.accounts?.length) { multiAccounts = gh.accounts.map(a => ({ stockMode:'sync', stockValue:0, ...a })); localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts)); renderMultiAccounts(); await autoLoadWarehouses(); return; } } catch {}
+  try { const res = await fetch(`${API}/api/pulse/accounts`); if (res.ok) { const d = await res.json(); if (d.accounts?.length) { multiAccounts = d.accounts.map(a => ({ stockMode:'sync', stockValue:0, markup:{type:'percent',value:0}, ...a })); localStorage.setItem('pulse_accounts', JSON.stringify(multiAccounts)); renderMultiAccounts(); await autoLoadWarehouses(); return; } } } catch {}
+  try { const s = localStorage.getItem('pulse_accounts'); if (s) { multiAccounts = JSON.parse(s).map(a => ({ stockMode:'sync', stockValue:0, ...a })); renderMultiAccounts(); await autoLoadWarehouses(); } } catch {}
+}
+
+async function autoLoadWarehouses() {
+  for (const acc of multiAccounts) {
+    if (acc.name && acc.name.toLowerCase().includes('westar')) continue;
+    await loadWarehouses(acc.id);
+  }
 }
 
 // ════════════════════════════════════════════════════════
